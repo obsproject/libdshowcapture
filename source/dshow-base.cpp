@@ -193,6 +193,8 @@ bool GetFilterPin(IBaseFilter *filter, const GUID &type, const GUID &category,
 			(*pin)->AddRef();
 			return true;
 		}
+
+		curPin.Release();
 	}
 
 	return false;
