@@ -56,8 +56,8 @@ struct HDevice {
 	bool EnsureActive(const wchar_t *func);
 	bool EnsureInactive(const wchar_t *func);
 
-	static void AudioCallback(HDevice *context, IMediaSample *sample);
-	static void VideoCallback(HDevice *context, IMediaSample *sample);
+	void AudioCallback(IMediaSample *sample);
+	void VideoCallback(IMediaSample *sample);
 
 	bool SetupVideoCapture(IBaseFilter *filter, VideoConfig &config);
 	bool SetupAudioCapture(IBaseFilter *filter, AudioConfig &config);

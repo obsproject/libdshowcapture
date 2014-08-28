@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #ifdef DSHOWCAPTURE_EXPORTS
 	#define DSHOWCAPTURE_EXPORT __declspec(dllexport)
@@ -46,8 +47,10 @@ namespace DShow {
 	/* internal forward */
 	struct HDevice;
 
-	typedef void (*CaptureProc)(void *param, unsigned char *data,
-			size_t size, long long startTime, long long stopTime);
+	typedef std::function<
+		void (unsigned char *data, size_t size,
+			long long startTime, long long stopTime)
+		> CaptureProc;
 
 	enum class InitGraph {
 		False,
@@ -141,7 +144,6 @@ namespace DShow {
 
 	struct Config : DeviceId {
 		CaptureProc callback = nullptr;
-		void        *param = nullptr;
 
 		/** Use the device's desired default config */
 		bool        useDefaultConfig = true;

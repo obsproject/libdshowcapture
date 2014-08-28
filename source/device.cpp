@@ -67,11 +67,11 @@ bool HDevice::EnsureInactive(const wchar_t *func)
 	return true;
 }
 
-void HDevice::AudioCallback(HDevice *context, IMediaSample *sample)
+void HDevice::AudioCallback(IMediaSample *sample)
 {
 	BYTE *ptr;
 
-	if (!sample || !context->audioConfig.callback)
+	if (!sample || !audioConfig.callback)
 		return;
 
 	int size = sample->GetActualDataLength();
@@ -86,15 +86,14 @@ void HDevice::AudioCallback(HDevice *context, IMediaSample *sample)
 	if (FAILED(sample->GetTime(&startTime, &stopTime)))
 		return;
 
-	context->audioConfig.callback(context->audioConfig.param, ptr, size,
-			startTime, stopTime);
+	audioConfig.callback(ptr, size, startTime, stopTime);
 }
 
-void HDevice::VideoCallback(HDevice *context, IMediaSample *sample)
+void HDevice::VideoCallback(IMediaSample *sample)
 {
 	BYTE *ptr;
 
-	if (!sample || !context->videoConfig.callback)
+	if (!sample || !videoConfig.callback)
 		return;
 
 	int size = sample->GetActualDataLength();
@@ -109,8 +108,7 @@ void HDevice::VideoCallback(HDevice *context, IMediaSample *sample)
 	if (FAILED(sample->GetTime(&startTime, &stopTime)))
 		return;
 
-	context->videoConfig.callback(context->videoConfig.param, ptr, size,
-			startTime, stopTime);
+	videoConfig.callback(ptr, size, startTime, stopTime);
 }
 
 void HDevice::ConvertVideoSettings()
@@ -180,8 +178,7 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 	ConvertVideoSettings();
 
 	PinCaptureInfo info;
-	info.callback          = CaptureCallback(VideoCallback);
-	info.param             = this;
+	info.callback          = [this] (IMediaSample *s) {VideoCallback(s);};
 	info.expectedMajorType = videoMediaType->majortype;
 
 	/* attempt to force intermediary filters for these types */
@@ -291,8 +288,7 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 	}
 
 	PinCaptureInfo info;
-	info.callback          = CaptureCallback(AudioCallback);
-	info.param             = this;
+	info.callback          = [this] (IMediaSample *s) {AudioCallback(s);};
 	info.expectedMajorType = audioMediaType->majortype;
 	info.expectedSubType   = audioMediaType->subtype;
 

@@ -237,7 +237,7 @@ STDMETHODIMP CapturePin::GetAllocatorRequirements(ALLOCATOR_PROPERTIES *pProps)
 STDMETHODIMP CapturePin::Receive(IMediaSample *pSample)
 {
 	if (pSample)
-		captureInfo.callback(captureInfo.param, pSample);
+		captureInfo.callback(pSample);
 
 	return S_OK;
 }
