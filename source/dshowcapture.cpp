@@ -181,6 +181,7 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 		const wchar_t *devicePath)
 {
 	CComPtr<IPin> pin;
+	CComPtr<IPin> audioPin;
 	VideoDevice   info;
 
 	bool success = GetFilterPin(filter, MEDIATYPE_Video,
@@ -190,6 +191,9 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 
 	if (!EnumVideoCaps(pin, info.caps))
 		return true;
+
+	info.audioAttached = GetFilterPin(filter, MEDIATYPE_Audio,
+			PIN_CATEGORY_CAPTURE, PINDIR_OUTPUT, &audioPin);
 
 	info.name = deviceName;
 	if (devicePath)
