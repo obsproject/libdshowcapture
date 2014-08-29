@@ -109,7 +109,6 @@ static void Get_FORMAT_WaveFormatEx_Data(AudioInfo &info,
 
 	switch (wfex->wBitsPerSample) {
 	case 16: info.format = AudioFormat::Wave16bit; break;
-	case 24: info.format = AudioFormat::Wave24bit; break;
 	case 32: info.format = AudioFormat::WaveFloat; break;
 	}
 

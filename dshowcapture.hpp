@@ -93,7 +93,6 @@ namespace DShow {
 
 		/* raw formats */
 		Wave16bit = 100,
-		Wave24bit,
 		WaveFloat,
 
 		/* encoded formats */
