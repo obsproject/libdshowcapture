@@ -30,8 +30,8 @@
 #endif
 
 #define DSHOWCAPTURE_VERSION_MAJOR 0
-#define DSHOWCAPTURE_VERSION_MINOR 0
-#define DSHOWCAPTURE_VERSION_PATCH 1
+#define DSHOWCAPTURE_VERSION_MINOR 1
+#define DSHOWCAPTURE_VERSION_PATCH 0
 
 #define MAKE_DSHOWCAPTURE_VERSION(major, minor, patch) \
 		( (major << 24) | \
@@ -67,6 +67,7 @@ namespace DShow {
 
 	enum class VideoFormat {
 		Any,
+		Unknown,
 
 		/* raw formats */
 		ARGB = 100,
@@ -90,6 +91,7 @@ namespace DShow {
 
 	enum class AudioFormat {
 		Any,
+		Unknown,
 
 		/* raw formats */
 		Wave16bit = 100,

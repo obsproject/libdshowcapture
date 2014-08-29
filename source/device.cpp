@@ -131,6 +131,18 @@ void HDevice::ConvertVideoSettings()
 
 void HDevice::ConvertAudioSettings()
 {
+	WAVEFORMATEX *wfex =
+		reinterpret_cast<WAVEFORMATEX*>(audioMediaType->pbFormat);
+
+	audioConfig.sampleRate = wfex->nSamplesPerSec;
+	audioConfig.channels   = wfex->nChannels;
+
+	if (wfex->wBitsPerSample == 16)
+		audioConfig.format = AudioFormat::Wave16bit;
+	else if (wfex->wBitsPerSample == 32)
+		audioConfig.format = AudioFormat::WaveFloat;
+	else
+		audioConfig.format = AudioFormat::Unknown;
 }
 
 bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
@@ -286,6 +298,8 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 		Error(L"Could not set audio format");
 		return false;
 	}
+
+	ConvertAudioSettings();
 
 	PinCaptureInfo info;
 	info.callback          = [this] (IMediaSample *s) {AudioCallback(s);};

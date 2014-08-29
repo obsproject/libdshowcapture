@@ -76,6 +76,8 @@ bool GetMediaTypeVFormat(const AM_MEDIA_TYPE &mt, VideoFormat &format)
 
 	const BITMAPINFOHEADER *bmih = GetBitmapInfoHeader(mt);
 
+	format = VideoFormat::Unknown;
+
 	/* raw formats */
 	if (mt.subtype == MEDIASUBTYPE_RGB24)
 		format = VideoFormat::XRGB;
