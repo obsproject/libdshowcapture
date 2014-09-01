@@ -81,6 +81,21 @@ public:
 		FreeMediaType(type);
 		CopyMediaType(&type, &type_);
 	}
+
+	template <typename T> inline T *AllocFormat()
+	{
+		if (type.pbFormat) {
+			CoTaskMemFree(type.pbFormat);
+			type.pbFormat = nullptr;
+			type.cbFormat = 0;
+		}
+
+		type.pbFormat = (PBYTE)CoTaskMemAlloc(sizeof(T));
+		type.cbFormat = sizeof(T);
+		memset(type.pbFormat, 0, sizeof(T));
+
+		return (T*)type.pbFormat;
+	}
 };
 
 class MediaTypePtr {
