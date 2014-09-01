@@ -39,6 +39,9 @@ bool GetDeviceFilter(const IID &type, const wchar_t *name, const wchar_t *path,
 bool GetFilterPin(IBaseFilter *filter, const GUID &type, const GUID &category,
 		PIN_DIRECTION dir, IPin **pin);
 
+bool GetPinByName(IBaseFilter *filter, PIN_DIRECTION dir, const wchar_t *name,
+		IPin **pin);
+
 wstring ConvertHRToEnglish(HRESULT hr);
 
 }; /* namespace DShow */

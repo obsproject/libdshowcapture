@@ -155,6 +155,22 @@ static inline bool PinIsCategory(IPin *pin, const GUID &category)
 	return category == pinCategory;
 }
 
+static inline bool PinNameIs(IPin *pin, const wchar_t *name)
+{
+	if (!pin) return false;
+	if (!name) return true;
+
+	PIN_INFO pinInfo;
+
+	if (FAILED(pin->QueryPinInfo(&pinInfo)))
+		return false;
+
+	if (pinInfo.pFilter)
+		pinInfo.pFilter->Release();
+
+	return wcscmp(name, pinInfo.achName) == 0;
+}
+
 static inline bool PinMatches(IPin *pin, const GUID &type, const GUID &category,
 		PIN_DIRECTION &dir)
 {
@@ -185,6 +201,32 @@ bool GetFilterPin(IBaseFilter *filter, const GUID &type, const GUID &category,
 		if (PinMatches(curPin, type, category, dir)) {
 			*pin = curPin;
 			(*pin)->AddRef();
+			return true;
+		}
+
+		curPin.Release();
+	}
+
+	return false;
+}
+
+bool GetPinByName(IBaseFilter *filter, PIN_DIRECTION dir, const wchar_t *name,
+		IPin **pin)
+{
+	CComPtr<IPin>      curPin;
+	CComPtr<IEnumPins> pinsEnum;
+	ULONG              num;
+
+	if (!filter)
+		return false;
+	if (FAILED(filter->EnumPins(&pinsEnum)))
+		return false;
+
+	while (pinsEnum->Next(1, &curPin, &num) == S_OK) {
+		wstring pinName;
+
+		if (PinIsDirection(curPin, dir) && PinNameIs(curPin, name)) {
+			*pin = curPin.Detach();
 			return true;
 		}
 
