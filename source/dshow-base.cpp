@@ -19,6 +19,9 @@
 
 #include "dshow-base.hpp"
 #include "dshow-enum.hpp"
+#include "log.hpp"
+
+#include <bdaiface.h>
 
 #include <vector>
 #include <string>
@@ -233,6 +236,30 @@ bool GetPinByName(IBaseFilter *filter, PIN_DIRECTION dir, const wchar_t *name,
 		curPin.Release();
 	}
 
+	return false;
+}
+
+bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium)
+{
+	CComQIPtr<IKsPin>             ksPin(pin);
+	CoTaskMemPtr<KSMULTIPLE_ITEM> items;
+
+	if (!ksPin)
+		return false;
+
+	if (FAILED(ksPin->KsQueryMediums(&items)))
+		return false;
+
+	REGPINMEDIUM *curMed = reinterpret_cast<REGPINMEDIUM*>(items + 1);
+	for (ULONG i = 0; i < items->Count; i++, curMed++) {
+		if (!IsEqualGUID(curMed->clsMedium, GUID_NULL) &&
+		    !IsEqualGUID(curMed->clsMedium, KSMEDIUMSETID_Standard)) {
+			medium = *curMed;
+			return true;
+		}
+	}
+
+	memset(&medium, 0, sizeof(medium));
 	return false;
 }
 

@@ -20,9 +20,13 @@
 #pragma once
 
 #define WIN32_MEAN_AND_LEAN
+#define __STREAMS__
 #include <windows.h>
 #include <atlbase.h>
 #include <dshow.h>
+#include <ks.h>
+#include <ksmedia.h>
+#include <ksproxy.h>
 #include <Amaudio.h>
 #include <Dvdmedia.h>
 
@@ -43,6 +47,8 @@ bool GetFilterPin(IBaseFilter *filter, const GUID &type, const GUID &category,
 
 bool GetPinByName(IBaseFilter *filter, PIN_DIRECTION dir, const wchar_t *name,
 		IPin **pin);
+
+bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium);
 
 wstring ConvertHRToEnglish(HRESULT hr);
 
