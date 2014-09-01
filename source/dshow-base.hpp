@@ -48,6 +48,10 @@ bool GetFilterPin(IBaseFilter *filter, const GUID &type, const GUID &category,
 bool GetPinByName(IBaseFilter *filter, PIN_DIRECTION dir, const wchar_t *name,
 		IPin **pin);
 
+bool GetPinByMedium(IBaseFilter *filter, REGPINMEDIUM &medium, IPin **pin);
+bool GetFilterByMedium(const CLSID &id, REGPINMEDIUM &medium,
+		IBaseFilter **filter);
+
 bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium);
 
 wstring ConvertHRToEnglish(HRESULT hr);

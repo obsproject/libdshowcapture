@@ -239,6 +239,91 @@ bool GetPinByName(IBaseFilter *filter, PIN_DIRECTION dir, const wchar_t *name,
 	return false;
 }
 
+bool GetPinByMedium(IBaseFilter *filter, REGPINMEDIUM &medium, IPin **pin)
+{
+	CComPtr<IPin>      curPin;
+	CComPtr<IEnumPins> pinsEnum;
+	ULONG              num;
+
+	if (!filter)
+		return false;
+	if (FAILED(filter->EnumPins(&pinsEnum)))
+		return false;
+
+	while (pinsEnum->Next(1, &curPin, &num) == S_OK) {
+		REGPINMEDIUM curMedium;
+
+		if (GetPinMedium(curPin, curMedium) &&
+		    memcmp(&medium, &curMedium, sizeof(medium)) == 0) {
+			*pin = curPin.Detach();
+			return true;
+		}
+
+		curPin.Release();
+	}
+
+	return false;
+}
+
+static bool GetFilterByMediumFromMoniker(IMoniker *moniker,
+		REGPINMEDIUM &medium, IBaseFilter **filter)
+{
+	CComPtr<IBaseFilter> curFilter;
+	HRESULT              hr;
+
+	hr = moniker->BindToObject(nullptr, nullptr, IID_IBaseFilter,
+			(void**)&curFilter);
+	if (SUCCEEDED(hr)) {
+		CComPtr<IPin> pin;
+		if (GetPinByMedium(curFilter, medium, &pin)) {
+			*filter = curFilter.Detach();
+			return true;
+		}
+	} else {
+		WarningHR(L"GetFilterByMediumFromMoniker: BindToObject failed",
+				hr);
+	}
+
+	return false;
+}
+
+bool GetFilterByMedium(const CLSID &id, REGPINMEDIUM &medium,
+		IBaseFilter **filter)
+{
+	CComPtr<ICreateDevEnum> deviceEnum;
+	CComPtr<IEnumMoniker>   enumMoniker;
+	CComPtr<IMoniker>       moniker;
+	DWORD                   count = 0;
+	HRESULT                 hr;
+
+	hr = CoCreateInstance(CLSID_SystemDeviceEnum, nullptr,
+			CLSCTX_INPROC_SERVER, IID_ICreateDevEnum,
+			(void**)&deviceEnum);
+	if (FAILED(hr)) {
+		WarningHR(L"GetFilterByMedium: Failed to create device enum",
+				hr);
+		return false;
+	}
+
+	hr = deviceEnum->CreateClassEnumerator(id, &enumMoniker, 0);
+	if (FAILED(hr)) {
+		WarningHR(L"GetFilterByMedium: Failed to create enum moniker",
+				hr);
+		return false;
+	}
+
+	enumMoniker->Reset();
+
+	while (enumMoniker->Next(1, &moniker, &count) == S_OK) {
+		if (GetFilterByMediumFromMoniker(moniker, medium, filter))
+			return true;
+
+		moniker.Release();
+	}
+
+	return false;
+}
+
 bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium)
 {
 	CComQIPtr<IKsPin>             ksPin(pin);
