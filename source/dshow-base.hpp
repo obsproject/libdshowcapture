@@ -54,6 +54,13 @@ bool GetFilterByMedium(const CLSID &id, REGPINMEDIUM &medium,
 
 bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium);
 
+/**
+ * This maps a created demuxer pin to a packet ID for the mux stream.  Note
+ * that this needs to be called after the device filters are connected to the
+ * demux filter.
+ */
+HRESULT MapPinToPacketID(IPin *pin, ULONG packetID);
+
 wstring ConvertHRToEnglish(HRESULT hr);
 
 }; /* namespace DShow */

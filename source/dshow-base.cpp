@@ -348,6 +348,15 @@ bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium)
 	return false;
 }
 
+HRESULT MapPinToPacketID(IPin *pin, ULONG packetID)
+{
+	CComQIPtr<IMPEG2PIDMap> pidMap(pin);
+	if (!pidMap)
+		return E_NOINTERFACE;
+
+	return pidMap->MapPID(1, &packetID, MEDIA_ELEMENTARY_STREAM);
+}
+
 wstring ConvertHRToEnglish(HRESULT hr)
 {
 	LPWSTR buffer = NULL;
