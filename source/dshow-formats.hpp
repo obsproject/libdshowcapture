@@ -22,8 +22,8 @@
 #include "../dshowcapture.hpp"
 #include "dshow-base.hpp"
 
-const GUID MEDIASUBTYPE_I420 =
-{0x30323449, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+#include <wmcodecdsp.h>
+#include <mmreg.h>
 
 namespace DShow {
 
