@@ -26,6 +26,8 @@
 #include <Amaudio.h>
 #include <Dvdmedia.h>
 
+#include "CoTaskMemPtr.hpp"
+
 #include <string>
 using namespace std;
 
