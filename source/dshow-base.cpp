@@ -126,28 +126,19 @@ static inline bool PinIsDirection(IPin *pin, PIN_DIRECTION dir)
 	return SUCCEEDED(pin->QueryDirection(&pinDir)) && pinDir == dir;
 }
 
-static bool GetPinCategory(IPin *pin, GUID &category)
+static HRESULT GetPinCategory(IPin *pin, GUID &category)
 {
 	if (!pin)
-		return false;
+		return E_POINTER;
 
 	CComQIPtr<IKsPropertySet> propertySet(pin);
-	PIN_INFO                  pinInfo;
 	DWORD                     size;
-	HRESULT                   hr;
 
 	if (propertySet == NULL)
-		return false;
+		return E_NOINTERFACE;
 
-	if (FAILED(pin->QueryPinInfo(&pinInfo)))
-		return false;
-
-	if (pinInfo.pFilter)
-		pinInfo.pFilter->Release();
-
-	hr = propertySet->Get(AMPROPSETID_Pin, AMPROPERTY_PIN_CATEGORY,
+	return propertySet->Get(AMPROPSETID_Pin, AMPROPERTY_PIN_CATEGORY,
 			NULL, 0, &category, sizeof(GUID), &size);
-	return SUCCEEDED(hr);
 }
 
 static inline bool PinIsCategory(IPin *pin, const GUID &category)
@@ -155,8 +146,11 @@ static inline bool PinIsCategory(IPin *pin, const GUID &category)
 	if (!pin) return false;
 
 	GUID pinCategory;
-	if (!GetPinCategory(pin, pinCategory))
-		return false;
+	HRESULT hr = GetPinCategory(pin, pinCategory);
+
+	/* if the pin has no category interface, chances are we created it */
+	if (FAILED(hr))
+		return (hr == E_NOINTERFACE);
 
 	return category == pinCategory;
 }
