@@ -137,7 +137,9 @@ void HDevice::ConvertAudioSettings()
 	audioConfig.sampleRate = wfex->nSamplesPerSec;
 	audioConfig.channels   = wfex->nChannels;
 
-	if (wfex->wBitsPerSample == 16)
+	if (wfex->wFormatTag == WAVE_FORMAT_RAW_AAC1)
+		audioConfig.format = AudioFormat::AAC;
+	else if (wfex->wBitsPerSample == 16)
 		audioConfig.format = AudioFormat::Wave16bit;
 	else if (wfex->wBitsPerSample == 32)
 		audioConfig.format = AudioFormat::WaveFloat;
