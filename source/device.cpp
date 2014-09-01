@@ -417,7 +417,7 @@ bool HDevice::CreateGraph()
 	return true;
 }
 
-bool HDevice::ConnectPins(const GUID *category, const GUID *type,
+bool HDevice::ConnectPins(const GUID &category, const GUID &type,
 		IBaseFilter *filter, CaptureFilter *capture)
 {
 	HRESULT hr;
@@ -427,7 +427,7 @@ bool HDevice::ConnectPins(const GUID *category, const GUID *type,
 	    !EnsureInactive(L"HDevice::ConnectPins"))
 		return false;
 
-	hr = builder->FindPin(filter, PINDIR_OUTPUT, category, type, FALSE, 0,
+	hr = builder->FindPin(filter, PINDIR_OUTPUT, &category, &type, FALSE, 0,
 			&filterPin);
 	if (FAILED(hr)) {
 		ErrorHR(L"HDevice::ConnectPins: Failed to find pin",
@@ -446,7 +446,7 @@ bool HDevice::ConnectPins(const GUID *category, const GUID *type,
 	return true;
 }
 
-bool HDevice::RenderFilters(const GUID *category, const GUID *type,
+bool HDevice::RenderFilters(const GUID &category, const GUID &type,
 		IBaseFilter *filter, CaptureFilter *capture)
 {
 	HRESULT hr;
@@ -455,7 +455,7 @@ bool HDevice::RenderFilters(const GUID *category, const GUID *type,
 	    !EnsureInactive(L"HDevice::RenderFilters"))
 		return false;
 
-	hr = builder->RenderStream(category, type, filter, NULL, capture);
+	hr = builder->RenderStream(&category, &type, filter, NULL, capture);
 	if (FAILED(hr)) {
 		WarningHR(L"HDevice::ConnectFilters: RenderStream failed", hr);
 		return false;
@@ -500,23 +500,23 @@ bool HDevice::ConnectFilters()
 		return false;
 
 	if (videoCapture != NULL) {
-		success = RenderFilters(&PIN_CATEGORY_CAPTURE,
-				&MEDIATYPE_Video, videoFilter, videoCapture);
+		success = RenderFilters(PIN_CATEGORY_CAPTURE,
+				MEDIATYPE_Video, videoFilter, videoCapture);
 		if (!success) {
 			Warning(L"Render video filters failed, trying pins...");
-			success = ConnectPins(&PIN_CATEGORY_CAPTURE,
-					&MEDIATYPE_Video, videoFilter,
+			success = ConnectPins(PIN_CATEGORY_CAPTURE,
+					MEDIATYPE_Video, videoFilter,
 					videoCapture);
 		}
 	}
 
 	if (audioCapture && success) {
-		success = RenderFilters(&PIN_CATEGORY_CAPTURE,
-				&MEDIATYPE_Audio, audioFilter, audioCapture);
+		success = RenderFilters(PIN_CATEGORY_CAPTURE,
+				MEDIATYPE_Audio, audioFilter, audioCapture);
 		if (!success) {
 			Warning(L"Render audio filters failed, trying pins...");
-			success = ConnectPins(&PIN_CATEGORY_CAPTURE,
-					&MEDIATYPE_Audio, audioFilter,
+			success = ConnectPins(PIN_CATEGORY_CAPTURE,
+					MEDIATYPE_Audio, audioFilter,
 					audioCapture);
 		}
 	}

@@ -66,9 +66,9 @@ struct HDevice {
 	bool SetAudioConfig(AudioConfig *config);
 
 	bool CreateGraph();
-	bool ConnectPins(const GUID *category, const GUID *type,
+	bool ConnectPins(const GUID &category, const GUID &type,
 			IBaseFilter *filter, CaptureFilter *capture);
-	bool RenderFilters(const GUID *category, const GUID *type,
+	bool RenderFilters(const GUID &category, const GUID &type,
 			IBaseFilter *filter, CaptureFilter *capture);
 	bool ConnectFilters();
 	Result Start();
