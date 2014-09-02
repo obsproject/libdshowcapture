@@ -348,6 +348,65 @@ bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium)
 	return false;
 }
 
+static inline bool PinIsConnected(IPin *pin)
+{
+	CComPtr<IPin> connectedPin;
+	return SUCCEEDED(pin->ConnectedTo(&connectedPin));
+}
+
+static bool DirectConnectOutputPin(IFilterGraph *graph, IPin *pin,
+		IBaseFilter *filterIn)
+{
+	CComPtr<IPin>      curPin;
+	CComPtr<IEnumPins> pinsEnum;
+	ULONG              num;
+
+	if (!graph || !filterIn || !pin)
+		return false;
+	if (FAILED(filterIn->EnumPins(&pinsEnum)))
+		return false;
+
+	while (pinsEnum->Next(1, &curPin, &num) == S_OK) {
+
+		if (PinIsDirection(curPin, PINDIR_INPUT) &&
+		    !PinIsConnected(curPin)) {
+			if (graph->ConnectDirect(pin, curPin, nullptr) == S_OK)
+				return true;
+		}
+
+		curPin.Release();
+	}
+
+	return false;
+}
+
+bool DirectConnectFilters(IFilterGraph *graph, IBaseFilter *filterOut,
+		IBaseFilter *filterIn)
+{
+	CComPtr<IPin>      curPin;
+	CComPtr<IEnumPins> pinsEnum;
+	ULONG              num;
+	bool               connected = false;
+
+	if (!graph || !filterOut || !filterIn)
+		return false;
+	if (FAILED(filterOut->EnumPins(&pinsEnum)))
+		return false;
+
+	while (pinsEnum->Next(1, &curPin, &num) == S_OK) {
+
+		if (PinIsDirection(curPin, PINDIR_OUTPUT) &&
+		    !PinIsConnected(curPin)) {
+			if (DirectConnectOutputPin(graph, curPin, filterIn))
+				connected = true;
+		}
+
+		curPin.Release();
+	}
+
+	return connected;
+}
+
 HRESULT MapPinToPacketID(IPin *pin, ULONG packetID)
 {
 	CComQIPtr<IMPEG2PIDMap> pidMap(pin);

@@ -54,6 +54,9 @@ bool GetFilterByMedium(const CLSID &id, REGPINMEDIUM &medium,
 
 bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium);
 
+bool DirectConnectFilters(IFilterGraph *graph, IBaseFilter *filterOut,
+		IBaseFilter *filterIn);
+
 /**
  * This maps a created demuxer pin to a packet ID for the mux stream.  Note
  * that this needs to be called after the device filters are connected to the
