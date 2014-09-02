@@ -98,7 +98,8 @@ namespace DShow {
 
 		/* encoded formats */
 		AAC = 200,
-		AC3
+		AC3,
+		MPGA /* MPEG 1 */
 	};
 
 	enum class AudioMode {

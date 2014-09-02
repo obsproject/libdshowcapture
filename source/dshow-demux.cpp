@@ -88,6 +88,8 @@ static inline WORD AudioFormatToFormatTag(AudioFormat format)
 		return WAVE_FORMAT_RAW_AAC1;
 	else if (format == AudioFormat::AC3)
 		return WAVE_FORMAT_DVM;
+	else if (format == AudioFormat::MPGA)
+		return WAVE_FORMAT_MPEG;
 
 	return 0;
 }
@@ -98,6 +100,8 @@ static inline const GUID &AudioFormatToSubType(AudioFormat format)
 		return MEDIASUBTYPE_RAW_AAC1;
 	else if (format == AudioFormat::AC3)
 		return MEDIASUBTYPE_DVM;
+	else if (format == AudioFormat::MPGA)
+		return MEDIASUBTYPE_MPEG1AudioPayload;
 
 	return GUID_NULL;
 }
