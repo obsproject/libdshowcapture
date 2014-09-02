@@ -97,7 +97,8 @@ namespace DShow {
 		WaveFloat,
 
 		/* encoded formats */
-		AAC = 200
+		AAC = 200,
+		AC3
 	};
 
 	enum class AudioMode {

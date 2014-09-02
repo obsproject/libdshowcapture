@@ -139,6 +139,8 @@ void HDevice::ConvertAudioSettings()
 
 	if (wfex->wFormatTag == WAVE_FORMAT_RAW_AAC1)
 		audioConfig.format = AudioFormat::AAC;
+	else if (wfex->wFormatTag == WAVE_FORMAT_DVM)
+		audioConfig.format = AudioFormat::AC3;
 	else if (wfex->wBitsPerSample == 16)
 		audioConfig.format = AudioFormat::Wave16bit;
 	else if (wfex->wBitsPerSample == 32)
