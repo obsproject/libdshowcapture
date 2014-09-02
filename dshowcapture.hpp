@@ -84,8 +84,7 @@ namespace DShow {
 		HDYC,
 
 		/* encoded formats */
-		MPEG2 = 400,
-		MJPEG,
+		MJPEG = 400,
 		H264
 	};
 

@@ -57,9 +57,6 @@ static bool GetFourCCVFormat(DWORD fourCC, VideoFormat &format)
 		format = VideoFormat::HDYC; break;
 
 	/* compressed formats */
-	case MAKEFOURCC('M', 'P', '4', 'V'):
-	case MAKEFOURCC('M', '4', 'S', '2'):
-		format = VideoFormat::MPEG2; break;
 	case MAKEFOURCC('H', '2', '6', '4'):
 		format = VideoFormat::H264; break;
 
@@ -109,8 +106,6 @@ bool GetMediaTypeVFormat(const AM_MEDIA_TYPE &mt, VideoFormat &format)
 		format = VideoFormat::UYVY;
 
 	/* compressed formats */
-	else if (mt.subtype == MEDIASUBTYPE_MPEG2_VIDEO)
-		format = VideoFormat::MPEG2;
 	else if (mt.subtype == MEDIASUBTYPE_H264)
 		format = VideoFormat::H264;
 
