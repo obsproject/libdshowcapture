@@ -504,7 +504,6 @@ bool HDevice::ConnectFilters()
 		success = RenderFilters(PIN_CATEGORY_CAPTURE,
 				MEDIATYPE_Video, videoFilter, videoCapture);
 		if (!success) {
-			Warning(L"Render video filters failed, trying pins...");
 			success = ConnectPins(PIN_CATEGORY_CAPTURE,
 					MEDIATYPE_Video, videoFilter,
 					videoCapture);
@@ -515,7 +514,6 @@ bool HDevice::ConnectFilters()
 		success = RenderFilters(PIN_CATEGORY_CAPTURE,
 				MEDIATYPE_Audio, audioFilter, audioCapture);
 		if (!success) {
-			Warning(L"Render audio filters failed, trying pins...");
 			success = ConnectPins(PIN_CATEGORY_CAPTURE,
 					MEDIATYPE_Audio, audioFilter,
 					audioCapture);
