@@ -109,6 +109,7 @@ public:
 		if (ptr) {
 			FreeMediaType(*ptr);
 			CoTaskMemFree(ptr);
+			ptr = nullptr;
 		}
 	}
 
