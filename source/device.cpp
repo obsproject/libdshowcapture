@@ -317,7 +317,8 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 	audioConfig  = config;
 
 	graph->AddFilter(audioCapture, NULL);
-	graph->AddFilter(audioFilter, NULL);
+	if (!config.useVideoDevice)
+		graph->AddFilter(audioFilter, NULL);
 	return true;
 }
 
