@@ -151,6 +151,25 @@ void HDevice::ConvertAudioSettings()
 		audioConfig.format = AudioFormat::Unknown;
 }
 
+static bool GetPinMediaType(IPin *pin, MediaType &mt)
+{
+	CComPtr<IEnumMediaTypes> mediaTypes;
+
+	if (SUCCEEDED(pin->EnumMediaTypes(&mediaTypes))) {
+		MediaTypePtr curMT;
+		ULONG        count = 0;
+
+		while (mediaTypes->Next(1, &curMT, &count) == S_OK) {
+			if (curMT->formattype == FORMAT_VideoInfo) {
+				mt = curMT;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 {
 	CComPtr<IPin> pin;
@@ -174,12 +193,19 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 		MediaTypePtr defaultMT;
 
 		hr = pinConfig->GetFormat(&defaultMT);
-		if (FAILED(hr)) {
+		if (hr == E_NOTIMPL) {
+			if (!GetPinMediaType(pin, videoMediaType)) {
+				Error(L"Couldn't get pin media type");
+				return false;
+			}
+
+		} else if (FAILED(hr)) {
 			ErrorHR(L"Could not get default format for video", hr);
 			return false;
-		}
 
-		videoMediaType = defaultMT;
+		} else {
+			videoMediaType = defaultMT;
+		}
 	} else {
 		if (!GetClosestVideoMediaType(filter, config, videoMediaType)) {
 			Error(L"Could not get closest video media type");
@@ -187,7 +213,7 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 		}
 
 		hr = pinConfig->SetFormat(videoMediaType);
-		if (FAILED(hr)) {
+		if (FAILED(hr) && hr != E_NOTIMPL) {
 			ErrorHR(L"Could not set video format", hr);
 			return false;
 		}
@@ -265,11 +291,37 @@ bool HDevice::SetVideoConfig(VideoConfig *config)
 	return true;
 }
 
+bool HDevice::SetupExceptionAudioCapture(IPin *pin)
+{
+	CComPtr<IEnumMediaTypes> enumMediaTypes;
+	ULONG                    count = 0;
+	HRESULT                  hr;
+	MediaTypePtr             mt;
+
+	hr = pin->EnumMediaTypes(&enumMediaTypes);
+	if (FAILED(hr)) {
+		WarningHR(L"SetupExceptionAudioCapture: pin->EnumMediaTypes "
+		          L"failed", hr);
+		return false;
+	}
+
+	enumMediaTypes->Reset();
+
+	if (enumMediaTypes->Next(1, &mt, &count) == S_OK &&
+	    mt->formattype == FORMAT_WaveFormatEx) {
+		audioMediaType = mt;
+		return true;
+	}
+
+	return false;
+}
+
 bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 {
 	CComPtr<IPin> pin;
 	MediaTypePtr  defaultMT;
 	bool          success;
+	HRESULT       hr;
 
 	success = GetFilterPin(filter, MEDIATYPE_Audio, PIN_CATEGORY_CAPTURE,
 			PINDIR_OUTPUT, &pin);
@@ -279,20 +331,19 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 	}
 
 	CComQIPtr<IAMStreamConfig> pinConfig(pin);
-	if (pinConfig == NULL) {
-		Error(L"Could not get IAMStreamConfig for device");
-		return false;
-	}
 
 	if (config.useDefaultConfig) {
 		MediaTypePtr defaultMT;
 
-		if (FAILED(pinConfig->GetFormat(&defaultMT))) {
-			Error(L"Could not get default format for audio pin");
-			return false;
+		if (pinConfig && SUCCEEDED(pinConfig->GetFormat(&defaultMT))) {
+			audioMediaType = defaultMT;
+		} else {
+			if (!SetupExceptionAudioCapture(pin)) {
+				Error(L"Could not get default format for "
+				      L"audio pin");
+				return false;
+			}
 		}
-
-		audioMediaType = defaultMT;
 	} else {
 		if (!GetClosestAudioMediaType(filter, config, audioMediaType)) {
 			Error(L"Could not get closest audio media type");
@@ -300,7 +351,8 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 		}
 	}
 
-	if (FAILED(pinConfig->SetFormat(audioMediaType))) {
+	hr = pinConfig->SetFormat(audioMediaType);
+	if (!!pinConfig && FAILED(hr) && hr != E_NOTIMPL) {
 		Error(L"Could not set audio format");
 		return false;
 	}

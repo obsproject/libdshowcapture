@@ -162,6 +162,7 @@
     <ClInclude Include="..\..\..\source\dshow-enum.hpp" />
     <ClInclude Include="..\..\..\source\dshow-formats.hpp" />
     <ClInclude Include="..\..\..\source\dshow-media-type.hpp" />
+    <ClInclude Include="..\..\..\source\IVideoCaptureFilter.h" />
     <ClInclude Include="..\..\..\source\log.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

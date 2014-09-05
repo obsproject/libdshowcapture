@@ -71,5 +71,8 @@
     <ClInclude Include="..\..\..\source\dshow-demux.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\IVideoCaptureFilter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

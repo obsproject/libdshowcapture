@@ -22,10 +22,32 @@
 #include "dshow-formats.hpp"
 #include "log.hpp"
 
+#undef DEFINE_GUID
+#define DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+        EXTERN_C const GUID DECLSPEC_SELECTANY name \
+                = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
+
+#include "IVideoCaptureFilter.h"
+
 namespace DShow {
 
 typedef bool (*EnumCapsCallback)(void *param, const AM_MEDIA_TYPE &mt,
 		const BYTE *data);
+
+static void EnumElgatoCaps(IPin *pin, EnumCapsCallback callback, void *param)
+{
+	CComPtr<IEnumMediaTypes> mediaTypes;
+
+	if (SUCCEEDED(pin->EnumMediaTypes(&mediaTypes))) {
+		MediaTypePtr mt;
+		ULONG        count = 0;
+
+		while (mediaTypes->Next(1, &mt, &count) == S_OK) {
+			if (!callback(param, *mt, nullptr))
+				break;
+		}
+	}
+}
 
 static bool EnumPinCaps(IPin *pin, EnumCapsCallback callback, void *param)
 {
@@ -48,8 +70,8 @@ static bool EnumPinCaps(IPin *pin, EnumCapsCallback callback, void *param)
 				if (!callback(param, *mt, caps.data()))
 					break;
 		}
-	} else if (hr == E_NOTIMPL) { /* TODO: elgato later */
-		return false;
+	} else if (hr == E_NOTIMPL) {
+		EnumElgatoCaps(pin, callback, param);
 	} else {
 		return false;
 	}
@@ -73,8 +95,9 @@ static bool Get_FORMAT_VideoInfo_Data(VideoInfo &info,
 	if (!GetMediaTypeVFormat(mt, format))
 		return false;
 
+	info.format = format;
+
 	if (vscc) {
-		info.format      = format;
 		info.minInterval = vscc->MinFrameInterval;
 		info.maxInterval = vscc->MaxFrameInterval;
 		info.minCX       = vscc->MinOutputSize.cx;
@@ -91,8 +114,11 @@ static bool Get_FORMAT_VideoInfo_Data(VideoInfo &info,
 		info.granularityCX = max(vscc->OutputGranularityX, 1);
 		info.granularityCY = max(vscc->OutputGranularityY, 1);
 	} else {
-		/* TODO, handling of terrible devices goes here */
-		return false;
+		info.minInterval = info.maxInterval = 10010000000LL/60000LL;
+		info.minCX = info.maxCX = bmiHeader->biWidth;
+		info.minCY = info.maxCY = bmiHeader->biHeight;
+		info.granularityCX = 1;
+		info.granularityCY = 1;
 	}
 
 	return true;
@@ -402,6 +428,22 @@ static bool EnumDevice(IMoniker *deviceInfo, EnumDeviceCallback callback,
 	return true;
 }
 
+static bool EnumExceptionVideoDevices(EnumDeviceCallback callback, void *param)
+{
+	CComPtr<IBaseFilter> filter;
+	HRESULT              hr;
+
+	hr = CoCreateInstance(CLSID_ElgatoVideoCaptureFilter, nullptr,
+			CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)&filter);
+	if (SUCCEEDED(hr)) {
+		if (!callback(param, filter, L"Elgato Game Capture HD",
+					L"__elgato"))
+			return false;
+	}
+
+	return true;
+}
+
 bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param)
 {
 	CComPtr<ICreateDevEnum> deviceEnum;
@@ -425,15 +467,18 @@ bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param)
 		return false;
 	}
 
-	if (hr == S_FALSE)
-		return true;
+	if (hr == S_OK) {
+		while (enumMoniker->Next(1, &deviceInfo, &count) == S_OK) {
+			if (!EnumDevice(deviceInfo, callback, param))
+				return true;
 
-	while (enumMoniker->Next(1, &deviceInfo, &count) == S_OK) {
-		if (!EnumDevice(deviceInfo, callback, param))
-			return true;
-
-		deviceInfo.Release();
+			deviceInfo.Release();
+		}
 	}
+
+	if (type == CLSID_VideoInputDeviceCategory)
+		if (!EnumExceptionVideoDevices(callback, param))
+			return true;
 
 	return true;
 }

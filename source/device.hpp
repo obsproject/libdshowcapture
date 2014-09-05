@@ -59,6 +59,8 @@ struct HDevice {
 	void AudioCallback(IMediaSample *sample);
 	void VideoCallback(IMediaSample *sample);
 
+	bool SetupExceptionAudioCapture(IPin *pin);
+
 	bool SetupVideoCapture(IBaseFilter *filter, VideoConfig &config);
 	bool SetupAudioCapture(IBaseFilter *filter, AudioConfig &config);
 
