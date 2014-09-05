@@ -431,7 +431,7 @@ bool HDevice::ConnectPins(const GUID &category, const GUID &type,
 	    !EnsureInactive(L"HDevice::ConnectPins"))
 		return false;
 
-	if (GetFilterPin(filter, category, type, PINDIR_OUTPUT, &filterPin)) {
+	if (!GetFilterPin(filter, type, category, PINDIR_OUTPUT, &filterPin)) {
 		Error(L"HDevice::ConnectPins: Failed to find pin");
 		return false;
 	}
