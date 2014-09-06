@@ -377,10 +377,13 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 		}
 	}
 
-	hr = pinConfig->SetFormat(audioMediaType);
-	if (!!pinConfig && FAILED(hr) && hr != E_NOTIMPL) {
-		Error(L"Could not set audio format");
-		return false;
+	if (!!pinConfig) {
+		hr = pinConfig->SetFormat(audioMediaType);
+
+		if (FAILED(hr) && hr != E_NOTIMPL) {
+			Error(L"Could not set audio format");
+			return false;
+		}
 	}
 
 	ConvertAudioSettings();
