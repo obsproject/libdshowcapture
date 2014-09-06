@@ -164,9 +164,6 @@ bool HDevice::SetupExceptionVideoCapture(IBaseFilter *filter,
 	else if (GetPinByName(filter, PINDIR_OUTPUT, L"TS Out", &pin))
 		return SetupRoxioVideoCapture(filter, config);
 
-	else if (config.name.find(HD_PVR1_NAME) != std::string::npos)
-		return SetupHDPVR1VideoCapture(filter, config);
-
 	return false;
 }
 
@@ -197,6 +194,9 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 
 	if (config.name.find(L"IT9910") != std::string::npos)
 		return SetupHDPVRRocketVideoCapture(filter, config);
+
+	else if (config.name.find(HD_PVR1_NAME) != std::string::npos)
+		return SetupHDPVR1VideoCapture(filter, config);
 
 	success = GetFilterPin(filter, MEDIATYPE_Video, PIN_CATEGORY_CAPTURE,
 			PINDIR_OUTPUT, &pin);
