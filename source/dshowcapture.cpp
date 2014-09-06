@@ -207,6 +207,11 @@ static void EnumExceptionVideoDevice(std::vector<VideoDevice> &devices,
 		EnumEncodedVideo(devices, deviceName, devicePath,
 				HD_PVR2_CX, HD_PVR2_CY, HD_PVR2_INTERVAL,
 				HD_PVR2_VFORMAT);
+
+	else if (GetPinByName(filter, PINDIR_OUTPUT, L"TS Out", &pin))
+		EnumEncodedVideo(devices, deviceName, devicePath,
+				ROXIO_CX, ROXIO_CY, ROXIO_INTERVAL,
+				ROXIO_VFORMAT);
 }
 
 static bool EnumVideoDevice(std::vector<VideoDevice> &devices,

@@ -31,3 +31,10 @@
 #define HD_PVR2_VFORMAT           COMMON_ENCODED_VFORMAT
 #define HD_PVR2_AFORMAT           AudioFormat::AAC
 #define HD_PVR2_SAMPLERATE        COMMON_ENCODED_SAMPLERATE
+
+#define ROXIO_CX                  COMMON_ENCODED_CX
+#define ROXIO_CY                  COMMON_ENCODED_CY
+#define ROXIO_INTERVAL            COMMON_ENCODED_INTERVAL
+#define ROXIO_VFORMAT             COMMON_ENCODED_VFORMAT
+#define ROXIO_AFORMAT             AudioFormat::AAC
+#define ROXIO_SAMPLERATE          COMMON_ENCODED_SAMPLERATE

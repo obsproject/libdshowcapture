@@ -159,6 +159,9 @@ bool HDevice::SetupExceptionVideoCapture(IBaseFilter *filter,
 	if (GetPinByName(filter, PINDIR_OUTPUT, L"656", &pin))
 		return SetupHDPVR2VideoCapture(filter, pin, config);
 
+	else if (GetPinByName(filter, PINDIR_OUTPUT, L"TS Out", &pin))
+		return SetupRoxioVideoCapture(filter, config);
+
 	return false;
 }
 
