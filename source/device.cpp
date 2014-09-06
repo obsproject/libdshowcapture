@@ -151,6 +151,17 @@ void HDevice::ConvertAudioSettings()
 		audioConfig.format = AudioFormat::Unknown;
 }
 
+bool HDevice::SetupExceptionVideoCapture(IBaseFilter *filter,
+		VideoConfig &config)
+{
+	CComPtr<IPin> pin;
+
+	if (GetPinByName(filter, PINDIR_OUTPUT, L"656", &pin))
+		return SetupHDPVR2VideoCapture(filter, pin, config);
+
+	return false;
+}
+
 static bool GetPinMediaType(IPin *pin, MediaType &mt)
 {
 	CComPtr<IEnumMediaTypes> mediaTypes;
@@ -179,8 +190,12 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 	success = GetFilterPin(filter, MEDIATYPE_Video, PIN_CATEGORY_CAPTURE,
 			PINDIR_OUTPUT, &pin);
 	if (!success) {
-		Error(L"Could not get video pin");
-		return false;
+		if (SetupExceptionVideoCapture(filter, config)) {
+			return true;
+		} else {
+			Error(L"Could not get video pin");
+			return false;
+		}
 	}
 
 	CComQIPtr<IAMStreamConfig> pinConfig(pin);

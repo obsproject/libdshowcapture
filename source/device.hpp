@@ -20,6 +20,7 @@
 #pragma once
 
 #include "../dshowcapture.hpp"
+#include "dshow-device-defs.hpp"
 #include "capture-filter.hpp"
 
 #include <string>
@@ -58,6 +59,12 @@ struct HDevice {
 
 	void AudioCallback(IMediaSample *sample);
 	void VideoCallback(IMediaSample *sample);
+
+	bool SetupHDPVR2VideoCapture(IBaseFilter *filter, IPin *pin656,
+			VideoConfig &config);
+
+	bool SetupExceptionVideoCapture(IBaseFilter *filter,
+			VideoConfig &config);
 
 	bool SetupExceptionAudioCapture(IPin *pin);
 

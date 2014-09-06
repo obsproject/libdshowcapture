@@ -149,6 +149,7 @@
     <ClCompile Include="..\..\..\source\dshow-demux.cpp" />
     <ClCompile Include="..\..\..\source\dshow-enum.cpp" />
     <ClCompile Include="..\..\..\source\dshow-formats.cpp" />
+    <ClCompile Include="..\..\..\source\dshow-hd-pvr2.cpp" />
     <ClCompile Include="..\..\..\source\dshow-media-type.cpp" />
     <ClCompile Include="..\..\..\source\dshowcapture.cpp" />
     <ClCompile Include="..\..\..\source\log.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="..\..\..\source\device.hpp" />
     <ClInclude Include="..\..\..\source\dshow-base.hpp" />
     <ClInclude Include="..\..\..\source\dshow-demux.hpp" />
+    <ClInclude Include="..\..\..\source\dshow-device-defs.hpp" />
     <ClInclude Include="..\..\..\source\dshow-enum.hpp" />
     <ClInclude Include="..\..\..\source\dshow-formats.hpp" />
     <ClInclude Include="..\..\..\source\dshow-media-type.hpp" />

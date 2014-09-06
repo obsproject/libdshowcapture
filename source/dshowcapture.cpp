@@ -175,6 +175,40 @@ void Device::OpenDialog(void *hwnd, DialogType type) const
 	OpenPropertyPages((HWND)hwnd, ptr);
 }
 
+static void EnumEncodedVideo(std::vector<VideoDevice> &devices,
+		const wchar_t *deviceName, const wchar_t *devicePath,
+		int cx, int cy, long long interval, VideoFormat format)
+{
+	VideoDevice device;
+	VideoInfo   caps;
+
+	device.name          = deviceName;
+	device.path          = devicePath;
+	device.audioAttached = true;
+
+	caps.minCX         = caps.maxCX         = cx;
+	caps.minCY         = caps.maxCY         = cy;
+	caps.granularityCX = caps.granularityCY = 1;
+	caps.minInterval   = caps.maxInterval   = interval;
+	caps.format                             = format;
+
+	device.caps.push_back(caps);
+	devices.push_back(device);
+}
+
+static void EnumExceptionVideoDevice(std::vector<VideoDevice> &devices,
+		IBaseFilter *filter,
+		const wchar_t *deviceName,
+		const wchar_t *devicePath)
+{
+	CComPtr<IPin> pin;
+
+	if (GetPinByName(filter, PINDIR_OUTPUT, L"656", &pin))
+		EnumEncodedVideo(devices, deviceName, devicePath,
+				HD_PVR2_CX, HD_PVR2_CY, HD_PVR2_INTERVAL,
+				HD_PVR2_VFORMAT);
+}
+
 static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 		IBaseFilter *filter,
 		const wchar_t *deviceName,
@@ -186,8 +220,15 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 
 	bool success = GetFilterPin(filter, MEDIATYPE_Video,
 			PIN_CATEGORY_CAPTURE, PINDIR_OUTPUT, &pin);
-	if (!success)
+
+	/* if this device has no standard capture pin, see if it's an
+	 * encoded device, and get its information if so (all encoded devices
+	 * are exception devices pretty much) */
+	if (!success) {
+		EnumExceptionVideoDevice(devices, filter, deviceName,
+				devicePath);
 		return true;
+	}
 
 	if (!EnumVideoCaps(pin, info.caps))
 		return true;
