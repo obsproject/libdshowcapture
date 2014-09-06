@@ -62,6 +62,8 @@ struct HDevice {
 
 	bool SetupHDPVR2VideoCapture(IBaseFilter *filter, IPin *pin656,
 			VideoConfig &config);
+	bool SetupHDPVRRocketVideoCapture(IBaseFilter *filter,
+			VideoConfig &config);
 	bool SetupRoxioVideoCapture(IBaseFilter *filter,
 			VideoConfig &config);
 

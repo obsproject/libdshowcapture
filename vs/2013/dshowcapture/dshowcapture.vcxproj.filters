@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\..\source\dshow-demux.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\dshow-hd-pvr-rocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\dshow-roxio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

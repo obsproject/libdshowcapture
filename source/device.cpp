@@ -190,6 +190,9 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 	HRESULT       hr;
 	bool          success;
 
+	if (config.name.find(L"IT9910") != std::string::npos)
+		return SetupHDPVRRocketVideoCapture(filter, config);
+
 	success = GetFilterPin(filter, MEDIATYPE_Video, PIN_CATEGORY_CAPTURE,
 			PINDIR_OUTPUT, &pin);
 	if (!success) {
