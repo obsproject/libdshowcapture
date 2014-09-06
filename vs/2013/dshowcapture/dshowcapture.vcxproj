@@ -150,6 +150,7 @@
     <ClCompile Include="..\..\..\source\dshow-enum.cpp" />
     <ClCompile Include="..\..\..\source\dshow-formats.cpp" />
     <ClCompile Include="..\..\..\source\dshow-hd-pvr-rocket.cpp" />
+    <ClCompile Include="..\..\..\source\dshow-hd-pvr1.cpp" />
     <ClCompile Include="..\..\..\source\dshow-hd-pvr2.cpp" />
     <ClCompile Include="..\..\..\source\dshow-media-type.cpp" />
     <ClCompile Include="..\..\..\source\dshow-roxio.cpp" />

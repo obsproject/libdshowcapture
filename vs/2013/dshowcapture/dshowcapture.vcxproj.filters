@@ -51,6 +51,9 @@
     <ClCompile Include="..\..\..\source\dshow-roxio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\dshow-hd-pvr1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\capture-filter.hpp">

@@ -60,6 +60,8 @@ struct HDevice {
 	void AudioCallback(IMediaSample *sample);
 	void VideoCallback(IMediaSample *sample);
 
+	bool SetupHDPVR1VideoCapture(IBaseFilter *filter,
+			VideoConfig &config);
 	bool SetupHDPVR2VideoCapture(IBaseFilter *filter, IPin *pin656,
 			VideoConfig &config);
 	bool SetupHDPVRRocketVideoCapture(IBaseFilter *filter,

@@ -151,6 +151,8 @@ void HDevice::ConvertAudioSettings()
 		audioConfig.format = AudioFormat::Unknown;
 }
 
+#define HD_PVR1_NAME L"Hauppauge HD PVR Capture"
+
 bool HDevice::SetupExceptionVideoCapture(IBaseFilter *filter,
 		VideoConfig &config)
 {
@@ -161,6 +163,9 @@ bool HDevice::SetupExceptionVideoCapture(IBaseFilter *filter,
 
 	else if (GetPinByName(filter, PINDIR_OUTPUT, L"TS Out", &pin))
 		return SetupRoxioVideoCapture(filter, config);
+
+	else if (config.name.find(HD_PVR1_NAME) != std::string::npos)
+		return SetupHDPVR1VideoCapture(filter, config);
 
 	return false;
 }

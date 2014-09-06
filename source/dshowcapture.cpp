@@ -212,6 +212,11 @@ static void EnumExceptionVideoDevice(std::vector<VideoDevice> &devices,
 		EnumEncodedVideo(devices, deviceName, devicePath,
 				ROXIO_CX, ROXIO_CY, ROXIO_INTERVAL,
 				ROXIO_VFORMAT);
+
+	else if (wcsstr(deviceName, L"Hauppauge HD PVR Capture") != nullptr)
+		EnumEncodedVideo(devices, deviceName, devicePath,
+				HD_PVR1_CX, HD_PVR1_CY, HD_PVR1_INTERVAL,
+				HD_PVR1_VFORMAT);
 }
 
 static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
