@@ -314,10 +314,8 @@ bool CapturePin::IsValidMediaType(const AM_MEDIA_TYPE *pmt) const
 			return false;
 
 		if (captureInfo.expectedMajorType == MEDIATYPE_Video) {
-			VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER*)pmt->pbFormat;
-
-			if (pVih->bmiHeader.biHeight == 0 ||
-			    pVih->bmiHeader.biWidth  == 0)
+			const BITMAPINFOHEADER *bih = GetBitmapInfoHeader(*pmt);
+			if (!bih || bih->biHeight == 0 || bih->biWidth == 0)
 				return false;
 		}
 	}

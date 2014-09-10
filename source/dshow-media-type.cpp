@@ -67,6 +67,11 @@ BITMAPINFOHEADER *GetBitmapInfoHeader(AM_MEDIA_TYPE &mt)
 		VIDEOINFOHEADER *vih;
 		vih = reinterpret_cast<VIDEOINFOHEADER*>(mt.pbFormat);
 		return &vih->bmiHeader;
+
+	} else if (mt.formattype == FORMAT_VideoInfo2) {
+		VIDEOINFOHEADER2 *vih;
+		vih = reinterpret_cast<VIDEOINFOHEADER2*>(mt.pbFormat);
+		return &vih->bmiHeader;
 	}
 
 	return NULL;
@@ -77,6 +82,11 @@ const BITMAPINFOHEADER *GetBitmapInfoHeader(const AM_MEDIA_TYPE &mt)
 	if (mt.formattype == FORMAT_VideoInfo) {
 		const VIDEOINFOHEADER *vih;
 		vih = reinterpret_cast<const VIDEOINFOHEADER*>(mt.pbFormat);
+		return &vih->bmiHeader;
+
+	} else if (mt.formattype == FORMAT_VideoInfo2) {
+		const VIDEOINFOHEADER2 *vih;
+		vih = reinterpret_cast<const VIDEOINFOHEADER2*>(mt.pbFormat);
 		return &vih->bmiHeader;
 	}
 
