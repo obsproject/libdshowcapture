@@ -46,11 +46,20 @@
 namespace DShow {
 	/* internal forward */
 	struct HDevice;
+	struct VideoConfig;
+	struct AudioConfig;
 
 	typedef std::function<
-		void (unsigned char *data, size_t size,
+		void (const VideoConfig &config,
+			unsigned char *data, size_t size,
 			long long startTime, long long stopTime)
-		> CaptureProc;
+		> VideoProc;
+
+	typedef std::function<
+		void (const AudioConfig &config,
+			unsigned char *data, size_t size,
+			long long startTime, long long stopTime)
+		> AudioProc;
 
 	enum class InitGraph {
 		False,
@@ -145,13 +154,13 @@ namespace DShow {
 	};
 
 	struct Config : DeviceId {
-		CaptureProc callback = nullptr;
-
 		/** Use the device's desired default config */
 		bool        useDefaultConfig = true;
 	};
 
 	struct VideoConfig : Config {
+		VideoProc   callback;
+
 		/** Desired width/height of video.  */
 		int         cx = 0, cy = 0;
 
@@ -166,6 +175,8 @@ namespace DShow {
 	};
 
 	struct AudioConfig : Config {
+		AudioProc   callback;
+
 		/**
 		 * Use the audio attached to the video device
 		 *

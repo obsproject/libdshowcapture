@@ -70,9 +70,16 @@ bool HDevice::EnsureInactive(const wchar_t *func)
 void HDevice::AudioCallback(IMediaSample *sample)
 {
 	BYTE *ptr;
+	MediaTypePtr mt;
 
 	if (!sample || !audioConfig.callback)
 		return;
+
+	if (sample->GetMediaType(&mt) == S_OK) {
+		Debug(L"Audio media type dynamically changed");
+		audioMediaType = mt;
+		ConvertAudioSettings();
+	}
 
 	int size = sample->GetActualDataLength();
 	if (!size)
@@ -86,15 +93,22 @@ void HDevice::AudioCallback(IMediaSample *sample)
 	if (FAILED(sample->GetTime(&startTime, &stopTime)))
 		return;
 
-	audioConfig.callback(ptr, size, startTime, stopTime);
+	audioConfig.callback(audioConfig, ptr, size, startTime, stopTime);
 }
 
 void HDevice::VideoCallback(IMediaSample *sample)
 {
 	BYTE *ptr;
+	MediaTypePtr mt;
 
 	if (!sample || !videoConfig.callback)
 		return;
+
+	if (sample->GetMediaType(&mt) == S_OK) {
+		Debug(L"Video media type dynamically changed");
+		videoMediaType = mt;
+		ConvertVideoSettings();
+	}
 
 	int size = sample->GetActualDataLength();
 	if (!size)
@@ -108,7 +122,7 @@ void HDevice::VideoCallback(IMediaSample *sample)
 	if (FAILED(sample->GetTime(&startTime, &stopTime)))
 		return;
 
-	videoConfig.callback(ptr, size, startTime, stopTime);
+	videoConfig.callback(videoConfig, ptr, size, startTime, stopTime);
 }
 
 void HDevice::ConvertVideoSettings()
