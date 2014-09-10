@@ -406,7 +406,6 @@ STDMETHODIMP CaptureFilter::Stop()
 {
 	PrintFunc(L"CaptureFilter::Stop");
 
-	pin->EndFlush();
 	state = State_Stopped;
 	return S_OK;
 }
