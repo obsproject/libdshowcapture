@@ -533,7 +533,7 @@ bool HDevice::ConnectPins(const GUID &category, const GUID &type,
 	}
 
 	IPin *capturePin = capture->GetPin();
-	hr = graph->Connect(filterPin, capturePin);
+	hr = graph->ConnectDirect(filterPin, capturePin, nullptr);
 	if (FAILED(hr)) {
 		WarningHR(L"HDevice::ConnectPins: failed to connect pins",
 				hr);
@@ -597,20 +597,21 @@ bool HDevice::ConnectFilters()
 		return false;
 
 	if (videoCapture != NULL) {
-		success = RenderFilters(PIN_CATEGORY_CAPTURE,
+		success = ConnectPins(PIN_CATEGORY_CAPTURE,
 				MEDIATYPE_Video, videoFilter, videoCapture);
+
 		if (!success) {
-			success = ConnectPins(PIN_CATEGORY_CAPTURE,
+			success = RenderFilters(PIN_CATEGORY_CAPTURE,
 					MEDIATYPE_Video, videoFilter,
 					videoCapture);
 		}
 	}
 
 	if (audioCapture && success) {
-		success = RenderFilters(PIN_CATEGORY_CAPTURE,
+		success = ConnectPins(PIN_CATEGORY_CAPTURE,
 				MEDIATYPE_Audio, audioFilter, audioCapture);
 		if (!success) {
-			success = ConnectPins(PIN_CATEGORY_CAPTURE,
+			success = RenderFilters(PIN_CATEGORY_CAPTURE,
 					MEDIATYPE_Audio, audioFilter,
 					audioCapture);
 		}
