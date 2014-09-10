@@ -377,13 +377,13 @@ STDMETHODIMP CaptureFilter::QueryInterface(REFIID riid, void **ppv)
 	if (riid == IID_IUnknown) {
 		AddRef();
 		*ppv = this;
-	} if (riid == IID_IPersist) {
+	} else if (riid == IID_IPersist) {
 		AddRef();
 		*ppv = (IPersist*)this;
-	} if (riid == IID_IMediaFilter) {
+	} else if (riid == IID_IMediaFilter) {
 		AddRef();
 		*ppv = (IMediaFilter*)this;
-	} if (riid == IID_IBaseFilter) {
+	} else if (riid == IID_IBaseFilter) {
 		AddRef();
 		*ppv = (IBaseFilter*)this;
 	} else if (riid == IID_IAMFilterMiscFlags) {
