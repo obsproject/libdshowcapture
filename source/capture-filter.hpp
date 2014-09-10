@@ -93,6 +93,8 @@ class CaptureFilter : public IBaseFilter {
 	CComPtr<IFilterGraph> graph;
 	CComPtr<CapturePin>   pin;
 
+	CComPtr<IAMFilterMiscFlags> misc;
+
 public:
 	CaptureFilter(const PinCaptureInfo &info);
 

@@ -323,10 +323,51 @@ bool CapturePin::IsValidMediaType(const AM_MEDIA_TYPE *pmt) const
 
 // ============================================================================
 
+class MiscFlagsHandler : public IAMFilterMiscFlags {
+	volatile long refCount = 0;
+
+public:
+	inline MiscFlagsHandler() {}
+
+	STDMETHODIMP QueryInterface(REFIID riid, void **ppv)
+	{
+		if (riid == IID_IUnknown) {
+			AddRef();
+			*ppv = this;
+		} else {
+			*ppv = nullptr;
+			return E_NOINTERFACE;
+		}
+
+		return NOERROR;
+	}
+
+	STDMETHODIMP_(ULONG) AddRef()
+	{
+		return InterlockedIncrement(&refCount);
+	}
+
+	STDMETHODIMP_(ULONG) Release()
+	{
+		if (!InterlockedDecrement(&refCount)) {
+			delete this;
+			return 0;
+		}
+
+		return refCount;
+	}
+
+	STDMETHODIMP_(ULONG) GetMiscFlags()
+	{
+		return AM_FILTER_MISC_FLAGS_IS_RENDERER;
+	}
+};
+
 CaptureFilter::CaptureFilter(const PinCaptureInfo &info)
 	: refCount (0),
 	  state    (State_Stopped),
-	  pin      (new CapturePin(this, info))
+	  pin      (new CapturePin(this, info)),
+	  misc     (new MiscFlagsHandler)
 {
 }
 
@@ -345,6 +386,8 @@ STDMETHODIMP CaptureFilter::QueryInterface(REFIID riid, void **ppv)
 	} if (riid == IID_IBaseFilter) {
 		AddRef();
 		*ppv = (IBaseFilter*)this;
+	} else if (riid == IID_IAMFilterMiscFlags) {
+		misc.CopyTo((IAMFilterMiscFlags**)ppv);
 	} else {
 		*ppv = nullptr;
 		return E_NOINTERFACE;
