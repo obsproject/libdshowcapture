@@ -148,6 +148,7 @@ public:
 class CaptureEnumMediaTypes : public IEnumMediaTypes {
 	volatile long       refCount;
 	CComPtr<CapturePin> pin;
+	UINT                curMT = 0;
 
 public:
 	CaptureEnumMediaTypes(CapturePin *pin);

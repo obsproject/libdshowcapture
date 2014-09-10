@@ -641,23 +641,31 @@ STDMETHODIMP CaptureEnumMediaTypes::Next(ULONG cMediaTypes,
 {
 	PrintFunc(L"CaptureEnumMediaTypes::Next");
 
-	DSHOW_UNUSED(cMediaTypes);
-	DSHOW_UNUSED(ppMediaTypes);
-	DSHOW_UNUSED(pcFetched);
-	return S_FALSE;
+	UINT nFetched = 0;
+
+	if (curMT == 0 && cMediaTypes > 0) {
+		CopyMediaType(*ppMediaTypes, pin->connectedMediaType);
+		nFetched = 1;
+		curMT++;
+	}
+
+	if (pcFetched) *pcFetched = nFetched;
+
+	return (nFetched == cMediaTypes) ? S_OK : S_FALSE;
 }
 
 STDMETHODIMP CaptureEnumMediaTypes::Skip(ULONG cMediaTypes)
 {
 	PrintFunc(L"CaptureEnumMediaTypes::Skip");
 
-	DSHOW_UNUSED(cMediaTypes);
-	return S_FALSE;
+	return ((curMT += cMediaTypes) > 1) ? S_FALSE : S_OK;
 }
 
 STDMETHODIMP CaptureEnumMediaTypes::Reset()
 {
 	PrintFunc(L"CaptureEnumMediaTypes::Reset");
+
+	curMT = 0;
 	return S_OK;
 }
 
