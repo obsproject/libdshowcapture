@@ -45,6 +45,7 @@ class CapturePin : public IPin, public IMemInputPin {
 	CComPtr<IPin>          connectedPin;
 	CaptureFilter          *filter;
 	MediaType              connectedMediaType;
+	volatile bool          flushing = false;
 
 	bool IsValidMediaType(const AM_MEDIA_TYPE *pmt) const;
 

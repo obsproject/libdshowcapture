@@ -233,12 +233,16 @@ STDMETHODIMP CapturePin::EndOfStream()
 STDMETHODIMP CapturePin::BeginFlush()
 {
 	PrintFunc(L"CapturePin::BeginFlush");
+
+	flushing = true;
 	return S_OK;
 }
 
 STDMETHODIMP CapturePin::EndFlush()
 {
 	PrintFunc(L"CapturePin::EndFlush");
+
+	flushing = false;
 	return S_OK;
 }
 
@@ -284,6 +288,9 @@ STDMETHODIMP CapturePin::Receive(IMediaSample *pSample)
 {
 	PrintFunc(L"CapturePin::Receive");
 
+	if (flushing)
+		return S_FALSE;
+
 	if (pSample)
 		captureInfo.callback(pSample);
 
@@ -295,10 +302,15 @@ STDMETHODIMP CapturePin::ReceiveMultiple(IMediaSample **pSamples,
 {
 	PrintFunc(L"CapturePin::ReceiveMultiple");
 
+	if (flushing)
+		return S_FALSE;
+
 	for (long i = 0; i < nSamples; i++)
-		Receive(pSamples[i]);
+		if (pSamples[i])
+			captureInfo.callback(pSamples[i]);
 
 	*nSamplesProcessed = nSamples;
+
 	return S_OK;
 }
 
