@@ -196,6 +196,7 @@ namespace DShow {
 		bool        Valid() const;
 
 		bool        ResetGraph();
+		void        ShutdownGraph();
 
 		bool        SetVideoConfig(VideoConfig *config);
 		bool        SetAudioConfig(AudioConfig *config);

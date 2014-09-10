@@ -52,6 +52,12 @@ bool Device::ResetGraph()
 	return context->CreateGraph();
 }
 
+void Device::ShutdownGraph()
+{
+	delete context;
+	context = new HDevice;
+}
+
 bool Device::SetVideoConfig(VideoConfig *config)
 {
 	return context->SetVideoConfig(config);
