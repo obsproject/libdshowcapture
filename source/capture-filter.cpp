@@ -192,8 +192,6 @@ STDMETHODIMP CapturePin::QueryAccept(const AM_MEDIA_TYPE *pmt)
 {
 	PrintFunc(L"CapturePin::QueryAccept");
 
-	if (filter->state != State_Stopped)
-		return S_FALSE;
 	if (pmt->majortype != captureInfo.expectedMajorType)
 		return S_FALSE;
 	if (!IsValidMediaType(pmt))
