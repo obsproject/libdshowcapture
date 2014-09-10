@@ -304,7 +304,7 @@ STDMETHODIMP CapturePin::ReceiveMultiple(IMediaSample **pSamples,
 	return S_OK;
 }
 
-STDMETHODIMP CapturePin::ReceiveCanBlock() {return S_OK;}
+STDMETHODIMP CapturePin::ReceiveCanBlock() {return S_FALSE;}
 
 bool CapturePin::IsValidMediaType(const AM_MEDIA_TYPE *pmt) const
 {
