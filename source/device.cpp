@@ -71,6 +71,7 @@ void HDevice::AudioCallback(IMediaSample *sample)
 {
 	BYTE *ptr;
 	MediaTypePtr mt;
+	bool encoded = (int)audioConfig.format >= 200;
 
 	if (!sample || !audioConfig.callback)
 		return;
@@ -89,9 +90,32 @@ void HDevice::AudioCallback(IMediaSample *sample)
 		return;
 
 	long long startTime, stopTime;
+	bool hasTime = SUCCEEDED(sample->GetTime(&startTime, &stopTime));
 
-	if (FAILED(sample->GetTime(&startTime, &stopTime)))
+	if (encoded) {
+		/* packets that have time are the first packet in a group of
+		 * segments */
+		if (hasTime) {
+			if (encodedAudioData.size())
+				audioConfig.callback(
+						audioConfig,
+						encodedAudioData.data(),
+						encodedAudioData.size(),
+						lastAudioStartTime,
+						lastAudioStopTime);
+
+			encodedAudioData.resize(0);
+			lastAudioStartTime = startTime;
+			lastAudioStopTime  = stopTime;
+		}
+
+		encodedAudioData.insert(encodedAudioData.end(),
+				(unsigned char*)ptr,
+				(unsigned char*)ptr + size);
 		return;
+	} else if (!hasTime) {
+		return;
+	}
 
 	audioConfig.callback(audioConfig, ptr, size, startTime, stopTime);
 }
@@ -100,6 +124,7 @@ void HDevice::VideoCallback(IMediaSample *sample)
 {
 	BYTE *ptr;
 	MediaTypePtr mt;
+	bool encoded = (int)videoConfig.format >= 400;
 
 	if (!sample || !videoConfig.callback)
 		return;
@@ -118,9 +143,32 @@ void HDevice::VideoCallback(IMediaSample *sample)
 		return;
 
 	long long startTime, stopTime;
+	bool hasTime = SUCCEEDED(sample->GetTime(&startTime, &stopTime));
 
-	if (FAILED(sample->GetTime(&startTime, &stopTime)))
+	if (encoded) {
+		/* packets that have time are the first packet in a group of
+		 * segments */
+		if (hasTime) {
+			if (encodedVideoData.size())
+				videoConfig.callback(
+						videoConfig,
+						encodedVideoData.data(),
+						encodedVideoData.size(),
+						lastVideoStartTime,
+						lastVideoStopTime);
+
+			encodedVideoData.resize(0);
+			lastVideoStartTime = startTime;
+			lastVideoStopTime  = stopTime;
+		}
+
+		encodedVideoData.insert(encodedVideoData.end(),
+				(unsigned char*)ptr,
+				(unsigned char*)ptr + size);
 		return;
+	} else if (!hasTime) {
+		return;
+	}
 
 	videoConfig.callback(videoConfig, ptr, size, startTime, stopTime);
 }

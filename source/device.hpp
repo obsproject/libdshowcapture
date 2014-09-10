@@ -24,6 +24,7 @@
 #include "capture-filter.hpp"
 
 #include <string>
+#include <vector>
 using namespace std;
 
 namespace DShow {
@@ -44,6 +45,14 @@ struct HDevice {
 
 	bool                           initialized;
 	bool                           active;
+
+	long long                      lastVideoStartTime = 0;
+	long long                      lastVideoStopTime  = 0;
+	vector<unsigned char>          encodedVideoData;
+
+	long long                      lastAudioStartTime = 0;
+	long long                      lastAudioStopTime  = 0;
+	vector<unsigned char>          encodedAudioData;
 
 	HDevice();
 	~HDevice();
