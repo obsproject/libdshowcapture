@@ -70,7 +70,7 @@ STDMETHODIMP_(ULONG) CapturePin::Release()
 		delete this;
 		return 0;
 	}
-	
+
 	return (ULONG)refCount;
 }
 
@@ -182,7 +182,7 @@ STDMETHODIMP CapturePin::QueryDirection(PIN_DIRECTION *pPinDir)
 	return NOERROR;
 }
 
-STDMETHODIMP CapturePin::QueryId(LPWSTR *lpId)                     
+STDMETHODIMP CapturePin::QueryId(LPWSTR *lpId)
 {
 	*lpId = L"Capture Pin";
 	return S_OK;
@@ -546,7 +546,7 @@ STDMETHODIMP_(ULONG) CaptureEnumPins::Release()
 		delete this;
 		return 0;
 	}
-	
+
 	return (ULONG)refCount;
 }
 
@@ -619,7 +619,7 @@ STDMETHODIMP_(ULONG) CaptureEnumMediaTypes::Release()
 		delete this;
 		return 0;
 	}
-	
+
 	return (ULONG)refCount;
 }
 
