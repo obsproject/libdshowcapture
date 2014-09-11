@@ -147,13 +147,10 @@
     <ClCompile Include="..\..\..\source\device.cpp" />
     <ClCompile Include="..\..\..\source\dshow-base.cpp" />
     <ClCompile Include="..\..\..\source\dshow-demux.cpp" />
+    <ClCompile Include="..\..\..\source\dshow-encoded-device.cpp" />
     <ClCompile Include="..\..\..\source\dshow-enum.cpp" />
     <ClCompile Include="..\..\..\source\dshow-formats.cpp" />
-    <ClCompile Include="..\..\..\source\dshow-hd-pvr-rocket.cpp" />
-    <ClCompile Include="..\..\..\source\dshow-hd-pvr1.cpp" />
-    <ClCompile Include="..\..\..\source\dshow-hd-pvr2.cpp" />
     <ClCompile Include="..\..\..\source\dshow-media-type.cpp" />
-    <ClCompile Include="..\..\..\source\dshow-roxio.cpp" />
     <ClCompile Include="..\..\..\source\dshowcapture.cpp" />
     <ClCompile Include="..\..\..\source\log.cpp" />
   </ItemGroup>

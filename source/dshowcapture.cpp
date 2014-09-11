@@ -21,6 +21,7 @@
 #include "dshow-base.hpp"
 #include "dshow-enum.hpp"
 #include "device.hpp"
+#include "dshow-device-defs.hpp"
 #include "log.hpp"
 
 #include <vector>
@@ -183,7 +184,7 @@ void Device::OpenDialog(void *hwnd, DialogType type) const
 
 static void EnumEncodedVideo(std::vector<VideoDevice> &devices,
 		const wchar_t *deviceName, const wchar_t *devicePath,
-		int cx, int cy, long long interval, VideoFormat format)
+		const EncodedDevice &info)
 {
 	VideoDevice device;
 	VideoInfo   caps;
@@ -192,11 +193,11 @@ static void EnumEncodedVideo(std::vector<VideoDevice> &devices,
 	device.path          = devicePath;
 	device.audioAttached = true;
 
-	caps.minCX         = caps.maxCX         = cx;
-	caps.minCY         = caps.maxCY         = cy;
+	caps.minCX         = caps.maxCX         = info.width;
+	caps.minCY         = caps.maxCY         = info.height;
 	caps.granularityCX = caps.granularityCY = 1;
-	caps.minInterval   = caps.maxInterval   = interval;
-	caps.format                             = format;
+	caps.minInterval   = caps.maxInterval   = info.frameInterval;
+	caps.format                             = info.videoFormat;
 
 	device.caps.push_back(caps);
 	devices.push_back(device);
@@ -210,14 +211,10 @@ static void EnumExceptionVideoDevice(std::vector<VideoDevice> &devices,
 	CComPtr<IPin> pin;
 
 	if (GetPinByName(filter, PINDIR_OUTPUT, L"656", &pin))
-		EnumEncodedVideo(devices, deviceName, devicePath,
-				HD_PVR2_CX, HD_PVR2_CY, HD_PVR2_INTERVAL,
-				HD_PVR2_VFORMAT);
+		EnumEncodedVideo(devices, deviceName, devicePath, HD_PVR2);
 
 	else if (GetPinByName(filter, PINDIR_OUTPUT, L"TS Out", &pin))
-		EnumEncodedVideo(devices, deviceName, devicePath,
-				ROXIO_CX, ROXIO_CY, ROXIO_INTERVAL,
-				ROXIO_VFORMAT);
+		EnumEncodedVideo(devices, deviceName, devicePath, Roxio);
 }
 
 static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
@@ -230,9 +227,7 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 	VideoDevice   info;
 
 	if (wcsstr(deviceName, L"Hauppauge HD PVR Capture") != nullptr) {
-		EnumEncodedVideo(devices, deviceName, devicePath,
-				HD_PVR1_CX, HD_PVR1_CY, HD_PVR1_INTERVAL,
-				HD_PVR1_VFORMAT);
+		EnumEncodedVideo(devices, deviceName, devicePath, HD_PVR1);
 		return true;
 	}
 

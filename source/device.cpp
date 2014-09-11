@@ -18,6 +18,7 @@
  */
 
 #include "device.hpp"
+#include "dshow-device-defs.hpp"
 #include "dshow-media-type.hpp"
 #include "dshow-formats.hpp"
 #include "dshow-enum.hpp"
@@ -189,10 +190,10 @@ bool HDevice::SetupExceptionVideoCapture(IBaseFilter *filter,
 	CComPtr<IPin> pin;
 
 	if (GetPinByName(filter, PINDIR_OUTPUT, L"656", &pin))
-		return SetupHDPVR2VideoCapture(filter, pin, config);
+		return SetupEncodedVideoCapture(filter, config, HD_PVR2);
 
 	else if (GetPinByName(filter, PINDIR_OUTPUT, L"TS Out", &pin))
-		return SetupRoxioVideoCapture(filter, config);
+		return SetupEncodedVideoCapture(filter, config, Roxio);
 
 	return false;
 }
@@ -223,10 +224,10 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 	bool          success;
 
 	if (config.name.find(L"IT9910") != std::string::npos)
-		return SetupHDPVRRocketVideoCapture(filter, config);
+		return SetupEncodedVideoCapture(filter, config, HD_PVR_Rocket);
 
 	else if (config.name.find(HD_PVR1_NAME) != std::string::npos)
-		return SetupHDPVR1VideoCapture(filter, config);
+		return SetupEncodedVideoCapture(filter, config, HD_PVR1);
 
 	success = GetFilterPin(filter, MEDIATYPE_Video, PIN_CATEGORY_CAPTURE,
 			PINDIR_OUTPUT, &pin);
