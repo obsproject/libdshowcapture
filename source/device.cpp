@@ -67,19 +67,40 @@ bool HDevice::EnsureInactive(const wchar_t *func)
 	return true;
 }
 
-void HDevice::AudioCallback(IMediaSample *sample)
+inline void HDevice::SendToCallback(bool video,
+		unsigned char *data, size_t size,
+		long long startTime, long long stopTime)
+{
+	if (!size)
+		return;
+
+	if (video)
+		videoConfig.callback(videoConfig, data, size, startTime,
+				stopTime);
+	else
+		audioConfig.callback(audioConfig, data, size, startTime,
+				stopTime);
+}
+
+void HDevice::Receive(bool isVideo, IMediaSample *sample)
 {
 	BYTE *ptr;
 	MediaTypePtr mt;
-	bool encoded = (int)audioConfig.format >= 200;
+	bool encoded = isVideo ?
+		((int)videoConfig.format >= 400) :
+		((int)audioConfig.format >= 200);
 
 	if (!sample || !audioConfig.callback)
 		return;
 
 	if (sample->GetMediaType(&mt) == S_OK) {
-		Debug(L"Audio media type dynamically changed");
-		audioMediaType = mt;
-		ConvertAudioSettings();
+		if (isVideo) {
+			videoMediaType = mt;
+			ConvertVideoSettings();
+		} else {
+			audioMediaType = mt;
+			ConvertAudioSettings();
+		}
 	}
 
 	int size = sample->GetActualDataLength();
@@ -93,84 +114,27 @@ void HDevice::AudioCallback(IMediaSample *sample)
 	bool hasTime = SUCCEEDED(sample->GetTime(&startTime, &stopTime));
 
 	if (encoded) {
+		EncodedData &data = isVideo ? encodedVideo : encodedAudio;
+
 		/* packets that have time are the first packet in a group of
 		 * segments */
 		if (hasTime) {
-			if (encodedAudioData.size())
-				audioConfig.callback(
-						audioConfig,
-						encodedAudioData.data(),
-						encodedAudioData.size(),
-						lastAudioStartTime,
-						lastAudioStopTime);
+			SendToCallback(isVideo,
+					data.bytes.data(), data.bytes.size(),
+					data.lastStartTime, data.lastStopTime);
 
-			encodedAudioData.resize(0);
-			lastAudioStartTime = startTime;
-			lastAudioStopTime  = stopTime;
+			data.bytes.resize(0);
+			data.lastStartTime = startTime;
+			data.lastStopTime  = stopTime;
 		}
 
-		encodedAudioData.insert(encodedAudioData.end(),
+		data.bytes.insert(data.bytes.end(),
 				(unsigned char*)ptr,
 				(unsigned char*)ptr + size);
-		return;
-	} else if (!hasTime) {
-		return;
+
+	} else if (hasTime) {
+		SendToCallback(isVideo, ptr, size, startTime, stopTime);
 	}
-
-	audioConfig.callback(audioConfig, ptr, size, startTime, stopTime);
-}
-
-void HDevice::VideoCallback(IMediaSample *sample)
-{
-	BYTE *ptr;
-	MediaTypePtr mt;
-	bool encoded = (int)videoConfig.format >= 400;
-
-	if (!sample || !videoConfig.callback)
-		return;
-
-	if (sample->GetMediaType(&mt) == S_OK) {
-		Debug(L"Video media type dynamically changed");
-		videoMediaType = mt;
-		ConvertVideoSettings();
-	}
-
-	int size = sample->GetActualDataLength();
-	if (!size)
-		return;
-
-	if (FAILED(sample->GetPointer(&ptr)))
-		return;
-
-	long long startTime, stopTime;
-	bool hasTime = SUCCEEDED(sample->GetTime(&startTime, &stopTime));
-
-	if (encoded) {
-		/* packets that have time are the first packet in a group of
-		 * segments */
-		if (hasTime) {
-			if (encodedVideoData.size())
-				videoConfig.callback(
-						videoConfig,
-						encodedVideoData.data(),
-						encodedVideoData.size(),
-						lastVideoStartTime,
-						lastVideoStopTime);
-
-			encodedVideoData.resize(0);
-			lastVideoStartTime = startTime;
-			lastVideoStopTime  = stopTime;
-		}
-
-		encodedVideoData.insert(encodedVideoData.end(),
-				(unsigned char*)ptr,
-				(unsigned char*)ptr + size);
-		return;
-	} else if (!hasTime) {
-		return;
-	}
-
-	videoConfig.callback(videoConfig, ptr, size, startTime, stopTime);
 }
 
 void HDevice::ConvertVideoSettings()
@@ -179,6 +143,8 @@ void HDevice::ConvertVideoSettings()
 	BITMAPINFOHEADER *bmih = GetBitmapInfoHeader(videoMediaType);
 
 	if (bmih) {
+		Debug(L"Video media type changed");
+
 		videoConfig.cx            = bmih->biWidth;
 		videoConfig.cy            = bmih->biHeight;
 		videoConfig.frameInterval = vih->AvgTimePerFrame;
@@ -195,6 +161,8 @@ void HDevice::ConvertAudioSettings()
 {
 	WAVEFORMATEX *wfex =
 		reinterpret_cast<WAVEFORMATEX*>(audioMediaType->pbFormat);
+
+	Debug(L"Audio media type changed");
 
 	audioConfig.sampleRate = wfex->nSamplesPerSec;
 	audioConfig.channels   = wfex->nChannels;
@@ -310,7 +278,7 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 	ConvertVideoSettings();
 
 	PinCaptureInfo info;
-	info.callback          = [this] (IMediaSample *s) {VideoCallback(s);};
+	info.callback          = [this] (IMediaSample *s) {Receive(true, s);};
 	info.expectedMajorType = videoMediaType->majortype;
 
 	/* attempt to force intermediary filters for these types */
@@ -451,7 +419,7 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 	ConvertAudioSettings();
 
 	PinCaptureInfo info;
-	info.callback          = [this] (IMediaSample *s) {AudioCallback(s);};
+	info.callback          = [this] (IMediaSample *s) {Receive(false, s);};
 	info.expectedMajorType = audioMediaType->majortype;
 	info.expectedSubType   = audioMediaType->subtype;
 

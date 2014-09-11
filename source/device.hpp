@@ -29,6 +29,12 @@ using namespace std;
 
 namespace DShow {
 
+struct EncodedData {
+	long long                      lastStartTime = 0;
+	long long                      lastStopTime  = 0;
+	vector<unsigned char>          bytes;
+};
+
 struct HDevice {
 	CComPtr<IGraphBuilder>         graph;
 	CComPtr<ICaptureGraphBuilder2> builder;
@@ -46,13 +52,8 @@ struct HDevice {
 	bool                           initialized;
 	bool                           active;
 
-	long long                      lastVideoStartTime = 0;
-	long long                      lastVideoStopTime  = 0;
-	vector<unsigned char>          encodedVideoData;
-
-	long long                      lastAudioStartTime = 0;
-	long long                      lastAudioStopTime  = 0;
-	vector<unsigned char>          encodedAudioData;
+	EncodedData                    encodedVideo;
+	EncodedData                    encodedAudio;
 
 	HDevice();
 	~HDevice();
@@ -66,8 +67,11 @@ struct HDevice {
 	bool EnsureActive(const wchar_t *func);
 	bool EnsureInactive(const wchar_t *func);
 
-	void AudioCallback(IMediaSample *sample);
-	void VideoCallback(IMediaSample *sample);
+	inline void SendToCallback(bool video,
+			unsigned char *data, size_t size,
+			long long startTime, long long stopTime);
+
+	void Receive(bool video, IMediaSample *sample);
 
 	bool SetupHDPVR1VideoCapture(IBaseFilter *filter,
 			VideoConfig &config);

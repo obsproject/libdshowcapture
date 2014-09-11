@@ -155,7 +155,7 @@ bool HDevice::SetupHDPVR2VideoCapture(IBaseFilter *filter, IPin *pin656,
 	config.internalFormat = HD_PVR2_VFORMAT;
 
 	PinCaptureInfo info;
-	info.callback          = [this] (IMediaSample *s) {VideoCallback(s);};
+	info.callback          = [this] (IMediaSample *s) {Receive(true, s);};
 	info.expectedMajorType = mtVideo->majortype;
 	info.expectedSubType   = mtVideo->subtype;
 

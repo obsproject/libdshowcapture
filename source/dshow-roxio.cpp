@@ -136,7 +136,7 @@ bool HDevice::SetupRoxioVideoCapture(IBaseFilter *filter, VideoConfig &config)
 	config.internalFormat = ROXIO_VFORMAT;
 
 	PinCaptureInfo info;
-	info.callback          = [this] (IMediaSample *s) {VideoCallback(s);};
+	info.callback          = [this] (IMediaSample *s) {Receive(true, s);};
 	info.expectedMajorType = mtVideo->majortype;
 	info.expectedSubType   = mtVideo->subtype;
 
