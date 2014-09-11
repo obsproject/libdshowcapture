@@ -20,7 +20,6 @@
 #pragma once
 
 #include "../dshowcapture.hpp"
-#include "dshow-device-defs.hpp"
 #include "capture-filter.hpp"
 
 #include <string>
@@ -33,6 +32,18 @@ struct EncodedData {
 	long long                      lastStartTime = 0;
 	long long                      lastStopTime  = 0;
 	vector<unsigned char>          bytes;
+};
+
+struct EncodedDevice {
+	VideoFormat videoFormat;
+	ULONG       videoPacketID;
+	long        width;
+	long        height;
+	long long   frameInterval;
+
+	AudioFormat audioFormat;
+	ULONG       audioPacketID;
+	DWORD       samplesPerSec;
 };
 
 struct HDevice {
@@ -73,14 +84,9 @@ struct HDevice {
 
 	void Receive(bool video, IMediaSample *sample);
 
-	bool SetupHDPVR1VideoCapture(IBaseFilter *filter,
-			VideoConfig &config);
-	bool SetupHDPVR2VideoCapture(IBaseFilter *filter, IPin *pin656,
-			VideoConfig &config);
-	bool SetupHDPVRRocketVideoCapture(IBaseFilter *filter,
-			VideoConfig &config);
-	bool SetupRoxioVideoCapture(IBaseFilter *filter,
-			VideoConfig &config);
+	bool SetupEncodedVideoCapture(IBaseFilter *filter,
+				VideoConfig &config,
+				const EncodedDevice &info);
 
 	bool SetupExceptionVideoCapture(IBaseFilter *filter,
 			VideoConfig &config);
