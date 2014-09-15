@@ -91,7 +91,10 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 		((int)videoConfig.format >= 400) :
 		((int)audioConfig.format >= 200);
 
-	if (!sample || !audioConfig.callback)
+	if (!sample)
+		return;
+
+	if (isVideo ? !videoConfig.callback : !audioConfig.callback)
 		return;
 
 	if (sample->GetMediaType(&mt) == S_OK) {
