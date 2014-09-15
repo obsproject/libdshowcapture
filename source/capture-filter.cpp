@@ -644,7 +644,7 @@ STDMETHODIMP CaptureEnumMediaTypes::Next(ULONG cMediaTypes,
 	UINT nFetched = 0;
 
 	if (curMT == 0 && cMediaTypes > 0) {
-		CopyMediaType(*ppMediaTypes, pin->connectedMediaType);
+		*ppMediaTypes = pin->connectedMediaType.Duplicate();
 		nFetched = 1;
 		curMT++;
 	}
