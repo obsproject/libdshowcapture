@@ -59,6 +59,15 @@ public:
 
 	inline AM_MEDIA_TYPE *operator->()           {return &type;}
 
+	inline AM_MEDIA_TYPE *Duplicate() const
+	{
+		AM_MEDIA_TYPE *ptr =
+			(AM_MEDIA_TYPE*)CoTaskMemAlloc(sizeof(*ptr));
+		memset(ptr, 0, sizeof(*ptr));
+		CopyMediaType(ptr, &type);
+		return ptr;
+	}
+
 	inline bool operator==(const AM_MEDIA_TYPE *pMT) const
 	{
 		return pMT == &type;
