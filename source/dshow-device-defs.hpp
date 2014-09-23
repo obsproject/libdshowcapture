@@ -66,7 +66,7 @@ static const EncodedDevice HD_PVR_Rocket = {
 	COMMON_ENCODED_CX,
 	COMMON_ENCODED_CY,
 	COMMON_ENCODED_INTERVAL,
-	AudioFormat::MPGA,
+	AudioFormat::AAC,
 	0x07D2UL,
 	COMMON_ENCODED_SAMPLERATE
 };
