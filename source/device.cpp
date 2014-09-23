@@ -26,6 +26,8 @@
 
 namespace DShow {
 
+bool SetRocketEnabled(IBaseFilter *encoder, bool enable);
+
 HDevice::HDevice()
 	: initialized (false),
 	  active      (false)
@@ -36,6 +38,21 @@ HDevice::~HDevice()
 {
 	if (active)
 		Stop();
+
+	DisconnectFilters();
+
+	/*
+	 * the sleeps for the rocket are required.  It seems that you cannot
+	 * simply start/stop the stream right away after/before you enable or
+	 * disable the rocket.  If you start it too fast after enabling, it
+	 * won't return any data.  If you try to turn off the rocket too
+	 * quickly after stopping, then it'll be perpetually stuck on, and then
+	 * you'll have to unplug/replug the device to get it working again.
+	 */
+	if (!!rocketEncoder) {
+		Sleep(3000);
+		SetRocketEnabled(rocketEncoder, false);
+	}
 }
 
 bool HDevice::EnsureInitialized(const wchar_t *func)
@@ -643,6 +660,26 @@ bool HDevice::ConnectFilters()
 	return success;
 }
 
+void HDevice::DisconnectFilters()
+{
+	CComPtr<IEnumFilters> filterEnum;
+	HRESULT               hr;
+
+	if (!graph)
+		return;
+
+	hr = graph->EnumFilters(&filterEnum);
+	if (FAILED(hr))
+		return;
+
+	CComPtr<IBaseFilter> filter;
+	while (filterEnum->Next(1, &filter, nullptr) == S_OK) {
+		graph->RemoveFilter(filter);
+		filterEnum->Reset();
+		filter.Release();
+	}
+}
+
 Result HDevice::Start()
 {
 	HRESULT hr;
@@ -650,6 +687,9 @@ Result HDevice::Start()
 	if (!EnsureInitialized(L"Start") ||
 	    !EnsureInactive(L"Start"))
 		return Result::Error;
+
+	if (!!rocketEncoder)
+		Sleep(3000);
 
 	hr = control->Run();
 

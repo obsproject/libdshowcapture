@@ -55,6 +55,7 @@ struct HDevice {
 	CComPtr<IBaseFilter>           audioFilter;
 	CComPtr<CaptureFilter>         videoCapture;
 	CComPtr<CaptureFilter>         audioCapture;
+	CComPtr<IBaseFilter>           rocketEncoder;
 	MediaType                      videoMediaType;
 	MediaType                      audioMediaType;
 	VideoConfig                    videoConfig;
@@ -105,6 +106,7 @@ struct HDevice {
 	bool RenderFilters(const GUID &category, const GUID &type,
 			IBaseFilter *filter, CaptureFilter *capture);
 	bool ConnectFilters();
+	void DisconnectFilters();
 	Result Start();
 	void Stop();
 };

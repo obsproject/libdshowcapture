@@ -141,6 +141,55 @@ static inline bool MapPacketIDs(IBaseFilter *demuxer, ULONG video, ULONG audio)
 	return true;
 }
 
+/*
+ * rocket-specific workaround code.  I have no idea what any of these numbers
+ * are except the GUID which was obvious.  All I know is calling
+ * IKsPropertySet::Set turns on/off some sort of 'mode' on the device.
+ * I discovered this merely by chance while monitoring API usage in other
+ * programs because I could not figure out how the hell to get this thing
+ * to turn on.
+ */
+static const GUID RocketEncoderGUID =
+{0x99100000, 0xa330, 0x11e1, {0xa3, 0x80, 0x99, 0x10, 0x68, 0x64, 0x00, 0x00}};
+
+struct RocketPropStruct {
+	DWORD dwSize;
+	DWORD unknown1;
+	DWORD unknown2;
+	DWORD unknown3;
+	DWORD code;
+	DWORD unknown4;
+	BOOL  enabled;
+};
+
+struct RocketInstStruct {
+	DWORD code;
+	DWORD unknown1;
+};
+
+bool SetRocketEnabled(IBaseFilter *encoder, bool enable)
+{
+	static const ULONG rocketEnableId   = 0x9910E001;
+	static const DWORD rocketEnableCode = 0x38384001;
+	RocketInstStruct   rocketInstance   = {};
+	RocketPropStruct   rocketProperty   = {};
+
+	CComQIPtr<IKsPropertySet> propertySet(encoder);
+	if (!propertySet)
+		return false;
+
+	rocketProperty.dwSize  = sizeof(rocketProperty);
+	rocketProperty.code    = rocketEnableCode;
+	rocketProperty.enabled = enable;
+	rocketInstance.code    = rocketEnableCode;
+
+	HRESULT hr = propertySet->Set(RocketEncoderGUID, rocketEnableId,
+			&rocketInstance, sizeof(rocketInstance),
+			&rocketProperty, sizeof(rocketProperty));
+
+	return SUCCEEDED(hr);
+}
+
 bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter,
 			VideoConfig &config,
 			const EncodedDevice &info)
@@ -175,6 +224,13 @@ bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter,
 
 	videoCapture = new CaptureFilter(pci);
 	videoFilter  = demuxer;
+
+	if (!!encoder && config.name.find(L"IT9910") != std::string::npos) {
+		rocketEncoder = encoder;
+
+		if (!SetRocketEnabled(rocketEncoder, true))
+			return false;
+	}
 
 	graph->AddFilter(crossbar,     L"Crossbar");
 	graph->AddFilter(filter,       L"Device");
