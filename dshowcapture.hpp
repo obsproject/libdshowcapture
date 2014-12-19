@@ -85,6 +85,7 @@ namespace DShow {
 		/* planar YUV formats */
 		I420 = 200,
 		NV12,
+		YV12,
 
 		/* packed YUV formats */
 		YVYU = 300,

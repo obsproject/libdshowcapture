@@ -46,6 +46,8 @@ static bool GetFourCCVFormat(DWORD fourCC, VideoFormat &format)
 	case MAKEFOURCC('I', '4', '2', '0'):
 	case MAKEFOURCC('I', 'Y', 'U', 'V'):
 		format = VideoFormat::I420; break;
+	case MAKEFOURCC('Y', 'V', '1', '2'):
+		format = VideoFormat::YV12; break;
 	case MAKEFOURCC('N', 'V', '1', '2'):
 		format = VideoFormat::NV12; break;
 
@@ -97,6 +99,8 @@ bool GetMediaTypeVFormat(const AM_MEDIA_TYPE &mt, VideoFormat &format)
 		format = VideoFormat::I420;
 	else if (mt.subtype == MEDIASUBTYPE_IYUV)
 		format = VideoFormat::I420;
+	else if (mt.subtype == MEDIASUBTYPE_YV12)
+		format = VideoFormat::YV12;
 	else if (mt.subtype == MEDIASUBTYPE_NV12)
 		format = VideoFormat::NV12;
 
