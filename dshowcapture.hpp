@@ -30,8 +30,8 @@
 #endif
 
 #define DSHOWCAPTURE_VERSION_MAJOR 0
-#define DSHOWCAPTURE_VERSION_MINOR 3
-#define DSHOWCAPTURE_VERSION_PATCH 3
+#define DSHOWCAPTURE_VERSION_MINOR 4
+#define DSHOWCAPTURE_VERSION_PATCH 0
 
 #define MAKE_DSHOWCAPTURE_VERSION(major, minor, patch) \
 		( (major << 24) | \
@@ -48,6 +48,7 @@
 namespace DShow {
 	/* internal forward */
 	struct HDevice;
+	struct HVideoEncoder;
 	struct VideoConfig;
 	struct AudioConfig;
 
@@ -239,6 +240,44 @@ namespace DShow {
 
 		static bool EnumVideoDevices(std::vector<VideoDevice> &devices);
 		static bool EnumAudioDevices(std::vector<AudioDevice> &devices);
+	};
+
+	struct VideoEncoderConfig : DeviceId {
+		int fpsNumerator;
+		int fpsDenominator;
+		int bitrate;
+		int keyframeInterval;
+		int cx;
+		int cy;
+	};
+
+	struct EncoderPacket {
+		unsigned char  *data;
+		size_t         size;
+		long long      pts;
+		long long      dts;
+	};
+
+	class VideoEncoder {
+		HVideoEncoder *context;
+
+	public:
+		VideoEncoder();
+		~VideoEncoder();
+
+		bool Valid() const;
+
+		bool SetConfig(VideoEncoderConfig &config);
+		bool GetConfig(VideoEncoderConfig &config) const;
+
+		bool Encode(unsigned char *data[DSHOW_MAX_PLANES],
+				size_t linesize[DSHOW_MAX_PLANES],
+				long long timestampStart,
+				long long timestampEnd,
+				EncoderPacket &packet,
+				bool &new_packet);
+
+		static bool EnumEncoders(std::vector<DeviceId> &encoders);
 	};
 
 	enum class LogType {
