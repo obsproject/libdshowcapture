@@ -58,8 +58,8 @@ bool CreateDemuxVideoPin(IBaseFilter *demuxFilter, MediaType &mt,
 	vih->bmiHeader.biWidth         = width;
 	vih->bmiHeader.biHeight        = height;
 	vih->bmiHeader.biCompression   = VideoFormatToFourCC(format);
-	vih->rcSource.right            = height;
-	vih->rcSource.bottom           = width;
+	vih->rcSource.right            = width;
+	vih->rcSource.bottom           = height;
 	vih->AvgTimePerFrame           = frameTime;
 
 	if (!vih->bmiHeader.biCompression) {
