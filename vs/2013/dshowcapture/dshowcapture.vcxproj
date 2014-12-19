@@ -153,6 +153,7 @@
     <ClCompile Include="..\..\..\source\dshow-media-type.cpp" />
     <ClCompile Include="..\..\..\source\dshowcapture.cpp" />
     <ClCompile Include="..\..\..\source\log.cpp" />
+    <ClCompile Include="..\..\..\source\output-filter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\dshowcapture.hpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="..\..\..\source\dshow-media-type.hpp" />
     <ClInclude Include="..\..\..\source\IVideoCaptureFilter.h" />
     <ClInclude Include="..\..\..\source\log.hpp" />
+    <ClInclude Include="..\..\..\source\output-filter.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

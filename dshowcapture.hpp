@@ -43,6 +43,8 @@
 		DSHOWCAPTURE_VERSION_MINOR, \
 		DSHOWCAPTURE_VERSION_PATCH)
 
+#define DSHOW_MAX_PLANES 8
+
 namespace DShow {
 	/* internal forward */
 	struct HDevice;
