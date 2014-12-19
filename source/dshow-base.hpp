@@ -39,6 +39,9 @@ using namespace std;
 
 namespace DShow {
 
+bool CreateFilterGraph(IGraphBuilder **graph, ICaptureGraphBuilder2 **builder,
+		IMediaControl **control);
+
 bool GetDeviceFilter(const IID &type, const wchar_t *name, const wchar_t *path,
 		IBaseFilter **filter);
 

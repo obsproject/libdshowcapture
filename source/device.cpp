@@ -516,39 +516,13 @@ bool HDevice::SetAudioConfig(AudioConfig *config)
 
 bool HDevice::CreateGraph()
 {
-	HRESULT hr;
-
 	if (initialized) {
 		Warning(L"Graph already created");
 		return false;
 	}
 
-	hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
-			IID_IFilterGraph, (void**)&graph);
-	if (FAILED(hr)) {
-		ErrorHR(L"Failed to create IGraphBuilder", hr);
+	if (!CreateFilterGraph(&graph, &builder, &control))
 		return false;
-	}
-
-	hr = CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL,
-			CLSCTX_INPROC_SERVER,
-			IID_ICaptureGraphBuilder2, (void**)&builder);
-	if (FAILED(hr)) {
-		ErrorHR(L"Failed to create ICaptureGraphBuilder2", hr);
-		return false;
-	}
-
-	hr = graph->QueryInterface(IID_IMediaControl, (void**)&control);
-	if (FAILED(hr)) {
-		ErrorHR(L"Failed to create IMediaControl", hr);
-		return false;
-	}
-
-	hr = builder->SetFiltergraph(graph);
-	if (FAILED(hr)) {
-		ErrorHR(L"Failed to set filter graph", hr);
-		return false;
-	}
 
 	initialized = true;
 	return true;
