@@ -107,7 +107,7 @@ struct DeviceFilterCallbackInfo {
 static bool GetDeviceCallback(DeviceFilterCallbackInfo &info,
 		IBaseFilter *filter, const wchar_t *name, const wchar_t *path)
 {
-	if (info.name && wcscmp(name, info.name) != 0)
+	if (info.name && *info.name && wcscmp(name, info.name) != 0)
 		return true;
 
 	info.filter = filter;
