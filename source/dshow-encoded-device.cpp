@@ -74,7 +74,7 @@ static inline bool CreateFilters(IBaseFilter *filter,
 	return true;
 }
 
-static inline bool ConnecEncodedtFilters(IGraphBuilder *graph,
+static inline bool ConnectEncodedFilters(IGraphBuilder *graph,
 		IBaseFilter *filter, IBaseFilter *crossbar,
 		IBaseFilter *encoder, IBaseFilter *demuxer)
 {
@@ -240,7 +240,7 @@ bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter,
 	if (!!encoder)
 		graph->AddFilter(encoder, L"Encoder");
 
-	bool success = ConnecEncodedtFilters(graph, filter, crossbar,
+	bool success = ConnectEncodedFilters(graph, filter, crossbar,
 			encoder, demuxer);
 	if (success)
 		success = MapPacketIDs(demuxer, info.videoPacketID,
