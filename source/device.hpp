@@ -70,8 +70,6 @@ struct HDevice {
 	HDevice();
 	~HDevice();
 
-	void LogFilters();
-
 	void ConvertVideoSettings();
 	void ConvertAudioSettings();
 

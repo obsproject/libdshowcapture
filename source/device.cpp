@@ -572,32 +572,6 @@ bool HDevice::RenderFilters(const GUID &category, const GUID &type,
 	return true;
 }
 
-void HDevice::LogFilters()
-{
-	CComPtr<IEnumFilters> filterEnum;
-	CComPtr<IBaseFilter>  filter;
-	HRESULT hr;
-
-	hr = graph->EnumFilters(&filterEnum);
-	if (FAILED(hr))
-		return;
-
-	Debug(L"Loaded filters..");
-
-	while (filterEnum->Next(1, &filter, NULL) == S_OK) {
-		FILTER_INFO filterInfo;
-
-		hr = filter->QueryFilterInfo(&filterInfo);
-		if (SUCCEEDED(hr)) {
-			if (filterInfo.pGraph)
-				filterInfo.pGraph->Release();
-
-			Debug(L"\t%s", filterInfo.achName);
-		}
-
-		filter.Release();
-	}
-}
 
 bool HDevice::ConnectFilters()
 {
@@ -631,7 +605,7 @@ bool HDevice::ConnectFilters()
 	}
 
 	if (success)
-		LogFilters();
+		LogFilters(graph);
 
 	return success;
 }

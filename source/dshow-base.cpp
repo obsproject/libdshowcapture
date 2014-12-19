@@ -71,6 +71,33 @@ bool CreateFilterGraph(IGraphBuilder **pgraph, ICaptureGraphBuilder2 **pbuilder,
 	return true;
 }
 
+void LogFilters(IGraphBuilder *graph)
+{
+	CComPtr<IEnumFilters> filterEnum;
+	CComPtr<IBaseFilter>  filter;
+	HRESULT hr;
+
+	hr = graph->EnumFilters(&filterEnum);
+	if (FAILED(hr))
+		return;
+
+	Debug(L"Loaded filters:");
+
+	while (filterEnum->Next(1, &filter, NULL) == S_OK) {
+		FILTER_INFO filterInfo;
+
+		hr = filter->QueryFilterInfo(&filterInfo);
+		if (SUCCEEDED(hr)) {
+			if (filterInfo.pGraph)
+				filterInfo.pGraph->Release();
+
+			Debug(L"\t%s", filterInfo.achName);
+		}
+
+		filter.Release();
+	}
+}
+
 struct DeviceFilterCallbackInfo {
 	CComPtr<IBaseFilter> filter;
 	const wchar_t        *name;
