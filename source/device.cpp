@@ -24,6 +24,8 @@
 #include "dshow-enum.hpp"
 #include "log.hpp"
 
+#define ROCKET_WAIT_TIME_MS 5000
+
 namespace DShow {
 
 bool SetRocketEnabled(IBaseFilter *encoder, bool enable);
@@ -50,7 +52,7 @@ HDevice::~HDevice()
 	 * you'll have to unplug/replug the device to get it working again.
 	 */
 	if (!!rocketEncoder) {
-		Sleep(3000);
+		Sleep(ROCKET_WAIT_TIME_MS);
 		SetRocketEnabled(rocketEncoder, false);
 	}
 }
@@ -639,7 +641,7 @@ Result HDevice::Start()
 		return Result::Error;
 
 	if (!!rocketEncoder)
-		Sleep(3000);
+		Sleep(ROCKET_WAIT_TIME_MS);
 
 	hr = control->Run();
 
