@@ -36,7 +36,7 @@ VideoEncoder::~VideoEncoder()
 
 bool VideoEncoder::Valid() const
 {
-	return context->active;
+	return context->initialized;
 }
 
 bool VideoEncoder::SetConfig(VideoEncoderConfig &config)
