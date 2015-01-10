@@ -266,6 +266,7 @@ namespace DShow {
 		~VideoEncoder();
 
 		bool Valid() const;
+		bool Active() const;
 
 		bool ResetGraph();
 

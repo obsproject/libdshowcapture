@@ -39,6 +39,11 @@ bool VideoEncoder::Valid() const
 	return context->initialized;
 }
 
+bool VideoEncoder::Active() const
+{
+	return context->active;
+}
+
 bool VideoEncoder::ResetGraph()
 {
 	delete context;
