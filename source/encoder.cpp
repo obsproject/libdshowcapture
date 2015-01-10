@@ -30,8 +30,26 @@ HVideoEncoder::HVideoEncoder()
 
 HVideoEncoder::~HVideoEncoder()
 {
+	CComPtr<IEnumFilters> filterEnum;
+	IBaseFilter *filter;
+	HRESULT hr;
+
+	if (!initialized)
+		return;
+
 	if (active)
 		control->Stop();
+
+	/* seems like you have to manually release the entire graph otherwise
+	 * the encoder device might not end up releasing properly */
+	hr = graph->EnumFilters(&filterEnum);
+	if (hr == S_OK) {
+		while (filterEnum->Next(1, &filter, nullptr) == S_OK) {
+			graph->RemoveFilter(filter);
+			filterEnum->Reset();
+			filter->Release();
+		}
+	}
 }
 
 bool HVideoEncoder::ConnectFilters()
