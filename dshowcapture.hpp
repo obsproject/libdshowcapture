@@ -267,6 +267,8 @@ namespace DShow {
 
 		bool Valid() const;
 
+		bool ResetGraph();
+
 		bool SetConfig(VideoEncoderConfig &config);
 		bool GetConfig(VideoEncoderConfig &config) const;
 
