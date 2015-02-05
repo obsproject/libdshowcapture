@@ -127,7 +127,7 @@ public:
 		unk->QueryInterface(__uuidof(T), (void**)&ptr);
 	}
 
-	inline ComPtr &operator=(IUnknown *unk)
+	inline ComPtr<T> &operator=(IUnknown *unk)
 	{
 		Clear();
 		unk->QueryInterface(__uuidof(T), (void**)&ptr);
