@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\dshowcapture.hpp" />
     <ClInclude Include="..\..\..\source\capture-filter.hpp" />
+    <ClInclude Include="..\..\..\source\ComPtr.hpp" />
     <ClInclude Include="..\..\..\source\device.hpp" />
     <ClInclude Include="..\..\..\source\dshow-base.hpp" />
     <ClInclude Include="..\..\..\source\dshow-demux.hpp" />

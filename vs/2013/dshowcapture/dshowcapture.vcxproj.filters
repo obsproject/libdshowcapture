@@ -95,5 +95,8 @@
     <ClInclude Include="..\..\..\source\encoder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\ComPtr.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
