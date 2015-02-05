@@ -152,6 +152,9 @@ struct ClosestVideoData {
 	long long   bestVal;
 	bool        found;
 
+	ClosestVideoData &operator=(ClosestVideoData const&) = delete;
+	ClosestVideoData &operator=(ClosestVideoData&&) = delete;
+
 	inline ClosestVideoData(VideoConfig &config, MediaType &mt)
 		: config     (config),
 		  mt         (mt),
@@ -262,6 +265,9 @@ struct ClosestAudioData {
 	MediaType   &mt;
 	int         bestVal;
 	bool        found;
+
+	ClosestAudioData &operator=(ClosestAudioData const&) = delete;
+	ClosestAudioData &operator=(ClosestAudioData&&) = delete;
 
 	inline ClosestAudioData(AudioConfig &config, MediaType &mt)
 		: config     (config),
