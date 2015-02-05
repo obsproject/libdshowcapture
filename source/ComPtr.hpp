@@ -40,11 +40,11 @@ protected:
 	}
 
 public:
-	inline ComPtr() : ptr(NULL)                  {}
-	inline ComPtr(T *p) : ptr(p)                 {if (ptr) ptr->AddRef();}
-	inline ComPtr(const ComPtr &c) : ptr(c.ptr)  {if (ptr) ptr->AddRef();}
-	inline ComPtr(ComPtr &&c) : ptr(c.ptr)       {c.ptr = NULL;}
-	inline ~ComPtr()                             {Kill();}
+	inline ComPtr() : ptr(NULL)                    {}
+	inline ComPtr(T *p) : ptr(p)                   {if (ptr) ptr->AddRef();}
+	inline ComPtr(const ComPtr<T> &c) : ptr(c.ptr) {if (ptr) ptr->AddRef();}
+	inline ComPtr(ComPtr<T> &&c) : ptr(c.ptr)      {c.ptr = NULL;}
+	inline ~ComPtr()                               {Kill();}
 
 	inline void Clear()
 	{
@@ -54,19 +54,19 @@ public:
 		}
 	}
 
-	inline ComPtr &operator=(T *p)
+	inline ComPtr<T> &operator=(T *p)
 	{
 		Replace(p);
 		return *this;
 	}
 
-	inline ComPtr &operator=(const ComPtr &c)
+	inline ComPtr<T> &operator=(const ComPtr<T> &c)
 	{
 		Replace(c.ptr);
 		return *this;
 	}
 
-	inline ComPtr &operator=(ComPtr &&c)
+	inline ComPtr<T> &operator=(ComPtr<T> &&c)
 	{
 		if (this != &c) {
 			Kill();
