@@ -44,14 +44,14 @@ struct EncodedData {
 namespace DShow {
 
 struct HVideoEncoder {
-	CComPtr<IGraphBuilder>         graph;
-	CComPtr<ICaptureGraphBuilder2> builder;
-	CComPtr<IMediaControl>         control;
+	ComPtr<IGraphBuilder>          graph;
+	ComPtr<ICaptureGraphBuilder2>  builder;
+	ComPtr<IMediaControl>          control;
 
-	CComPtr<IBaseFilter>           encoder;
-	CComPtr<IBaseFilter>           device;
-	CComPtr<OutputFilter>          output;
-	CComPtr<CaptureFilter>         capture;
+	ComPtr<IBaseFilter>            encoder;
+	ComPtr<IBaseFilter>            device;
+	ComPtr<OutputFilter>           output;
+	ComPtr<CaptureFilter>          capture;
 
 	VideoEncoderConfig             config;
 

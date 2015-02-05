@@ -47,15 +47,15 @@ struct EncodedDevice {
 };
 
 struct HDevice {
-	CComPtr<IGraphBuilder>         graph;
-	CComPtr<ICaptureGraphBuilder2> builder;
-	CComPtr<IMediaControl>         control;
+	ComPtr<IGraphBuilder>          graph;
+	ComPtr<ICaptureGraphBuilder2>  builder;
+	ComPtr<IMediaControl>          control;
 
-	CComPtr<IBaseFilter>           videoFilter;
-	CComPtr<IBaseFilter>           audioFilter;
-	CComPtr<CaptureFilter>         videoCapture;
-	CComPtr<CaptureFilter>         audioCapture;
-	CComPtr<IBaseFilter>           rocketEncoder;
+	ComPtr<IBaseFilter>            videoFilter;
+	ComPtr<IBaseFilter>            audioFilter;
+	ComPtr<CaptureFilter>          videoCapture;
+	ComPtr<CaptureFilter>          audioCapture;
+	ComPtr<IBaseFilter>            rocketEncoder;
 	MediaType                      videoMediaType;
 	MediaType                      audioMediaType;
 	VideoConfig                    videoConfig;

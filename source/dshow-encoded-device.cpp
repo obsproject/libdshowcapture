@@ -31,8 +31,8 @@ static inline bool CreateFilters(IBaseFilter *filter,
 		IBaseFilter **crossbar, IBaseFilter **encoder,
 		IBaseFilter **demuxer)
 {
-	CComPtr<IPin> inputPin;
-	CComPtr<IPin> outputPin;
+	ComPtr<IPin>  inputPin;
+	ComPtr<IPin>  outputPin;
 	REGPINMEDIUM  inMedium;
 	REGPINMEDIUM  outMedium;
 	bool          hasOutMedium;
@@ -109,7 +109,7 @@ static inline bool ConnectEncodedFilters(IGraphBuilder *graph,
 
 static inline bool MapPacketIDs(IBaseFilter *demuxer, ULONG video, ULONG audio)
 {
-	CComPtr<IPin> videoPin, audioPin;
+	ComPtr<IPin>  videoPin, audioPin;
 	HRESULT       hr;
 
 	if (!GetPinByName(demuxer, PINDIR_OUTPUT, DEMUX_VIDEO_PIN, &videoPin)) {
@@ -174,7 +174,7 @@ bool SetRocketEnabled(IBaseFilter *encoder, bool enable)
 	RocketInstStruct   rocketInstance   = {};
 	RocketPropStruct   rocketProperty   = {};
 
-	CComQIPtr<IKsPropertySet> propertySet(encoder);
+	ComQIPtr<IKsPropertySet> propertySet(encoder);
 	if (!propertySet)
 		return false;
 
@@ -194,9 +194,9 @@ bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter,
 			VideoConfig &config,
 			const EncodedDevice &info)
 {
-	CComPtr<IBaseFilter> crossbar;
-	CComPtr<IBaseFilter> encoder;
-	CComPtr<IBaseFilter> demuxer;
+	ComPtr<IBaseFilter>  crossbar;
+	ComPtr<IBaseFilter>  encoder;
+	ComPtr<IBaseFilter>  demuxer;
 	MediaType            mtVideo;
 	MediaType            mtAudio;
 

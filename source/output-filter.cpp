@@ -88,7 +88,7 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 
 	hr = pReceivePin->ReceiveConnection(this, outputInfo.mt);
 	if (FAILED(hr)) {
-		CComPtr<IEnumMediaTypes> enumMT;
+		ComPtr<IEnumMediaTypes> enumMT;
 		pReceivePin->EnumMediaTypes(&enumMT);
 
 		if (enumMT) {
@@ -103,13 +103,12 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 		return E_FAIL;
 	}
 
-	CComQIPtr<IMemInputPin> memInput(pReceivePin);
+	ComQIPtr<IMemInputPin> memInput(pReceivePin);
 	if (!memInput)
 		return E_FAIL;
 
 	if (!!allocator) {
 		allocator->Decommit();
-		allocator.Release();
 	}
 
 	hr = memInput->GetAllocator(&allocator);
@@ -173,7 +172,6 @@ STDMETHODIMP OutputPin::Disconnect()
 
 	if (!!allocator) {
 		allocator->Decommit();
-		allocator.Release();
 	}
 
 	connectedPin = nullptr;
@@ -318,10 +316,10 @@ void OutputPin::Send(unsigned char *data[DSHOW_MAX_PLANES],
 		size_t linesize[DSHOW_MAX_PLANES],
 		long long timestampStart, long long timestampEnd)
 {
-	CComQIPtr<IMemInputPin> memInput(connectedPin);
+	ComQIPtr<IMemInputPin> memInput(connectedPin);
 	REFERENCE_TIME startTime = timestampStart;
 	REFERENCE_TIME endTime = timestampEnd;
-	CComPtr<IMediaSample> sample;
+	ComPtr<IMediaSample> sample;
 	HRESULT hr;
 	BYTE *ptr;
 

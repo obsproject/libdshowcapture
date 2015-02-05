@@ -125,7 +125,7 @@ static void OpenPropertyPages(HWND hwnd, IUnknown *propertyObject)
 	if (!propertyObject)
 		return;
 
-	CComQIPtr<ISpecifyPropertyPages> pages(propertyObject);
+	ComQIPtr<ISpecifyPropertyPages> pages(propertyObject);
 	CAUUID cauuid;
 
 	if (pages != NULL) {
@@ -141,7 +141,7 @@ static void OpenPropertyPages(HWND hwnd, IUnknown *propertyObject)
 
 void Device::OpenDialog(void *hwnd, DialogType type) const
 {
-	CComPtr<IUnknown> ptr;
+	ComPtr<IUnknown>  ptr;
 	HRESULT           hr;
 
 	if (type == DialogType::ConfigVideo) {
@@ -157,8 +157,8 @@ void Device::OpenDialog(void *hwnd, DialogType type) const
 		}
 
 		if (ptr != NULL && type == DialogType::ConfigCrossbar2) {
-			CComQIPtr<IAMCrossbar> xbar(ptr);
-			CComQIPtr<IBaseFilter> filter(xbar);
+			ComQIPtr<IAMCrossbar> xbar(ptr);
+			ComQIPtr<IBaseFilter> filter(xbar);
 
 			hr = context->builder->FindInterface(
 					&LOOK_UPSTREAM_ONLY,
@@ -208,7 +208,7 @@ static void EnumExceptionVideoDevice(std::vector<VideoDevice> &devices,
 		const wchar_t *deviceName,
 		const wchar_t *devicePath)
 {
-	CComPtr<IPin> pin;
+	ComPtr<IPin> pin;
 
 	if (GetPinByName(filter, PINDIR_OUTPUT, L"656", &pin))
 		EnumEncodedVideo(devices, deviceName, devicePath, HD_PVR2);
@@ -222,8 +222,8 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 		const wchar_t *deviceName,
 		const wchar_t *devicePath)
 {
-	CComPtr<IPin> pin;
-	CComPtr<IPin> audioPin;
+	ComPtr<IPin>  pin;
+	ComPtr<IPin>  audioPin;
 	VideoDevice   info;
 
 	if (wcsstr(deviceName, L"Hauppauge HD PVR Capture") != nullptr) {
@@ -269,7 +269,7 @@ static bool EnumAudioDevice(vector<AudioDevice> &devices,
 		const wchar_t *deviceName,
 		const wchar_t *devicePath)
 {
-	CComPtr<IPin> pin;
+	ComPtr<IPin>  pin;
 	AudioDevice   info;
 
 	bool success = GetFilterPin(filter, MEDIATYPE_Audio,

@@ -36,7 +36,7 @@ typedef bool (*EnumCapsCallback)(void *param, const AM_MEDIA_TYPE &mt,
 
 static void EnumElgatoCaps(IPin *pin, EnumCapsCallback callback, void *param)
 {
-	CComPtr<IEnumMediaTypes> mediaTypes;
+	ComPtr<IEnumMediaTypes> mediaTypes;
 
 	if (SUCCEEDED(pin->EnumMediaTypes(&mediaTypes))) {
 		MediaTypePtr mt;
@@ -52,7 +52,7 @@ static void EnumElgatoCaps(IPin *pin, EnumCapsCallback callback, void *param)
 static bool EnumPinCaps(IPin *pin, EnumCapsCallback callback, void *param)
 {
 	HRESULT hr;
-	CComQIPtr<IAMStreamConfig> config(pin);
+	ComQIPtr<IAMStreamConfig> config(pin);
 	int count, size;
 
 	if (config == NULL)
@@ -239,7 +239,7 @@ static bool ClosestVideoMTCallback(ClosestVideoData &data,
 bool GetClosestVideoMediaType(IBaseFilter *filter, VideoConfig &config,
 		MediaType &mt)
 {
-	CComPtr<IPin>    pin;
+	ComPtr<IPin>     pin;
 	ClosestVideoData data(config, mt);
 	bool             success;
 
@@ -344,7 +344,7 @@ static bool ClosestAudioMTCallback(ClosestAudioData &data,
 bool GetClosestAudioMediaType(IBaseFilter *filter, AudioConfig &config,
 		MediaType &mt)
 {
-	CComPtr<IPin>    pin;
+	ComPtr<IPin>     pin;
 	ClosestAudioData data(config, mt);
 	bool             success;
 
@@ -403,8 +403,8 @@ bool EnumAudioCaps(IPin *pin, vector<AudioInfo> &caps)
 static bool EnumDevice(IMoniker *deviceInfo, EnumDeviceCallback callback,
 		void *param)
 {
-	CComPtr<IPropertyBag> propertyData;
-	CComPtr<IBaseFilter>  filter;
+	ComPtr<IPropertyBag> propertyData;
+	ComPtr<IBaseFilter>  filter;
 	HRESULT hr;
 
 	hr = deviceInfo->BindToStorage(0, 0, IID_IPropertyBag,
@@ -436,7 +436,7 @@ static bool EnumDevice(IMoniker *deviceInfo, EnumDeviceCallback callback,
 
 static bool EnumExceptionVideoDevices(EnumDeviceCallback callback, void *param)
 {
-	CComPtr<IBaseFilter> filter;
+	ComPtr<IBaseFilter>  filter;
 	HRESULT              hr;
 
 	hr = CoCreateInstance(CLSID_ElgatoVideoCaptureFilter, nullptr,
@@ -452,9 +452,9 @@ static bool EnumExceptionVideoDevices(EnumDeviceCallback callback, void *param)
 
 bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param)
 {
-	CComPtr<ICreateDevEnum> deviceEnum;
-	CComPtr<IEnumMoniker>   enumMoniker;
-	CComPtr<IMoniker>       deviceInfo;
+	ComPtr<ICreateDevEnum>  deviceEnum;
+	ComPtr<IEnumMoniker>    enumMoniker;
+	ComPtr<IMoniker>        deviceInfo;
 	HRESULT                 hr;
 	DWORD                   count = 0;
 
@@ -477,8 +477,6 @@ bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param)
 		while (enumMoniker->Next(1, &deviceInfo, &count) == S_OK) {
 			if (!EnumDevice(deviceInfo, callback, param))
 				return true;
-
-			deviceInfo.Release();
 		}
 	}
 

@@ -43,14 +43,14 @@ bool CreateDemuxVideoPin(IBaseFilter *demuxFilter, MediaType &mt,
 		long width, long height, long long frameTime,
 		VideoFormat format)
 {
-	CComQIPtr<IMpeg2Demultiplexer> demuxer(demuxFilter);
+	ComQIPtr<IMpeg2Demultiplexer> demuxer(demuxFilter);
 	if (!demuxer) {
 		Warning(L"CreateDemuxVideoPin: Failed to get "
 		        L"IMpeg2Demultiplexer from filter");
 		return false;
 	}
 
-	CComPtr<IPin> pin;
+	ComPtr<IPin>  pin;
 	HRESULT       hr;
 
 	VIDEOINFOHEADER *vih           = mt.AllocFormat<VIDEOINFOHEADER>();
@@ -110,14 +110,14 @@ bool CreateDemuxAudioPin(IBaseFilter *demuxFilter, MediaType &mt,
 		DWORD samplesPerSec, WORD bitsPerSample, WORD channels,
 		AudioFormat format)
 {
-	CComQIPtr<IMpeg2Demultiplexer> demuxer(demuxFilter);
+	ComQIPtr<IMpeg2Demultiplexer> demuxer(demuxFilter);
 	if (!demuxer) {
 		Warning(L"CreateDemuxAudioPin: Failed to get "
 		        L"IMpeg2Demultiplexer from filter");
 		return false;
 	}
 
-	CComPtr<IPin> pin;
+	ComPtr<IPin>  pin;
 	HRESULT       hr;
 
 	WAVEFORMATEX *wfex   = mt.AllocFormat<WAVEFORMATEX>();

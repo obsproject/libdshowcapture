@@ -22,7 +22,6 @@
 #define WIN32_MEAN_AND_LEAN
 #define __STREAMS__
 #include <windows.h>
-#include <atlbase.h>
 #include <dshow.h>
 #include <ks.h>
 #include <ksmedia.h>
@@ -30,6 +29,7 @@
 #include <Amaudio.h>
 #include <Dvdmedia.h>
 
+#include "ComPtr.hpp"
 #include "CoTaskMemPtr.hpp"
 
 #include <string>

@@ -30,7 +30,7 @@ HVideoEncoder::HVideoEncoder()
 
 HVideoEncoder::~HVideoEncoder()
 {
-	CComPtr<IEnumFilters> filterEnum;
+	ComPtr<IEnumFilters> filterEnum;
 	IBaseFilter *filter;
 	HRESULT hr;
 
@@ -54,10 +54,10 @@ HVideoEncoder::~HVideoEncoder()
 
 bool HVideoEncoder::ConnectFilters()
 {
-	CComPtr<IPin> deviceIn;
-	CComPtr<IPin> deviceOut;
-	CComPtr<IPin> encoderIn;
-	CComPtr<IPin> encoderOut;
+	ComPtr<IPin> deviceIn;
+	ComPtr<IPin> deviceOut;
+	ComPtr<IPin> encoderIn;
+	ComPtr<IPin> encoderOut;
 	bool success;
 	HRESULT hr;
 
@@ -110,7 +110,7 @@ bool HVideoEncoder::ConnectFilters()
 
 static bool GetPinFirstMediaType(IPin *pin, AM_MEDIA_TYPE **mt)
 {
-	CComPtr<IEnumMediaTypes>       mediaEnum;
+	ComPtr<IEnumMediaTypes>        mediaEnum;
 	HRESULT                        hr;
 	ULONG                          fetched;
 
@@ -130,8 +130,8 @@ static bool GetPinFirstMediaType(IPin *pin, AM_MEDIA_TYPE **mt)
 
 bool HVideoEncoder::SetupCrossbar()
 {
-	CComPtr<IBaseFilter> crossbar;
-	CComPtr<IPin> pin;
+	ComPtr<IBaseFilter> crossbar;
+	ComPtr<IPin> pin;
 	REGPINMEDIUM medium;
 
 	/* C353 has no crossbar */
@@ -199,9 +199,9 @@ void HVideoEncoder::InitializeVideoFormat(MediaType &mt)
 
 bool HVideoEncoder::SetupEncoder(IBaseFilter *filter)
 {
-	CComPtr<IBaseFilter>           deviceFilter;
-	CComPtr<IPin>                  inputPin;
-	CComPtr<IPin>                  outputPin;
+	ComPtr<IBaseFilter>            deviceFilter;
+	ComPtr<IPin>                   inputPin;
+	ComPtr<IPin>                   outputPin;
 	REGPINMEDIUM                   medium;
 	MediaTypePtr                   mtRaw;
 	MediaTypePtr                   mtEncoded;
@@ -296,7 +296,7 @@ bool SetAvermediaEncoderConfig(IBaseFilter *encoder, VideoEncoderConfig &config)
 {
 	HRESULT hr;
 
-	CComQIPtr<IKsPropertySet> propertySet(encoder);
+	ComQIPtr<IKsPropertySet> propertySet(encoder);
 	if (!propertySet) {
 		Warning(L"Could not get IKsPropertySet for encoder");
 		return false;
@@ -350,8 +350,8 @@ bool SetAvermediaEncoderConfig(IBaseFilter *encoder, VideoEncoderConfig &config)
 
 bool HVideoEncoder::SetConfig(VideoEncoderConfig &config)
 {
-	CComPtr<IBaseFilter> filter;
-	CComPtr<IBaseFilter> crossbar;
+	ComPtr<IBaseFilter> filter;
+	ComPtr<IBaseFilter> crossbar;
 
 	if (config.name.empty() && config.path.empty()) {
 		Warning(L"No video encoder name or path specified");

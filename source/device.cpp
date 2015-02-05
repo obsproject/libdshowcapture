@@ -209,7 +209,7 @@ void HDevice::ConvertAudioSettings()
 bool HDevice::SetupExceptionVideoCapture(IBaseFilter *filter,
 		VideoConfig &config)
 {
-	CComPtr<IPin> pin;
+	ComPtr<IPin> pin;
 
 	if (GetPinByName(filter, PINDIR_OUTPUT, L"656", &pin))
 		return SetupEncodedVideoCapture(filter, config, HD_PVR2);
@@ -222,7 +222,7 @@ bool HDevice::SetupExceptionVideoCapture(IBaseFilter *filter,
 
 static bool GetPinMediaType(IPin *pin, MediaType &mt)
 {
-	CComPtr<IEnumMediaTypes> mediaTypes;
+	ComPtr<IEnumMediaTypes> mediaTypes;
 
 	if (SUCCEEDED(pin->EnumMediaTypes(&mediaTypes))) {
 		MediaTypePtr curMT;
@@ -241,7 +241,7 @@ static bool GetPinMediaType(IPin *pin, MediaType &mt)
 
 bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 {
-	CComPtr<IPin> pin;
+	ComPtr<IPin>  pin;
 	HRESULT       hr;
 	bool          success;
 
@@ -262,7 +262,7 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 		}
 	}
 
-	CComQIPtr<IAMStreamConfig> pinConfig(pin);
+	ComQIPtr<IAMStreamConfig> pinConfig(pin);
 	if (pinConfig == NULL) {
 		Error(L"Could not get IAMStreamConfig for device");
 		return false;
@@ -328,7 +328,7 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 
 bool HDevice::SetVideoConfig(VideoConfig *config)
 {
-	CComPtr<IBaseFilter> filter;
+	ComPtr<IBaseFilter> filter;
 
 	if (!EnsureInitialized(L"SetVideoConfig") ||
 	    !EnsureInactive(L"SetVideoConfig"))
@@ -372,7 +372,7 @@ bool HDevice::SetVideoConfig(VideoConfig *config)
 
 bool HDevice::SetupExceptionAudioCapture(IPin *pin)
 {
-	CComPtr<IEnumMediaTypes> enumMediaTypes;
+	ComPtr<IEnumMediaTypes>  enumMediaTypes;
 	ULONG                    count = 0;
 	HRESULT                  hr;
 	MediaTypePtr             mt;
@@ -397,7 +397,7 @@ bool HDevice::SetupExceptionAudioCapture(IPin *pin)
 
 bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 {
-	CComPtr<IPin> pin;
+	ComPtr<IPin>  pin;
 	MediaTypePtr  defaultMT;
 	bool          success;
 	HRESULT       hr;
@@ -409,7 +409,7 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 		return false;
 	}
 
-	CComQIPtr<IAMStreamConfig> pinConfig(pin);
+	ComQIPtr<IAMStreamConfig> pinConfig(pin);
 
 	if (config.useDefaultConfig) {
 		MediaTypePtr defaultMT;
@@ -458,7 +458,7 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 
 bool HDevice::SetAudioConfig(AudioConfig *config)
 {
-	CComPtr<IBaseFilter> filter;
+	ComPtr<IBaseFilter> filter;
 
 	if (!EnsureInitialized(L"SetAudioConfig") ||
 	    !EnsureInactive(L"SetAudioConfig"))
@@ -534,7 +534,7 @@ bool HDevice::ConnectPins(const GUID &category, const GUID &type,
 		IBaseFilter *filter, CaptureFilter *capture)
 {
 	HRESULT hr;
-	CComPtr<IPin> filterPin;
+	ComPtr<IPin> filterPin;
 
 	if (!EnsureInitialized(L"HDevice::ConnectPins") ||
 	    !EnsureInactive(L"HDevice::ConnectPins"))
@@ -614,7 +614,7 @@ bool HDevice::ConnectFilters()
 
 void HDevice::DisconnectFilters()
 {
-	CComPtr<IEnumFilters> filterEnum;
+	ComPtr<IEnumFilters>  filterEnum;
 	HRESULT               hr;
 
 	if (!graph)
@@ -624,11 +624,10 @@ void HDevice::DisconnectFilters()
 	if (FAILED(hr))
 		return;
 
-	CComPtr<IBaseFilter> filter;
+	ComPtr<IBaseFilter> filter;
 	while (filterEnum->Next(1, &filter, nullptr) == S_OK) {
 		graph->RemoveFilter(filter);
 		filterEnum->Reset();
-		filter.Release();
 	}
 }
 
