@@ -123,14 +123,14 @@ template<class T> class ComQIPtr : public ComPtr<T> {
 public:
 	inline ComQIPtr(IUnknown *unk)
 	{
-		ptr = nullptr;
-		unk->QueryInterface(__uuidof(T), (void**)&ptr);
+		this->ptr = nullptr;
+		unk->QueryInterface(__uuidof(T), (void**)&this->ptr);
 	}
 
 	inline ComPtr<T> &operator=(IUnknown *unk)
 	{
-		Clear();
-		unk->QueryInterface(__uuidof(T), (void**)&ptr);
+		ComPtr<T>::Clear();
+		unk->QueryInterface(__uuidof(T), (void**)&this->ptr);
 		return *this;
 	}
 };
