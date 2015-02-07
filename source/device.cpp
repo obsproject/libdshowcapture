@@ -493,8 +493,8 @@ bool HDevice::SetAudioConfig(AudioConfig *config)
 				config->name.c_str(), config->path.c_str(),
 				&filter);
 		if (!success) {
-			Error(L"Audio device '%s': %s not found", config->name,
-					config->path);
+			Error(L"Audio device '%s': %s not found", config->name.c_str(),
+					config->path.c_str());
 			return false;
 		}
 	}
