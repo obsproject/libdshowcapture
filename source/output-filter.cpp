@@ -231,9 +231,13 @@ STDMETHODIMP OutputPin::QueryDirection(PIN_DIRECTION *pPinDir)
 	return NOERROR;
 }
 
+#define OUTPUT_PIN_NAME L"Output Pin"
+
 STDMETHODIMP OutputPin::QueryId(LPWSTR *lpId)
 {
-	*lpId = L"Output Pin";
+	wchar_t *str = (wchar_t*)CoTaskMemAlloc(sizeof(OUTPUT_PIN_NAME));
+	memcpy(str, OUTPUT_PIN_NAME, sizeof(OUTPUT_PIN_NAME));
+	*lpId = str;
 	return S_OK;
 }
 

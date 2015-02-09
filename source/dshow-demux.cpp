@@ -72,7 +72,10 @@ bool CreateDemuxVideoPin(IBaseFilter *demuxFilter, MediaType &mt,
 	mt->formattype           = FORMAT_VideoInfo;
 	mt->bTemporalCompression = true;
 
-	hr = demuxer->CreateOutputPin(mt, DEMUX_VIDEO_PIN, &pin);
+	wchar_t *name = (wchar_t*)CoTaskMemAlloc(sizeof(DEMUX_VIDEO_PIN));
+	memcpy(name, DEMUX_VIDEO_PIN, sizeof(DEMUX_VIDEO_PIN));
+
+	hr = demuxer->CreateOutputPin(mt, name, &pin);
 	if (FAILED(hr)) {
 		WarningHR(L"CreateDemuxVideoPin: Failed to create video pin "
 		          L"on demuxer", hr);
@@ -136,7 +139,10 @@ bool CreateDemuxAudioPin(IBaseFilter *demuxFilter, MediaType &mt,
 	mt->formattype           = FORMAT_WaveFormatEx;
 	mt->bTemporalCompression = true;
 
-	hr = demuxer->CreateOutputPin(mt, DEMUX_AUDIO_PIN, &pin);
+	wchar_t *name = (wchar_t*)CoTaskMemAlloc(sizeof(DEMUX_AUDIO_PIN));
+	memcpy(name, DEMUX_AUDIO_PIN, sizeof(DEMUX_AUDIO_PIN));
+
+	hr = demuxer->CreateOutputPin(mt, name, &pin);
 	if (FAILED(hr)) {
 		WarningHR(L"CreateDemuxAudioPin: Failed to create audio pin "
 		          L"on demuxer", hr);

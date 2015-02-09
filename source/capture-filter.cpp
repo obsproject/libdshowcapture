@@ -186,9 +186,13 @@ STDMETHODIMP CapturePin::QueryDirection(PIN_DIRECTION *pPinDir)
 	return NOERROR;
 }
 
+#define CAPTURE_PIN_NAME L"Capture Pin"
+
 STDMETHODIMP CapturePin::QueryId(LPWSTR *lpId)
 {
-	*lpId = L"Capture Pin";
+	wchar_t *str = (wchar_t*)CoTaskMemAlloc(sizeof(CAPTURE_PIN_NAME));
+	memcpy(str, CAPTURE_PIN_NAME, sizeof(CAPTURE_PIN_NAME));
+	*lpId = str;
 	return S_OK;
 }
 
