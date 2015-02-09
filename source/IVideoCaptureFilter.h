@@ -86,7 +86,7 @@ DECLARE_INTERFACE_(IElgatoVideoCaptureFilter, IUnknown)
 =============================================================================*/
 
 //! Video Capture device type
-typedef enum VIDEO_CAPTURE_FILTER_DEVICE_TYPE
+enum VIDEO_CAPTURE_FILTER_DEVICE_TYPE
 {
     VIDEO_CAPTURE_FILTER_DEVICE_TYPE_INVALID                = 0,            //!< Invalid
     VIDEO_CAPTURE_FILTER_DEVICE_TYPE_GAME_CAPTURE_HD        = 2,            //!< Game Capture HD   (VID: 0x0fd9 PID: 0x0044, 0x004e, 0x0051)
@@ -95,7 +95,7 @@ typedef enum VIDEO_CAPTURE_FILTER_DEVICE_TYPE
 };
 
 //! Input device
-typedef enum VIDEO_CAPTURE_FILTER_INPUT_DEVICE
+enum VIDEO_CAPTURE_FILTER_INPUT_DEVICE
 {
     VIDEO_CAPTURE_FILTER_INPUT_DEVICE_INVALID               =   0,          //!< Invalid
     VIDEO_CAPTURE_FILTER_INPUT_DEVICE_XBOX360               =   1,          //!< Microsoft Xbox 360
@@ -110,7 +110,7 @@ typedef enum VIDEO_CAPTURE_FILTER_INPUT_DEVICE
 };
 
 //! Video inputs
-typedef enum VIDEO_CAPTURE_FILTER_VIDEO_INPUT
+enum VIDEO_CAPTURE_FILTER_VIDEO_INPUT
 {
     VIDEO_CAPTURE_FILTER_VIDEO_INPUT_INVALID                =   0,          //!< Invalid
     VIDEO_CAPTURE_FILTER_VIDEO_INPUT_COMPOSITE              =   1,          //!< Composite
@@ -120,7 +120,7 @@ typedef enum VIDEO_CAPTURE_FILTER_VIDEO_INPUT
 };
 
 //! Video encoder profile
-typedef enum VIDEO_CAPTURE_FILTER_VID_ENC_PROFILE
+enum VIDEO_CAPTURE_FILTER_VID_ENC_PROFILE
 {
     VIDEO_CAPTURE_FILTER_VID_ENC_PROFILE_INVALID            = 0x00000000,   //!< Invalid
     VIDEO_CAPTURE_FILTER_VID_ENC_PROFILE_240                = 0x00000001,   //!< 320x240
@@ -131,7 +131,7 @@ typedef enum VIDEO_CAPTURE_FILTER_VID_ENC_PROFILE
 };
 
 //! Color range
-typedef enum VIDEO_CAPTURE_FILTER_COLOR_RANGE
+enum VIDEO_CAPTURE_FILTER_COLOR_RANGE
 {
     VIDEO_CAPTURE_FILTER_COLOR_RANGE_INVALID                =   0,          //!< Invalid
     VIDEO_CAPTURE_FILTER_COLOR_RANGE_FULL                   =   1,          //!< 0-255
@@ -140,7 +140,7 @@ typedef enum VIDEO_CAPTURE_FILTER_COLOR_RANGE
 };
 
 //! Settings
-typedef struct _VIDEO_CAPTURE_FILTER_SETTINGS
+struct VIDEO_CAPTURE_FILTER_SETTINGS
 {
     TCHAR                                deviceName[256];                   //!< Device name (get only)
     VIDEO_CAPTURE_FILTER_INPUT_DEVICE    inputDevice;                       //!< Input device (e.g. Xbox360)
@@ -156,17 +156,16 @@ typedef struct _VIDEO_CAPTURE_FILTER_SETTINGS
     int                                  digitalAudioGain;                  //!< Digital audio gain (-60 - 12 dB)
     BOOL                                 preserveInputFormat;               //!< Input Format will be preserved (e.g. do not convert interlaced to progressive)
     BOOL                                 stretchStandardDefinitionInput;    //!< Stretch SD input to 16:9
-}VIDEO_CAPTURE_FILTER_SETTINGS, *PVIDEO_CAPTURE_FILTER_SETTINGS;
-typedef const VIDEO_CAPTURE_FILTER_SETTINGS* PCVIDEO_CAPTURE_FILTER_SETTINGS;
+};
 
 //! Interface
 DECLARE_INTERFACE_(IElgatoVideoCaptureFilter2, IElgatoVideoCaptureFilter)
 {
     // Get current settings
-    STDMETHOD(GetSettings)(THIS_ PVIDEO_CAPTURE_FILTER_SETTINGS pSettings) PURE;
+    STDMETHOD(GetSettings)(THIS_ VIDEO_CAPTURE_FILTER_SETTINGS *pSettings) PURE;
 
     // Set settings
-    STDMETHOD(SetSettings)(THIS_ PCVIDEO_CAPTURE_FILTER_SETTINGS pcSettings) PURE;
+    STDMETHOD(SetSettings)(THIS_ const VIDEO_CAPTURE_FILTER_SETTINGS *pcSettings) PURE;
 };
 
 /*=============================================================================
@@ -186,7 +185,7 @@ DECLARE_INTERFACE_(IElgatoVideoCaptureFilter3, IElgatoVideoCaptureFilter2)
 =============================================================================*/
 
 //! Messages
-typedef enum VIDEO_CAPTURE_FILTER_NOTIFICATION
+enum VIDEO_CAPTURE_FILTER_NOTIFICATION
 {
 	//! Description: Delay of the device has changed. Call GetDelayMs() to get the new delay.
     VIDEO_CAPTURE_FILTER_NOTIFICATION_DEVICE_DELAY_CHANGED              = 110,      //!< Data: none
@@ -222,19 +221,18 @@ DECLARE_INTERFACE_(IElgatoVideoCaptureFilter4, IElgatoVideoCaptureFilter3)
 =============================================================================*/
 
 //! Extended Settings
-typedef struct _VIDEO_CAPTURE_FILTER_SETTINGS_EX
+struct VIDEO_CAPTURE_FILTER_SETTINGS_EX
 {
 	VIDEO_CAPTURE_FILTER_SETTINGS		Settings;
 	BOOL								enableFullFrameRate;				//!< Enable full frame rate (50/60 fps)
 	BYTE								reserved[20 * 1024];
-}VIDEO_CAPTURE_FILTER_SETTINGS_EX, *PVIDEO_CAPTURE_FILTER_SETTINGS_EX;
-typedef const VIDEO_CAPTURE_FILTER_SETTINGS_EX* PCVIDEO_CAPTURE_FILTER_SETTINGS_EX;
+};
 
 DECLARE_INTERFACE_(IElgatoVideoCaptureFilter5, IElgatoVideoCaptureFilter4)
 {
 	//! Get current settings
-	STDMETHOD(GetSettingsEx)(THIS_ PVIDEO_CAPTURE_FILTER_SETTINGS_EX pSettings) PURE;
+	STDMETHOD(GetSettingsEx)(THIS_ VIDEO_CAPTURE_FILTER_SETTINGS_EX *pSettings) PURE;
 
 	//! Set settings
-	STDMETHOD(SetSettingsEx)(THIS_ PCVIDEO_CAPTURE_FILTER_SETTINGS_EX pcSettings) PURE;
+	STDMETHOD(SetSettingsEx)(THIS_ const VIDEO_CAPTURE_FILTER_SETTINGS_EX *pcSettings) PURE;
 };
