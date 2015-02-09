@@ -51,6 +51,7 @@ class OutputPin : public IPin {
 
 public:
 	OutputPin(OutputFilter *filter, const PinOutputInfo &info);
+	virtual ~OutputPin();
 
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);
 	STDMETHODIMP_(ULONG) AddRef();
@@ -96,6 +97,7 @@ class OutputFilter : public IBaseFilter {
 
 public:
 	OutputFilter(const PinOutputInfo &info);
+	virtual ~OutputFilter();
 
 	// IUnknown methods
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);
@@ -137,6 +139,7 @@ class OutputEnumPins : public IEnumPins {
 
 public:
 	OutputEnumPins(OutputFilter *filter, OutputEnumPins *pEnum);
+	virtual ~OutputEnumPins();
 
 	// IUnknown
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);
@@ -157,6 +160,7 @@ class OutputEnumMediaTypes : public IEnumMediaTypes {
 
 public:
 	OutputEnumMediaTypes(OutputPin *pin);
+	virtual ~OutputEnumMediaTypes();
 
 	// IUnknown
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);

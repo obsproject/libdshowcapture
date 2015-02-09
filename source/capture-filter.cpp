@@ -40,6 +40,10 @@ CapturePin::CapturePin(CaptureFilter *filter_, const PinCaptureInfo &info)
 	connectedMediaType->majortype = info.expectedMajorType;
 }
 
+CapturePin::~CapturePin()
+{
+}
+
 STDMETHODIMP CapturePin::QueryInterface(REFIID riid, void **ppv)
 {
 	if (riid == IID_IUnknown) {
@@ -340,6 +344,7 @@ class MiscFlagsHandler : public IAMFilterMiscFlags {
 
 public:
 	inline MiscFlagsHandler() {}
+	virtual ~MiscFlagsHandler() {}
 
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv)
 	{
@@ -380,6 +385,10 @@ CaptureFilter::CaptureFilter(const PinCaptureInfo &info)
 	  state    (State_Stopped),
 	  pin      (new CapturePin(this, info)),
 	  misc     (new MiscFlagsHandler)
+{
+}
+
+CaptureFilter::~CaptureFilter()
 {
 }
 
@@ -534,6 +543,10 @@ CaptureEnumPins::CaptureEnumPins(CaptureFilter *filter_, CaptureEnumPins *pEnum)
 	curPin = (pEnum != nullptr) ? pEnum->curPin : 0;
 }
 
+CaptureEnumPins::~CaptureEnumPins()
+{
+}
+
 // IUnknown
 STDMETHODIMP CaptureEnumPins::QueryInterface(REFIID riid, void **ppv)
 {
@@ -605,6 +618,10 @@ STDMETHODIMP CaptureEnumPins::Clone(IEnumPins **ppEnum)
 CaptureEnumMediaTypes::CaptureEnumMediaTypes(CapturePin *pin_)
 	: pin      (pin_),
 	  refCount (1)
+{
+}
+
+CaptureEnumMediaTypes::~CaptureEnumMediaTypes()
 {
 }
 

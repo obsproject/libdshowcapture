@@ -51,6 +51,7 @@ class CapturePin : public IPin, public IMemInputPin {
 
 public:
 	CapturePin(CaptureFilter *filter, const PinCaptureInfo &info);
+	virtual ~CapturePin();
 
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);
 	STDMETHODIMP_(ULONG) AddRef();
@@ -98,6 +99,7 @@ class CaptureFilter : public IBaseFilter {
 
 public:
 	CaptureFilter(const PinCaptureInfo &info);
+	virtual ~CaptureFilter();
 
 	// IUnknown methods
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);
@@ -132,6 +134,7 @@ class CaptureEnumPins : public IEnumPins {
 
 public:
 	CaptureEnumPins(CaptureFilter *filter, CaptureEnumPins *pEnum);
+	virtual ~CaptureEnumPins();
 
 	// IUnknown
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);
@@ -152,6 +155,7 @@ class CaptureEnumMediaTypes : public IEnumMediaTypes {
 
 public:
 	CaptureEnumMediaTypes(CapturePin *pin);
+	virtual ~CaptureEnumMediaTypes();
 
 	// IUnknown
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);

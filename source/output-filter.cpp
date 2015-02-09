@@ -39,6 +39,10 @@ OutputPin::OutputPin(OutputFilter *filter_, const PinOutputInfo &info)
 {
 }
 
+OutputPin::~OutputPin()
+{
+}
+
 STDMETHODIMP OutputPin::QueryInterface(REFIID riid, void **ppv)
 {
 	if (riid == IID_IUnknown) {
@@ -373,6 +377,7 @@ class SourceMiscFlags : public IAMFilterMiscFlags {
 
 public:
 	inline SourceMiscFlags() {}
+	virtual ~SourceMiscFlags() {}
 
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv)
 	{
@@ -413,6 +418,10 @@ OutputFilter::OutputFilter(const PinOutputInfo &info)
 	  state    (State_Stopped),
 	  pin      (new OutputPin(this, info)),
 	  misc     (new SourceMiscFlags)
+{
+}
+
+OutputFilter::~OutputFilter()
 {
 }
 
@@ -571,6 +580,10 @@ OutputEnumPins::OutputEnumPins(OutputFilter *filter_, OutputEnumPins *pEnum)
 	curPin = (pEnum != nullptr) ? pEnum->curPin : 0;
 }
 
+OutputEnumPins::~OutputEnumPins()
+{
+}
+
 // IUnknown
 STDMETHODIMP OutputEnumPins::QueryInterface(REFIID riid, void **ppv)
 {
@@ -642,6 +655,10 @@ STDMETHODIMP OutputEnumPins::Clone(IEnumPins **ppEnum)
 OutputEnumMediaTypes::OutputEnumMediaTypes(OutputPin *pin_)
 	: pin      (pin_),
 	  refCount (1)
+{
+}
+
+OutputEnumMediaTypes::~OutputEnumMediaTypes()
 {
 }
 
