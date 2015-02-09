@@ -280,7 +280,7 @@ struct ClosestAudioData {
 static bool ClosestAudioMTCallback(ClosestAudioData &data,
 		const AM_MEDIA_TYPE &mt, const BYTE *capData)
 {
-	AudioInfo info;
+	AudioInfo info = {};
 
 	if (mt.formattype == FORMAT_WaveFormatEx)
 		Get_FORMAT_WaveFormatEx_Data(info, mt, capData);
