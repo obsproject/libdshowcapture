@@ -128,7 +128,7 @@ public:
 };
 
 class CaptureEnumPins : public IEnumPins {
-	volatile long          refCount;
+	volatile long          refCount = 1;
 	ComPtr<CaptureFilter>  filter;
 	UINT                   curPin;
 
@@ -149,7 +149,7 @@ public:
 };
 
 class CaptureEnumMediaTypes : public IEnumMediaTypes {
-	volatile long       refCount;
+	volatile long       refCount = 1;
 	ComPtr<CapturePin>  pin;
 	UINT                curMT = 0;
 

@@ -541,8 +541,7 @@ STDMETHODIMP CaptureFilter::QueryVendorInfo(LPWSTR *pVendorInfo)
 // ============================================================================
 
 CaptureEnumPins::CaptureEnumPins(CaptureFilter *filter_, CaptureEnumPins *pEnum)
-	: filter   (filter_),
-	  refCount (1)
+	: filter (filter_)
 {
 	curPin = (pEnum != nullptr) ? pEnum->curPin : 0;
 }
@@ -620,8 +619,7 @@ STDMETHODIMP CaptureEnumPins::Clone(IEnumPins **ppEnum)
 // ============================================================================
 
 CaptureEnumMediaTypes::CaptureEnumMediaTypes(CapturePin *pin_)
-	: pin      (pin_),
-	  refCount (1)
+	: pin (pin_)
 {
 }
 

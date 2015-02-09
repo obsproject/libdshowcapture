@@ -578,8 +578,7 @@ STDMETHODIMP OutputFilter::QueryVendorInfo(LPWSTR *pVendorInfo)
 // ============================================================================
 
 OutputEnumPins::OutputEnumPins(OutputFilter *filter_, OutputEnumPins *pEnum)
-	: filter   (filter_),
-	  refCount (1)
+	: filter (filter_)
 {
 	curPin = (pEnum != nullptr) ? pEnum->curPin : 0;
 }
@@ -657,8 +656,7 @@ STDMETHODIMP OutputEnumPins::Clone(IEnumPins **ppEnum)
 // ============================================================================
 
 OutputEnumMediaTypes::OutputEnumMediaTypes(OutputPin *pin_)
-	: pin      (pin_),
-	  refCount (1)
+	: pin (pin_)
 {
 }
 

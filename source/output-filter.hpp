@@ -133,7 +133,7 @@ public:
 };
 
 class OutputEnumPins : public IEnumPins {
-	volatile long                  refCount;
+	volatile long                  refCount = 1;
 	ComPtr<OutputFilter>           filter;
 	UINT                           curPin;
 
@@ -154,7 +154,7 @@ public:
 };
 
 class OutputEnumMediaTypes : public IEnumMediaTypes {
-	volatile long                  refCount;
+	volatile long                  refCount = 1;
 	ComPtr<OutputPin>              pin;
 	UINT                           curMT = 0;
 
