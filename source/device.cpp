@@ -321,8 +321,8 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 	videoCapture = new CaptureFilter(info);
 	videoFilter  = filter;
 
-	graph->AddFilter(videoCapture, NULL);
-	graph->AddFilter(videoFilter, NULL);
+	graph->AddFilter(videoCapture, L"Video Capture Filter");
+	graph->AddFilter(videoFilter, L"Video Filter");
 	return true;
 }
 
@@ -450,9 +450,9 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 	audioFilter  = filter;
 	audioConfig  = config;
 
-	graph->AddFilter(audioCapture, NULL);
+	graph->AddFilter(audioCapture, L"Audio Capture Filter");
 	if (!config.useVideoDevice)
-		graph->AddFilter(audioFilter, NULL);
+		graph->AddFilter(audioFilter, L"Audio Filter");
 	return true;
 }
 
