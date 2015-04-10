@@ -99,6 +99,7 @@ struct HDevice {
 	bool SetAudioConfig(AudioConfig *config);
 
 	bool CreateGraph();
+	bool FindCrossbar(IBaseFilter *filter, IBaseFilter **crossbar);
 	bool ConnectPins(const GUID &category, const GUID &type,
 			IBaseFilter *filter, CaptureFilter *capture);
 	bool RenderFilters(const GUID &category, const GUID &type,

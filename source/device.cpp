@@ -534,15 +534,46 @@ bool HDevice::CreateGraph()
 	return true;
 }
 
+bool HDevice::FindCrossbar(IBaseFilter *filter, IBaseFilter **crossbar)
+{
+	ComPtr<IPin> pin;
+	REGPINMEDIUM medium;
+	HRESULT hr;
+
+	hr = builder->FindInterface(NULL, NULL, filter, IID_IAMCrossbar,
+			(void**)crossbar);
+	if (SUCCEEDED(hr))
+		return true;
+
+	if (!GetPinByName(filter, PINDIR_INPUT, nullptr, &pin))
+		return false;
+	if (!GetPinMedium(pin, medium))
+		return false;
+	if (!GetFilterByMedium(AM_KSCATEGORY_CROSSBAR, medium, crossbar))
+		return false;
+
+	graph->AddFilter(*crossbar, L"Crossbar Filter");
+	return true;
+}
+
 bool HDevice::ConnectPins(const GUID &category, const GUID &type,
 		IBaseFilter *filter, CaptureFilter *capture)
 {
 	HRESULT hr;
+	ComPtr<IBaseFilter> crossbar;
 	ComPtr<IPin> filterPin;
 
 	if (!EnsureInitialized(L"HDevice::ConnectPins") ||
 	    !EnsureInactive(L"HDevice::ConnectPins"))
 		return false;
+
+	if (type == MEDIATYPE_Video && FindCrossbar(filter, &crossbar)) {
+		if (!DirectConnectFilters(graph, crossbar, filter)) {
+			Warning(L"HDevice::ConnectPins: Failed to connect "
+			        L"crossbar");
+			return false;
+		}
+	}
 
 	if (!GetFilterPin(filter, type, category, PINDIR_OUTPUT, &filterPin)) {
 		Error(L"HDevice::ConnectPins: Failed to find pin");
