@@ -18,6 +18,7 @@
  */
 
 #include <stdlib.h>
+#include <mutex>
 #include "dshow-enum.hpp"
 #include "dshow-formats.hpp"
 #include "log.hpp"
@@ -30,6 +31,7 @@
 #include "IVideoCaptureFilter.h"
 
 namespace DShow {
+using namespace std;
 
 typedef bool (*EnumCapsCallback)(void *param, const AM_MEDIA_TYPE &mt,
 		const BYTE *data);
@@ -465,8 +467,11 @@ static bool EnumExceptionVideoDevices(EnumDeviceCallback callback, void *param)
 	return true;
 }
 
+static mutex enumMutex;
+
 bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param)
 {
+	lock_guard<mutex>       lock(enumMutex);
 	ComPtr<ICreateDevEnum>  deviceEnum;
 	ComPtr<IEnumMoniker>    enumMoniker;
 	ComPtr<IMoniker>        deviceInfo;
