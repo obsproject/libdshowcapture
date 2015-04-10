@@ -285,17 +285,21 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 		} else {
 			videoMediaType = defaultMT;
 		}
-	} else {
-		if (!GetClosestVideoMediaType(filter, config, videoMediaType)) {
-			Error(L"Could not get closest video media type");
-			return false;
-		}
 
-		hr = pinConfig->SetFormat(videoMediaType);
-		if (FAILED(hr) && hr != E_NOTIMPL) {
-			ErrorHR(L"Could not set video format", hr);
-			return false;
-		}
+		ConvertVideoSettings();
+
+		config.format = config.internalFormat = VideoFormat::Any;
+	}
+
+	if (!GetClosestVideoMediaType(filter, config, videoMediaType)) {
+		Error(L"Could not get closest video media type");
+		return false;
+	}
+
+	hr = pinConfig->SetFormat(videoMediaType);
+	if (FAILED(hr) && hr != E_NOTIMPL) {
+		ErrorHR(L"Could not set video format", hr);
+		return false;
 	}
 
 	ConvertVideoSettings();
