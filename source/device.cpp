@@ -619,23 +619,22 @@ bool HDevice::ConnectFilters()
 		return false;
 
 	if (videoCapture != NULL) {
-		success = RenderFilters(PIN_CATEGORY_CAPTURE,
+		success = ConnectPins(PIN_CATEGORY_CAPTURE,
 				MEDIATYPE_Video, videoFilter,
 				videoCapture);
-
 		if (!success) {
-			success = ConnectPins(PIN_CATEGORY_CAPTURE,
+			success = RenderFilters(PIN_CATEGORY_CAPTURE,
 					MEDIATYPE_Video, videoFilter,
 					videoCapture);
 		}
 	}
 
 	if (audioCapture && success) {
-		success = RenderFilters(PIN_CATEGORY_CAPTURE,
+		success = ConnectPins(PIN_CATEGORY_CAPTURE,
 				MEDIATYPE_Audio, audioFilter,
 				audioCapture);
 		if (!success) {
-			success = ConnectPins(PIN_CATEGORY_CAPTURE,
+			success = RenderFilters(PIN_CATEGORY_CAPTURE,
 					MEDIATYPE_Audio, audioFilter,
 					audioCapture);
 		}
