@@ -168,6 +168,18 @@ static inline void ClampToGranularity(LONG &val, int minVal, int granularity)
 	val -= ((val - minVal) % granularity);
 }
 
+static inline int GetFormatRating(VideoFormat format)
+{
+	if (format >= VideoFormat::I420 && format < VideoFormat::YVYU)
+		return 0;
+	else if (format >= VideoFormat::YVYU && format < VideoFormat::MJPEG)
+		return 5;
+	else if (format >= VideoFormat::MJPEG)
+		return 10;
+
+	return 15;
+}
+
 static bool ClosestVideoMTCallback(ClosestVideoData &data,
 		const AM_MEDIA_TYPE &mt, const BYTE *capData)
 {
@@ -190,6 +202,7 @@ static bool ClosestVideoMTCallback(ClosestVideoData &data,
 
 	int                 xVal      = 0;
 	int                 yVal      = 0;
+	int                 formatVal = 0;
 	long long           frameVal  = 0;
 
 	if (data.config.cx < info.minCX)
@@ -207,7 +220,9 @@ static bool ClosestVideoMTCallback(ClosestVideoData &data,
 	else if (data.config.frameInterval > info.maxInterval)
 		frameVal = data.config.frameInterval - info.maxInterval;
 
-	long long totalVal = frameVal + yVal + xVal;
+	formatVal = GetFormatRating(info.format);
+
+	long long totalVal = frameVal + yVal + xVal + formatVal;
 
 	if (!data.found || data.bestVal > totalVal) {
 		if (xVal == 0) {
