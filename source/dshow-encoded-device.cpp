@@ -246,6 +246,7 @@ bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter,
 		success = MapPacketIDs(demuxer, info.videoPacketID,
 				info.audioPacketID);
 
+	encodedDevice = success;
 	return success;
 }
 

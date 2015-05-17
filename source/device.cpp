@@ -562,12 +562,13 @@ bool HDevice::ConnectPins(const GUID &category, const GUID &type,
 	HRESULT hr;
 	ComPtr<IBaseFilter> crossbar;
 	ComPtr<IPin> filterPin;
+	bool connectCrossbar = !encodedDevice && type == MEDIATYPE_Video;
 
 	if (!EnsureInitialized(L"HDevice::ConnectPins") ||
 	    !EnsureInactive(L"HDevice::ConnectPins"))
 		return false;
 
-	if (type == MEDIATYPE_Video && FindCrossbar(filter, &crossbar)) {
+	if (connectCrossbar && FindCrossbar(filter, &crossbar)) {
 		if (!DirectConnectFilters(graph, crossbar, filter)) {
 			Warning(L"HDevice::ConnectPins: Failed to connect "
 			        L"crossbar");

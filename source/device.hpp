@@ -61,6 +61,7 @@ struct HDevice {
 	VideoConfig                    videoConfig;
 	AudioConfig                    audioConfig;
 
+	bool                           encodedDevice = false;
 	bool                           initialized;
 	bool                           active;
 
