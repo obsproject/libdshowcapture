@@ -226,7 +226,11 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 	ComPtr<IPin>  audioPin;
 	VideoDevice   info;
 
-	if (wcsstr(deviceName, L"Hauppauge HD PVR Capture") != nullptr) {
+	if (wcsstr(deviceName, L"C875") != nullptr) {
+		EnumEncodedVideo(devices, deviceName, devicePath, AV_LGP);
+		return true;
+
+	} else if (wcsstr(deviceName, L"Hauppauge HD PVR Capture") != nullptr) {
 		EnumEncodedVideo(devices, deviceName, devicePath, HD_PVR1);
 		return true;
 	}

@@ -71,4 +71,15 @@ static const EncodedDevice HD_PVR_Rocket = {
 	COMMON_ENCODED_SAMPLERATE
 };
 
+static const EncodedDevice AV_LGP = {
+	COMMON_ENCODED_VFORMAT,
+	68,
+	COMMON_ENCODED_CX,
+	COMMON_ENCODED_CY,
+	COMMON_ENCODED_INTERVAL,
+	AudioFormat::AAC,
+	69,
+	COMMON_ENCODED_SAMPLERATE
+};
+
 }; /* namespace DShow */
