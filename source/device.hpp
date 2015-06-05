@@ -55,6 +55,7 @@ struct HDevice {
 	ComPtr<IBaseFilter>            audioFilter;
 	ComPtr<CaptureFilter>          videoCapture;
 	ComPtr<CaptureFilter>          audioCapture;
+	ComPtr<IBaseFilter>            audioOutput;
 	ComPtr<IBaseFilter>            rocketEncoder;
 	MediaType                      videoMediaType;
 	MediaType                      audioMediaType;
@@ -96,15 +97,17 @@ struct HDevice {
 	bool SetupVideoCapture(IBaseFilter *filter, VideoConfig &config);
 	bool SetupAudioCapture(IBaseFilter *filter, AudioConfig &config);
 
+	bool SetupAudioOutput(IBaseFilter *filter, AudioConfig &config);
+
 	bool SetVideoConfig(VideoConfig *config);
 	bool SetAudioConfig(AudioConfig *config);
 
 	bool CreateGraph();
 	bool FindCrossbar(IBaseFilter *filter, IBaseFilter **crossbar);
 	bool ConnectPins(const GUID &category, const GUID &type,
-			IBaseFilter *filter, CaptureFilter *capture);
+			IBaseFilter *filter, IBaseFilter *capture);
 	bool RenderFilters(const GUID &category, const GUID &type,
-			IBaseFilter *filter, CaptureFilter *capture);
+			IBaseFilter *filter, IBaseFilter *capture);
 	bool ConnectFilters();
 	void DisconnectFilters();
 	Result Start();

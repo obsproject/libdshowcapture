@@ -463,6 +463,34 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 	return true;
 }
 
+bool HDevice::SetupAudioOutput(IBaseFilter *filter, AudioConfig &config)
+{
+	ComPtr<IBaseFilter> outputFilter;
+	const CLSID *clsID;
+	HRESULT hr;
+
+	if (config.mode == AudioMode::WaveOut) {
+		clsID = &CLSID_AudioRender;
+	} else {
+		clsID = &CLSID_DSoundRender;
+	}
+
+	hr = CoCreateInstance(*clsID, nullptr, CLSCTX_INPROC_SERVER,
+			IID_IBaseFilter, (void**)&outputFilter);
+	if (FAILED(hr)) {
+		ErrorHR(L"Failed to create audio sound output filter", hr);
+		return false;
+	}
+
+	audioFilter = filter;
+	audioOutput = outputFilter;
+
+	graph->AddFilter(audioOutput, L"Audio Output Filter");
+	if (!config.useVideoDevice)
+		graph->AddFilter(audioFilter, L"Audio Filter");
+	return true;
+}
+
 bool HDevice::SetAudioConfig(AudioConfig *config)
 {
 	ComPtr<IBaseFilter> filter;
@@ -474,8 +502,10 @@ bool HDevice::SetAudioConfig(AudioConfig *config)
 	if (!audioConfig.useVideoDevice)
 		graph->RemoveFilter(audioFilter);
 	graph->RemoveFilter(audioCapture);
+	graph->RemoveFilter(audioOutput);
 	audioFilter.Release();
 	audioCapture.Release();
+	audioOutput.Release();
 	audioMediaType = NULL;
 
 	if (!config)
@@ -519,8 +549,7 @@ bool HDevice::SetAudioConfig(AudioConfig *config)
 		return true;
 	}
 
-	/* TODO: other modes */
-	return false;
+	return SetupAudioOutput(filter, audioConfig);
 }
 
 bool HDevice::CreateGraph()
@@ -560,11 +589,12 @@ bool HDevice::FindCrossbar(IBaseFilter *filter, IBaseFilter **crossbar)
 }
 
 bool HDevice::ConnectPins(const GUID &category, const GUID &type,
-		IBaseFilter *filter, CaptureFilter *capture)
+		IBaseFilter *filter, IBaseFilter *capture)
 {
 	HRESULT hr;
 	ComPtr<IBaseFilter> crossbar;
 	ComPtr<IPin> filterPin;
+	ComPtr<IPin> capturePin;
 	bool connectCrossbar = !encodedDevice && type == MEDIATYPE_Video;
 
 	if (!EnsureInitialized(L"HDevice::ConnectPins") ||
@@ -584,7 +614,11 @@ bool HDevice::ConnectPins(const GUID &category, const GUID &type,
 		return false;
 	}
 
-	IPin *capturePin = capture->GetPin();
+	if (!GetPinByName(capture, PINDIR_INPUT, nullptr, &capturePin)) {
+		Error(L"HDevice::ConnectPins: Failed to find capture pin");
+		return false;
+	}
+
 	hr = graph->ConnectDirect(filterPin, capturePin, nullptr);
 	if (FAILED(hr)) {
 		WarningHR(L"HDevice::ConnectPins: failed to connect pins",
@@ -596,7 +630,7 @@ bool HDevice::ConnectPins(const GUID &category, const GUID &type,
 }
 
 bool HDevice::RenderFilters(const GUID &category, const GUID &type,
-		IBaseFilter *filter, CaptureFilter *capture)
+		IBaseFilter *filter, IBaseFilter *capture)
 {
 	HRESULT hr;
 
@@ -633,14 +667,17 @@ bool HDevice::ConnectFilters()
 		}
 	}
 
-	if (audioCapture && success) {
+	if ((audioCapture || audioOutput) && success) {
+		IBaseFilter *filter = (audioCapture != nullptr) ?
+			audioCapture.Get() : audioOutput.Get();
+
 		success = ConnectPins(PIN_CATEGORY_CAPTURE,
 				MEDIATYPE_Audio, audioFilter,
-				audioCapture);
+				filter);
 		if (!success) {
 			success = RenderFilters(PIN_CATEGORY_CAPTURE,
 					MEDIATYPE_Audio, audioFilter,
-					audioCapture);
+					filter);
 		}
 	}
 
