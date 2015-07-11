@@ -92,6 +92,7 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 
 	hr = pReceivePin->ReceiveConnection(this, outputInfo.mt);
 	if (FAILED(hr)) {
+#if 0 /* debug code to test caps on fail */
 		ComPtr<IEnumMediaTypes> enumMT;
 		pReceivePin->EnumMediaTypes(&enumMT);
 
@@ -104,6 +105,7 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 				test = 1;
 			}
 		}
+#endif
 		return E_FAIL;
 	}
 
