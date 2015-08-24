@@ -417,8 +417,10 @@ bool EnumAudioCaps(IPin *pin, vector<AudioInfo> &caps)
 	return EnumPinCaps(pin, EnumCapsCallback(EnumAudioCap), &caps);
 }
 
-static bool EnumDevice(IMoniker *deviceInfo, EnumDeviceCallback callback,
-		void *param)
+static bool decklinkVideoPresent = false;
+
+static bool EnumDevice(const GUID &type, IMoniker *deviceInfo,
+		EnumDeviceCallback callback, void *param)
 {
 	ComPtr<IPropertyBag> propertyData;
 	ComPtr<IBaseFilter>  filter;
@@ -437,6 +439,17 @@ static bool EnumDevice(IMoniker *deviceInfo, EnumDeviceCallback callback,
 	hr = propertyData->Read(L"FriendlyName", &deviceName, NULL);
 	if (FAILED(hr))
 		return true;
+
+	/* workaround to a crash in decklink drivers; if no decklink device
+	 * is plugged in to the system, it will still try to enumerate the
+	 * decklink audio device, but will crash when trying to bind it to
+	 * a filter due to a bug in the drivers */
+	if (deviceName.bstrVal &&
+	    type == CLSID_AudioInputDeviceCategory &&
+	    wcsstr(deviceName.bstrVal, L"Decklink") != nullptr &&
+	    !decklinkVideoPresent) {
+		return true;
+	}
 
 	propertyData->Read(L"DevicePath", &devicePath, NULL);
 
@@ -467,16 +480,43 @@ static bool EnumExceptionVideoDevices(EnumDeviceCallback callback, void *param)
 	return true;
 }
 
-static mutex enumMutex;
+static recursive_mutex enumMutex;
+
+static bool CheckForDLCallback(void *unused,
+		IBaseFilter *filter,
+		const wchar_t *deviceName,
+		const wchar_t *devicePath)
+{
+	if (wcsstr(deviceName, L"Decklink") != nullptr) {
+		decklinkVideoPresent = true;
+		return false;
+	}
+
+	DSHOW_UNUSED(unused);
+	DSHOW_UNUSED(filter);
+	DSHOW_UNUSED(devicePath);
+	return true;
+}
+
+static void CheckForDecklinkVideo()
+{
+	decklinkVideoPresent = false;
+	EnumDevices(CLSID_VideoInputDeviceCategory, CheckForDLCallback,
+			nullptr);
+}
 
 bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param)
 {
-	lock_guard<mutex>       lock(enumMutex);
+	lock_guard<recursive_mutex> lock(enumMutex);
 	ComPtr<ICreateDevEnum>  deviceEnum;
 	ComPtr<IEnumMoniker>    enumMoniker;
 	ComPtr<IMoniker>        deviceInfo;
 	HRESULT                 hr;
 	DWORD                   count = 0;
+
+	if (type == CLSID_AudioInputDeviceCategory) {
+		CheckForDecklinkVideo();
+	}
 
 	hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL,
 		CLSCTX_INPROC_SERVER, IID_ICreateDevEnum, (void**)&deviceEnum);
@@ -495,7 +535,7 @@ bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param)
 
 	if (hr == S_OK) {
 		while (enumMoniker->Next(1, &deviceInfo, &count) == S_OK) {
-			if (!EnumDevice(deviceInfo, callback, param))
+			if (!EnumDevice(type, deviceInfo, callback, param))
 				return true;
 		}
 	}
