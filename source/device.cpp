@@ -245,7 +245,8 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 	HRESULT       hr;
 	bool          success;
 
-	if (config.name.find(L"C875") != std::string::npos)
+	if (config.name.find(L"C875") != std::string::npos ||
+	    config.name.find(L"C835") != std::string::npos)
 		return SetupEncodedVideoCapture(filter, config, AV_LGP);
 
 	else if (config.name.find(L"IT9910") != std::string::npos)

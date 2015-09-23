@@ -226,7 +226,8 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 	ComPtr<IPin>  audioPin;
 	VideoDevice   info;
 
-	if (wcsstr(deviceName, L"C875") != nullptr) {
+	if (wcsstr(deviceName, L"C875") != nullptr ||
+	    wcsstr(deviceName, L"C835") != nullptr) {
 		EnumEncodedVideo(devices, deviceName, devicePath, AV_LGP);
 		return true;
 
