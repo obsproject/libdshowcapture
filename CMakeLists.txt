@@ -52,6 +52,13 @@ else()
 	set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG=1 -D_DEBUG=1 ${CMAKE_CXX_FLAGS_DEBUG}")
 endif()
 
+if(MINGW)
+    include_directories(deps/mingw-std-threads)
+endif()
+
+include (CheckFunctionExists)
+check_function_exists (vswprintf_s HAVE_VSWPRINTF_S)
+
 set(libdshowcapture_SOURCES
 	source/capture-filter.cpp
 	source/output-filter.cpp
