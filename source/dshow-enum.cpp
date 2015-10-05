@@ -18,7 +18,15 @@
  */
 
 #include <stdlib.h>
+#include <thread>
+#if defined(_WIN32) && !defined(__WINPTHREADS_VERSION)
+#include "mingw.thread.h"
 #include <mutex>
+#include "mingw.mutex.h"
+#include "mingw.condition_variable.h"
+#else
+#include <mutex>
+#endif
 #include "dshow-enum.hpp"
 #include "dshow-formats.hpp"
 #include "log.hpp"

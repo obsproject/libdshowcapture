@@ -9,3 +9,8 @@ libdshowcapture
    The biggest goal of this project is to eventually support as many devices as
    possible, as well as add more interesting features later on for improving
    performance.
+
+Load git submodules (required):
+
+   git submodule update --init
+

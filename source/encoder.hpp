@@ -26,7 +26,14 @@
 #include <string>
 #include <vector>
 #include <deque>
+#if defined(_WIN32) && !defined(__WINPTHREADS_VERSION)
+#include "mingw.thread.h"
 #include <mutex>
+#include "mingw.mutex.h"
+#include "mingw.condition_variable.h"
+#else
+#include <mutex>
+#endif
 using namespace std;
 
 struct EncodedData {

@@ -35,7 +35,11 @@ void SetLogCallback(LogCallback callback, void *param)
 static void Log(LogType type, const wchar_t *format, va_list args)
 {
 	wchar_t str[4096];
+#ifdef HAVE_VSWPRINTF_S
 	vswprintf_s(str, 4096, format, args);
+#else
+    vswprintf(str, 4096, format, args);
+#endif
 
 	if (logCallback)
 		logCallback(type, str, logParam);
