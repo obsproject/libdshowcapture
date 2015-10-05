@@ -53,7 +53,12 @@ else()
 endif()
 
 if(MINGW)
-    include_directories(deps/mingw-std-threads)
+    #include_directories(deps/mingw-std-threads)
+	include (CheckSymbolExists) 
+	check_symbol_exists(MINGW_HAS_SECURE_API "_mingw.h" HAVE_MINGW_HAS_SECURE_API) 
+	if(NOT HAVE_MINGW_HAS_SECURE_API)
+		message(FATAL_ERROR "mingw must be compiled with --enable-secure-api")
+	endif()
 endif()
 
 include (CheckFunctionExists)
