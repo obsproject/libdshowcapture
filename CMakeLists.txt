@@ -52,6 +52,14 @@ else()
 	set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG=1 -D_DEBUG=1 ${CMAKE_CXX_FLAGS_DEBUG}")
 endif()
 
+if(MINGW)
+    include (CheckSymbolExists)
+    check_symbol_exists(MINGW_HAS_SECURE_API "_mingw.h" HAVE_MINGW_HAS_SECURE_API)
+    if(NOT HAVE_MINGW_HAS_SECURE_API)
+        message(FATAL_ERROR "mingw must be compiled with --enable-secure-api")
+    endif()
+endif()
+
 set(libdshowcapture_SOURCES
 	source/capture-filter.cpp
 	source/output-filter.cpp
