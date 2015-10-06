@@ -4,6 +4,8 @@ project(libdshowcapture)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
+OPTION(BUILD_SHARED_LIBS "Build shared library" ON)
+
 find_package(CXX11 REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_FLAGS}")
 
