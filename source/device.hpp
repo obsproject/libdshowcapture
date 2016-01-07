@@ -108,6 +108,7 @@ struct HDevice {
 			IBaseFilter *filter, IBaseFilter *capture);
 	bool RenderFilters(const GUID &category, const GUID &type,
 			IBaseFilter *filter, IBaseFilter *capture);
+	void SetAudioBuffering(int bufferingMs);
 	bool ConnectFilters();
 	void DisconnectFilters();
 	Result Start();

@@ -648,6 +648,43 @@ bool HDevice::RenderFilters(const GUID &category, const GUID &type,
 	return true;
 }
 
+void HDevice::SetAudioBuffering(int bufferingMs)
+{
+	ComPtr<IPin> pin;
+	bool success = GetFilterPin(audioFilter, MEDIATYPE_Audio,
+			PIN_CATEGORY_CAPTURE, PINDIR_OUTPUT, &pin);
+	if (!success)
+		return;
+
+	ComQIPtr<IAMStreamConfig> config(pin);
+	if (!config)
+		return;
+
+	ComQIPtr<IAMBufferNegotiation> neg(pin);
+	if (!neg)
+		return;
+
+	MediaTypePtr mt;
+	if (FAILED(config->GetFormat(&mt)))
+		return;
+
+	if (mt->formattype != FORMAT_WaveFormatEx)
+		return;
+	if (mt->cbFormat != sizeof(WAVEFORMATEX))
+		return;
+
+	WAVEFORMATEX *wfex = (WAVEFORMATEX*)mt->pbFormat;
+
+	ALLOCATOR_PROPERTIES props;
+	props.cBuffers = -1;
+	props.cbBuffer = wfex->nAvgBytesPerSec * bufferingMs / 1000;
+	props.cbAlign = -1;
+	props.cbPrefix = -1;
+	HRESULT hr = neg->SuggestAllocatorProperties(&props);
+	if (FAILED(hr))
+		WarningHR(L"Could not set allocator properties on audio "
+		          L"capture pin", hr);
+}
 
 bool HDevice::ConnectFilters()
 {
@@ -671,6 +708,9 @@ bool HDevice::ConnectFilters()
 	if ((audioCapture || audioOutput) && success) {
 		IBaseFilter *filter = (audioCapture != nullptr) ?
 			audioCapture.Get() : audioOutput.Get();
+
+		if (audioCapture != nullptr)
+			SetAudioBuffering(10);
 
 		success = ConnectPins(PIN_CATEGORY_CAPTURE,
 				MEDIATYPE_Audio, audioFilter,
