@@ -709,7 +709,14 @@ bool HDevice::ConnectFilters()
 		IBaseFilter *filter = (audioCapture != nullptr) ?
 			audioCapture.Get() : audioOutput.Get();
 
-		if (audioCapture != nullptr)
+		/* Stream engine has a bug where it will break if you try to
+		 * set different audio buffering, so don't use audio buffering
+		 * if using the stream engine's audio */
+		bool streamEngine = audioConfig.useVideoDevice &&
+			(videoConfig.name.find(L"Stream Engine") !=
+			 std::string::npos);
+
+		if (!streamEngine && audioCapture != nullptr)
 			SetAudioBuffering(10);
 
 		success = ConnectPins(PIN_CATEGORY_CAPTURE,
