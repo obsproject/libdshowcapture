@@ -33,6 +33,9 @@ const GUID MEDIASUBTYPE_DVM =
 
 #endif
 
+const GUID MEDIASUBTYPE_Y800 =
+{0x30303859, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+
 namespace DShow {
 
 static bool GetFourCCVFormat(DWORD fourCC, VideoFormat &format)
@@ -54,6 +57,8 @@ static bool GetFourCCVFormat(DWORD fourCC, VideoFormat &format)
 		format = VideoFormat::YV12; break;
 	case MAKEFOURCC('N', 'V', '1', '2'):
 		format = VideoFormat::NV12; break;
+	case MAKEFOURCC('Y', '8', '0', '0'):
+		format = VideoFormat::Y800; break;
 
 	/* packed YUV formats */
 	case MAKEFOURCC('Y', 'V', 'Y', 'U'):
@@ -107,6 +112,8 @@ bool GetMediaTypeVFormat(const AM_MEDIA_TYPE &mt, VideoFormat &format)
 		format = VideoFormat::YV12;
 	else if (mt.subtype == MEDIASUBTYPE_NV12)
 		format = VideoFormat::NV12;
+	else if (mt.subtype == MEDIASUBTYPE_Y800)
+		format = VideoFormat::Y800;
 
 	/* packed YUV formats */
 	else if (mt.subtype == MEDIASUBTYPE_YVYU)
