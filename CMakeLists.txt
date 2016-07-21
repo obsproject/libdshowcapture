@@ -34,6 +34,9 @@ endif()
 
 if(WIN32)
 	add_definitions(-DUNICODE -D_UNICODE)
+	if (BUILD_SHARED_LIBS)
+		add_definitions(-DDSHOWCAPTURE_EXPORTS)
+	endif()
 endif()
 
 if(MSVC)
