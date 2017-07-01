@@ -135,6 +135,22 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 
 	long long startTime, stopTime;
 	bool hasTime = SUCCEEDED(sample->GetTime(&startTime, &stopTime));
+	if (!hasTime) {
+		/* Sample without timestamp for some virtual camera. Try to fix it by getting current time from videoFilter. */
+		if (nullptr != videoFilter) {
+			ComPtr<IMediaFilter> mediaFilter;
+			if (SUCCEEDED(videoFilter->QueryInterface(IID_IMediaFilter, (void**)&mediaFilter))) {
+				ComPtr<IReferenceClock> refClock;
+				if (SUCCEEDED(mediaFilter->GetSyncSource(&refClock))) {
+					hasTime = SUCCEEDED(refClock->GetTime(&startTime));
+					if (hasTime) {
+						/* If the sample has no stop time, the value is set to the start time plus one. */
+						stopTime = startTime + 1;
+					}
+				}
+			}
+		}
+	}
 
 	if (encoded) {
 		EncodedData &data = isVideo ? encodedVideo : encodedAudio;

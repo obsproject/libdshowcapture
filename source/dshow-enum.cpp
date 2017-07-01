@@ -457,9 +457,8 @@ static bool EnumDevice(const GUID &type, IMoniker *deviceInfo,
 		return true;
 	}
 
+	/* devicePath maybe empty for some virtual camera */
 	hr = propertyData->Read(L"DevicePath", &devicePath, NULL);
-	if (FAILED(hr))
-		return true;
 
 	hr = deviceInfo->BindToObject(NULL, 0, IID_IBaseFilter,
 			(void**)&filter);
