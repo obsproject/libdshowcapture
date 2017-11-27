@@ -189,9 +189,10 @@ static void EnumEncodedVideo(std::vector<VideoDevice> &devices,
 	VideoDevice device;
 	VideoInfo   caps;
 
-	device.name          = deviceName;
-	device.path          = devicePath;
-	device.audioAttached = true;
+	device.name                = deviceName;
+	device.path                = devicePath;
+	device.audioAttached       = true;
+	device.separateAudioFilter = false;
 
 	caps.minCX         = caps.maxCX         = info.width;
 	caps.minCY         = caps.maxCY         = info.height;
@@ -222,8 +223,9 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 		const wchar_t *deviceName,
 		const wchar_t *devicePath)
 {
-	ComPtr<IPin>  pin;
-	ComPtr<IPin>  audioPin;
+	ComPtr<IPin>        pin;
+	ComPtr<IPin>        audioPin;
+	ComPtr<IBaseFilter> audioFilter;
 	VideoDevice   info;
 
 	if (wcsstr(deviceName, L"C875") != nullptr ||
@@ -254,6 +256,12 @@ static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 
 	info.audioAttached = GetFilterPin(filter, MEDIATYPE_Audio,
 			PIN_CATEGORY_CAPTURE, PINDIR_OUTPUT, &audioPin);
+
+	// Fallback: Find a corresponding audio filter for the same device
+	if (!info.audioAttached) {
+		info.separateAudioFilter = GetDeviceAudioFilter(devicePath, &audioFilter);
+		info.audioAttached = info.separateAudioFilter;
+	}
 
 	info.name = deviceName;
 	if (devicePath)

@@ -71,4 +71,10 @@ HRESULT MapPinToPacketID(IPin *pin, ULONG packetID);
 
 wstring ConvertHRToEnglish(HRESULT hr);
 
+/**
+ * Get audio filter for the same device as the given video device path
+ */
+bool GetDeviceAudioFilter(const wchar_t *videoDevicePath,
+		IBaseFilter **audioCaptureFilter);
+
 }; /* namespace DShow */
