@@ -71,4 +71,31 @@ HRESULT MapPinToPacketID(IPin *pin, ULONG packetID);
 
 wstring ConvertHRToEnglish(HRESULT hr);
 
+/**
+ * Get audio filter for the same device as the given video device path
+ */
+bool GetDeviceAudioFilter(const wchar_t *videoDevicePath,
+		IBaseFilter **audioCaptureFilter);
+bool GetDeviceAudioFilter(REFCLSID deviceClass,
+		const wchar_t *videoDevicePath, IBaseFilter **audioCaptureFilter);
+
+/** Returns true if device instance path is an Elgato USB or PCIe device */
+bool IsElgatoDevice(const wchar_t *videoDeviceInstancePath);
+
+/** Read property from moniker */
+HRESULT ReadProperty(IMoniker *moniker, const wchar_t *property,
+		wchar_t *value, int size);
+
+/** Parse device instance path from device path */
+HRESULT DevicePathToDeviceInstancePath(const wchar_t *devicePath,
+		wchar_t *deviceInstancePath, int size);
+
+/** Get device instance path of the parent of the given device. */
+HRESULT GetParentDeviceInstancePath(const wchar_t *deviceInstancePath,
+		wchar_t *parentDeviceInstancePath, int size);
+
+/** Get device instance path of the parent of the given audio capture device. */
+HRESULT GetAudioCaptureParentDeviceInstancePath(IMoniker *audioCapture,
+		wchar_t *parentDeviceInstancePath, int size);
+
 }; /* namespace DShow */
