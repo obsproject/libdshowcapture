@@ -151,6 +151,7 @@ namespace DShow {
 
 	struct VideoDevice : DeviceId {
 		bool audioAttached = false;
+		bool separateAudioFilter = false;
 		std::vector<VideoInfo> caps;
 	};
 
@@ -188,6 +189,9 @@ namespace DShow {
 		 * (name/path memeber variables will be ignored)
 		 */
 		bool        useVideoDevice = false;
+
+		/** Use separate filter for audio */
+		bool        useSeparateAudioFilter = false;
 
 		/** Desired sample rate */
 		int         sampleRate = 0;

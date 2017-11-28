@@ -26,6 +26,14 @@
 #include <vector>
 #include <string>
 
+#include <mmddk.h>                   // for DRV_QUERYDEVICEINTERFACE
+#include <SetupAPI.h>                // for SetupDixxx
+#include <cfgmgr32.h>                // for CM_xxx
+#include <algorithm>                 // for std::transform
+
+#pragma comment(lib, "winmm.lib")    // for waveInMessage
+#pragma comment(lib, "setupapi.lib") // for SetupDixxx
+
 using namespace std;
 
 namespace DShow {
@@ -487,6 +495,330 @@ wstring ConvertHRToEnglish(HRESULT hr)
 	}
 
 	return str.c_str();
+}
+
+bool GetDeviceAudioFilter(const wchar_t *videoDevicePath,
+	IBaseFilter **audioCaptureFilter)
+{
+	// Search in "Audio capture sources"
+	bool success = GetDeviceAudioFilter(CLSID_AudioInputDeviceCategory,
+		videoDevicePath, audioCaptureFilter);
+
+	// Search in "WDM Streaming Capture Devices"
+	if (!success)
+		success = GetDeviceAudioFilter(KSCATEGORY_CAPTURE, videoDevicePath,
+			audioCaptureFilter);
+
+	return success;
+}
+
+bool GetDeviceAudioFilter(REFCLSID deviceClass, const wchar_t *videoDevicePath,
+	IBaseFilter **audioCaptureFilter)
+{
+	// Get video device instance path
+	wchar_t videoDeviceInstancePath[512];
+	HRESULT hr = DevicePathToDeviceInstancePath(videoDevicePath,
+		videoDeviceInstancePath, _ARRAYSIZE(videoDeviceInstancePath));
+
+	// Only enabled for Elgato devices for now to do not change behavior for
+	// any other devices (e.g. webcams)
+#if 1
+	if (!IsElgatoDevice(videoDeviceInstancePath))
+		return false;
+#endif
+
+	// Create device enumerator
+	ComPtr<ICreateDevEnum> createDevEnum;
+	if(SUCCEEDED(hr))
+		hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER,
+			IID_ICreateDevEnum, (void**)&createDevEnum);
+
+	// Enumerate filters
+	ComPtr<IEnumMoniker> enumMoniker;
+	if (SUCCEEDED(hr)) {
+		
+		hr = createDevEnum->CreateClassEnumerator(deviceClass, &enumMoniker, 0);
+		if (!enumMoniker) // returns S_FALSE if no devices are installed
+			hr = E_FAIL;
+	}
+
+	// Cycle through the enumeration
+	if (SUCCEEDED(hr)) {
+		enumMoniker->Reset();
+		ULONG fetched = 0;
+		IMoniker* moniker = nullptr;
+		while (enumMoniker->Next(1, &moniker, &fetched) == S_OK) {
+
+			// Get friendly name (helpful for debugging)
+			//wchar_t friendlyName[512];
+			//ReadProperty(moniker, L"FriendlyName", friendlyName,
+			//	_ARRAYSIZE(friendlyName));
+
+			// Get device path
+			wchar_t audioDevicePath[512];
+			hr = ReadProperty(moniker, L"DevicePath", audioDevicePath,
+				_ARRAYSIZE(audioDevicePath));
+			if (SUCCEEDED(hr)) {
+
+				// Skip if it is the video device
+				if (wcscmp(audioDevicePath, videoDevicePath) == 0) {
+					moniker->Release();
+					continue;
+				}
+
+				// Get audio device instance path
+				wchar_t audioDeviceInstancePath[512];
+				if (SUCCEEDED(hr))
+					hr = DevicePathToDeviceInstancePath(audioDevicePath,
+						audioDeviceInstancePath, _ARRAYSIZE(audioDeviceInstancePath));
+
+				// Compare audio and video device instance path
+				if (SUCCEEDED(hr))
+					hr = (wcscmp(audioDeviceInstancePath, videoDeviceInstancePath) == 0) ?
+						S_OK : E_FAIL;
+			}
+			else {
+
+				// Get video parent device instance path
+				wchar_t videoParentDeviceInstancePath[512];
+				hr = GetParentDeviceInstancePath(videoDeviceInstancePath,
+					videoParentDeviceInstancePath,
+					_ARRAYSIZE(videoParentDeviceInstancePath));
+
+				// Get audio parent device instance path
+				wchar_t audioParentDeviceInstancePath[512];
+				if(SUCCEEDED(hr))
+					hr = GetAudioCaptureParentDeviceInstancePath(moniker,
+						audioParentDeviceInstancePath,
+						_ARRAYSIZE(audioParentDeviceInstancePath));
+
+				// Compare audio and video parent device instance path
+				if (SUCCEEDED(hr))
+					hr = (wcscmp(audioParentDeviceInstancePath,
+						videoParentDeviceInstancePath) == 0) ? S_OK : E_FAIL;
+			}
+
+			// Get audio capture filter
+			if (SUCCEEDED(hr)) {
+				hr = moniker->BindToObject(0, 0, IID_IBaseFilter,
+					(void**)audioCaptureFilter);
+				if (SUCCEEDED(hr))
+					return true;
+			}
+
+			// Cleanup
+			moniker->Release();
+		}
+	}
+
+	return false;
+}
+
+bool IsElgatoDevice(const wchar_t *videoDeviceInstancePath)
+{
+	// Sanity checks
+	if (!videoDeviceInstancePath)
+		return false;
+
+	wstring path = videoDeviceInstancePath;
+
+	// USB
+	wstring usbToken = L"USB\\VID_";
+	wstring usbVidElgato = L"0FD9";
+	if (path.find(usbToken) == 0) {
+		if (path.size() >= usbToken.size() + usbVidElgato.size()) {
+			
+			// Get USB vendor ID
+			wstring vid = path.substr(usbToken.size(), usbVidElgato.size());
+			if (vid == usbVidElgato)
+				return true;
+		}
+	}
+
+	// PCI
+	wstring pciToken = L"PCI\\VEN_";
+	wstring pciSubsysToken = L"SUBSYS_";
+	wstring pciVidElgato = L"1CFA";
+	if (path.find(pciToken) == 0) {
+		size_t pos = path.find(pciSubsysToken);
+		if (pos != string::npos && path.size() >= pos + pciSubsysToken.size() +
+			4 /* skip product ID*/ + pciVidElgato.size()) {
+
+			// Get PCI subsystem vendor ID
+			wstring vid = path.substr(pos + pciSubsysToken.size() +
+				4 /* skip product ID*/, pciVidElgato.size());
+			if (vid == pciVidElgato)
+				return true;
+		}
+	}
+
+	return false;
+}
+
+HRESULT ReadProperty(IMoniker *moniker, const wchar_t *property,
+	wchar_t *value, int size)
+{
+	// Sanity checks
+	if (!moniker)
+		return E_POINTER;
+	if (!property)
+		return E_POINTER;
+	if (!value)
+		return E_POINTER;
+
+	// Increment reference count
+	moniker->AddRef();
+
+	// Bind to property bag
+	ComPtr<IPropertyBag> propertyBag;
+	HRESULT hr = moniker->BindToStorage(0, 0, IID_IPropertyBag,
+		(void**)&propertyBag);
+	if (SUCCEEDED(hr)) {
+		// Initialize variant
+		VARIANT var;
+		VariantInit(&var);
+
+		// Read property
+		hr = propertyBag->Read(property, &var, nullptr);
+		if (SUCCEEDED(hr))
+			StringCchCopyW(value, size, var.bstrVal);
+
+		// Cleanup
+		VariantClear(&var);
+	}
+
+	// Decrement reference count
+	moniker->Release();
+	
+	return hr;
+}
+
+HRESULT DevicePathToDeviceInstancePath(const wchar_t *devicePath,
+	wchar_t *deviceInstancePath, int size)
+{
+	// Sanity checks
+	if (!devicePath)
+		return E_POINTER;
+	if (!deviceInstancePath)
+		return E_POINTER;
+
+	// Convert to uppercase STL string
+	wstring parseDevicePath = devicePath;
+	std::transform(parseDevicePath.begin(), parseDevicePath.end(),
+		parseDevicePath.begin(), ::toupper);
+
+	// Find start position ('\\?\' or '\?\')
+	wstring startToken = L"\\\\?\\";
+	size_t start = parseDevicePath.find(startToken, 0);
+	if (start == string::npos) {
+		startToken = L"\\??\\";
+		start = parseDevicePath.find(startToken, 0);
+		if (start == string::npos)
+			return E_FAIL;
+	}
+	parseDevicePath = parseDevicePath.substr(startToken.size(), 
+		parseDevicePath.size() - startToken.size());
+
+	// Find end position (last occurrence of '#')
+	wstring endToken = L"#";
+	size_t end = parseDevicePath.find_last_of(endToken, parseDevicePath.size());
+	if (end == string::npos)
+		return E_FAIL;
+	parseDevicePath = parseDevicePath.substr(0, end);
+
+	// Replace '#' by '\'
+	std::replace(parseDevicePath.begin(), parseDevicePath.end(), L'#', L'\\');
+
+	// Set output parameter
+	StringCchCopyW(deviceInstancePath, size, parseDevicePath.c_str());
+
+	return S_OK;
+}
+
+HRESULT GetParentDeviceInstancePath(const wchar_t *deviceInstancePath, 
+	wchar_t *parentDeviceInstancePath, int size)
+{
+	// Init return value
+	HRESULT hr = E_FAIL;
+
+	// Get device info
+	HDEVINFO hDevInfo = SetupDiCreateDeviceInfoList(nullptr, NULL);
+	if (NULL != hDevInfo)
+	{
+		SP_DEVINFO_DATA did;
+		did.cbSize = sizeof(SP_DEVINFO_DATA);
+		BOOL success = SetupDiOpenDeviceInfo(hDevInfo, deviceInstancePath,
+			NULL, 0, &did);
+		if (success) {
+
+			// Get parent device
+			DEVINST devParent;
+			CONFIGRET ret = CM_Get_Parent(&devParent, did.DevInst, 0);
+			if (CR_SUCCESS == ret) {
+
+				// Get parent device instance path
+				ret = CM_Get_Device_ID(devParent, parentDeviceInstancePath,
+					size, 0);
+				if (CR_SUCCESS == ret)
+					hr = S_OK;
+			}
+
+			// Cleanup
+			SetupDiDeleteDeviceInfo(hDevInfo, &did);
+		}
+
+		// Cleanup
+		SetupDiDestroyDeviceInfoList(hDevInfo);
+	}
+
+	return hr;
+}
+
+HRESULT GetAudioCaptureParentDeviceInstancePath(IMoniker *audioCapture, 
+	wchar_t *parentDeviceInstancePath, int size)
+{
+	// Sanity checks
+	if (!audioCapture)
+		return E_POINTER;
+
+	// Bind to property bag
+	ComPtr<IPropertyBag> propertyBag;
+	HRESULT hr = audioCapture->BindToStorage(0, 0, IID_IPropertyBag,
+		(void**)&propertyBag);
+	if (SUCCEEDED(hr)) {
+
+		// Init variant
+		VARIANT var;
+		VariantInit(&var);
+		
+		// Get "WaveInId"
+		hr = propertyBag->Read(L"WaveInId", &var, nullptr);
+		if (SUCCEEDED(hr) && var.vt == VT_I4) {
+		
+			// Get device path
+			wchar_t devicePath[512];
+			MMRESULT res = waveInMessage((HWAVEIN)var.iVal,
+				DRV_QUERYDEVICEINTERFACE, (DWORD_PTR)devicePath,
+				sizeof(devicePath));
+			if (res == MMSYSERR_NOERROR)
+			{
+				// Get device instance path
+				wchar_t deviceInstancePath[512];
+				hr = DevicePathToDeviceInstancePath(devicePath,
+					deviceInstancePath, _ARRAYSIZE(deviceInstancePath));
+
+				// Get parent
+				if (SUCCEEDED(hr))
+					hr = GetParentDeviceInstancePath(deviceInstancePath,
+						parentDeviceInstancePath, size);
+			}
+		}
+		
+		// Cleanup
+		VariantClear(&var);
+	}
+
+	return hr;
 }
 
 }; /* namespace DShow */

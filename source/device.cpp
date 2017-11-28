@@ -513,7 +513,7 @@ bool HDevice::SetAudioConfig(AudioConfig *config)
 	if (!config)
 		return true;
 
-	if (!config->useVideoDevice &&
+	if (!config->useVideoDevice && !config->useSeparateAudioFilter &&
 	    config->name.empty() && config->path.empty()) {
 		Error(L"No audio device name or path specified");
 		return false;
@@ -527,6 +527,14 @@ bool HDevice::SetAudioConfig(AudioConfig *config)
 		}
 
 		filter = videoFilter;
+	} else if (config->useSeparateAudioFilter) {
+		bool success = GetDeviceAudioFilter(videoConfig.path.c_str(), &filter);
+		if (!success) {
+			Error(L"Corresponding audio device for '%s' not found",
+				videoConfig.path.c_str());
+			return false;
+		}
+
 	} else {
 		bool success = GetDeviceFilter(CLSID_AudioInputDeviceCategory,
 				config->name.c_str(), config->path.c_str(),
