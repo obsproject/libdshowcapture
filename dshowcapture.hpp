@@ -26,7 +26,7 @@
 #ifdef DSHOWCAPTURE_EXPORTS
 	#define DSHOWCAPTURE_EXPORT __declspec(dllexport)
 #else
-	#define DSHOWCAPTURE_EXPORT
+	#define DSHOWCAPTURE_EXPORT __declspec(dllimport)
 #endif
 
 #define DSHOWCAPTURE_VERSION_MAJOR 0
