@@ -374,7 +374,7 @@ bool GetFilterByMedium(const CLSID &id, REGPINMEDIUM &medium,
 	}
 
 	hr = deviceEnum->CreateClassEnumerator(id, &enumMoniker, 0);
-	if (FAILED(hr)) {
+	if (hr != S_OK) {
 		WarningHR(L"GetFilterByMedium: Failed to create enum moniker",
 				hr);
 		return false;
