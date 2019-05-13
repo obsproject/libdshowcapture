@@ -158,6 +158,13 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 	} else if (hasTime) {
 		SendToCallback(isVideo, ptr, size, startTime, stopTime);
 	}
+	else {
+		/* some virtual cam doesn't set the time correctly, e.g.: YYMixer
+		 * to support the existing large amout of YYMixer users, don't drop
+		 * frames without timestamp!
+		 */
+		SendToCallback(isVideo, ptr, size, startTime, stopTime);
+	}
 }
 
 void HDevice::ConvertVideoSettings()
