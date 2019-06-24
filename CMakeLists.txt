@@ -82,7 +82,7 @@ set(libdshowcapture_SOURCES
 
 set(libdshowcapture_HEADERS
 	dshowcapture.hpp
-	source/IVideoCaptureFilter.h
+	source/external/IVideoCaptureFilter.h
 	source/capture-filter.hpp
 	source/output-filter.hpp
 	source/device.hpp

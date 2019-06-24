@@ -28,7 +28,7 @@
 	EXTERN_C const GUID DECLSPEC_SELECTANY name = {              \
 		l, w1, w2, {b1, b2, b3, b4, b5, b6, b7, b8}}
 
-#include "IVideoCaptureFilter.h"
+#include "external/IVideoCaptureFilter.h"
 
 namespace DShow {
 using namespace std;
