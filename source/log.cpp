@@ -23,13 +23,13 @@
 
 namespace DShow {
 
-void               *logParam   = NULL;
+void *logParam = NULL;
 static LogCallback logCallback = NULL;
 
 void SetLogCallback(LogCallback callback, void *param)
 {
 	logCallback = callback;
-	logParam    = param;
+	logParam = param;
 }
 
 static void Log(LogType type, const wchar_t *format, va_list args)
@@ -41,7 +41,7 @@ static void Log(LogType type, const wchar_t *format, va_list args)
 		logCallback(type, str, logParam);
 }
 
-void Error  (const wchar_t *format, ...)
+void Error(const wchar_t *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -57,7 +57,7 @@ void Warning(const wchar_t *format, ...)
 	va_end(args);
 }
 
-void Info   (const wchar_t *format, ...)
+void Info(const wchar_t *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -65,7 +65,7 @@ void Info   (const wchar_t *format, ...)
 	va_end(args);
 }
 
-void Debug  (const wchar_t *format, ...)
+void Debug(const wchar_t *format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -73,7 +73,7 @@ void Debug  (const wchar_t *format, ...)
 	va_end(args);
 }
 
-void ErrorHR  (const wchar_t *str, HRESULT hr)
+void ErrorHR(const wchar_t *str, HRESULT hr)
 {
 	Error(L"%s (0x%08lX): %s", str, hr, ConvertHRToEnglish(hr).c_str());
 }
@@ -83,12 +83,12 @@ void WarningHR(const wchar_t *str, HRESULT hr)
 	Warning(L"%s (0x%08lX): %s", str, hr, ConvertHRToEnglish(hr).c_str());
 }
 
-void InfoHR   (const wchar_t *str, HRESULT hr)
+void InfoHR(const wchar_t *str, HRESULT hr)
 {
 	Info(L"%s (0x%08lX): %s", str, hr, ConvertHRToEnglish(hr).c_str());
 }
 
-void DebugHR  (const wchar_t *str, HRESULT hr)
+void DebugHR(const wchar_t *str, HRESULT hr)
 {
 	Info(L"%s (0x%08lX): %s", str, hr, ConvertHRToEnglish(hr).c_str());
 }

@@ -30,17 +30,16 @@ using namespace std;
 namespace DShow {
 
 bool GetClosestVideoMediaType(IBaseFilter *filter, VideoConfig &config,
-		MediaType &mt);
+			      MediaType &mt);
 bool GetClosestAudioMediaType(IBaseFilter *filter, AudioConfig &config,
-		MediaType &mt);
+			      MediaType &mt);
 
 bool EnumVideoCaps(IPin *pin, vector<VideoInfo> &caps);
 bool EnumAudioCaps(IPin *pin, vector<AudioInfo> &caps);
 
-typedef bool (*EnumDeviceCallback)(void *param,
-		IBaseFilter *filter,
-		const wchar_t *deviceName,
-		const wchar_t *devicePath);
+typedef bool (*EnumDeviceCallback)(void *param, IBaseFilter *filter,
+				   const wchar_t *deviceName,
+				   const wchar_t *devicePath);
 
 bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param);
 

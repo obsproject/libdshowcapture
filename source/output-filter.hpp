@@ -38,14 +38,14 @@ class OutputFilter;
 class OutputPin : public IPin {
 	friend class OutputEnumMediaTypes;
 
-	volatile long                  refCount;
+	volatile long refCount;
 
-	PinOutputInfo                  outputInfo;
-	ComPtr<IPin>                   connectedPin;
-	OutputFilter                   *filter;
-	volatile bool                  flushing = false;
-	ComPtr<IMemAllocator>          allocator;
-	size_t                         bufSize;
+	PinOutputInfo outputInfo;
+	ComPtr<IPin> connectedPin;
+	OutputFilter *filter;
+	volatile bool flushing = false;
+	ComPtr<IMemAllocator> allocator;
+	size_t bufSize;
 
 	bool IsValidMediaType(const AM_MEDIA_TYPE *pmt) const;
 
@@ -60,7 +60,7 @@ public:
 	// IPin methods
 	STDMETHODIMP Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt);
 	STDMETHODIMP ReceiveConnection(IPin *connector,
-			const AM_MEDIA_TYPE *pmt);
+				       const AM_MEDIA_TYPE *pmt);
 	STDMETHODIMP Disconnect();
 	STDMETHODIMP ConnectedTo(IPin **pPin);
 	STDMETHODIMP ConnectionMediaType(AM_MEDIA_TYPE *pmt);
@@ -69,18 +69,17 @@ public:
 	STDMETHODIMP QueryId(LPWSTR *lpId);
 	STDMETHODIMP QueryAccept(const AM_MEDIA_TYPE *pmt);
 	STDMETHODIMP EnumMediaTypes(IEnumMediaTypes **ppEnum);
-	STDMETHODIMP QueryInternalConnections(IPin* *apPin, ULONG *nPin);
+	STDMETHODIMP QueryInternalConnections(IPin **apPin, ULONG *nPin);
 	STDMETHODIMP EndOfStream();
 
 	STDMETHODIMP BeginFlush();
 	STDMETHODIMP EndFlush();
 	STDMETHODIMP NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop,
-			double dRate);
+				double dRate);
 
 	void Send(unsigned char *data[DSHOW_MAX_PLANES],
-			size_t linesize[DSHOW_MAX_PLANES],
-			long long timestampStart,
-			long long timestampEnd);
+		  size_t linesize[DSHOW_MAX_PLANES], long long timestampStart,
+		  long long timestampEnd);
 
 	void Stop();
 };
@@ -88,12 +87,12 @@ public:
 class OutputFilter : public IBaseFilter {
 	friend class OutputPin;
 
-	volatile long                  refCount;
-	FILTER_STATE                   state;
-	ComPtr<IFilterGraph>           graph;
-	ComPtr<OutputPin>              pin;
+	volatile long refCount;
+	FILTER_STATE state;
+	ComPtr<IFilterGraph> graph;
+	ComPtr<OutputPin> pin;
 
-	ComPtr<IAMFilterMiscFlags>     misc;
+	ComPtr<IAMFilterMiscFlags> misc;
 
 public:
 	OutputFilter(const PinOutputInfo &info);
@@ -122,20 +121,20 @@ public:
 	STDMETHODIMP JoinFilterGraph(IFilterGraph *pGraph, LPCWSTR pName);
 	STDMETHODIMP QueryVendorInfo(LPWSTR *pVendorInfo);
 
-	inline OutputPin* GetPin() const {return (OutputPin*)pin;}
+	inline OutputPin *GetPin() const { return (OutputPin *)pin; }
 
 	inline void Send(unsigned char *data[DSHOW_MAX_PLANES],
-			size_t linesize[DSHOW_MAX_PLANES],
-			long long timestampStart, long long timestampEnd)
+			 size_t linesize[DSHOW_MAX_PLANES],
+			 long long timestampStart, long long timestampEnd)
 	{
 		pin->Send(data, linesize, timestampStart, timestampEnd);
 	}
 };
 
 class OutputEnumPins : public IEnumPins {
-	volatile long                  refCount = 1;
-	ComPtr<OutputFilter>           filter;
-	UINT                           curPin;
+	volatile long refCount = 1;
+	ComPtr<OutputFilter> filter;
+	UINT curPin;
 
 public:
 	OutputEnumPins(OutputFilter *filter, OutputEnumPins *pEnum);
@@ -154,9 +153,9 @@ public:
 };
 
 class OutputEnumMediaTypes : public IEnumMediaTypes {
-	volatile long                  refCount = 1;
-	ComPtr<OutputPin>              pin;
-	UINT                           curMT = 0;
+	volatile long refCount = 1;
+	ComPtr<OutputPin> pin;
+	UINT curMT = 0;
 
 public:
 	OutputEnumMediaTypes(OutputPin *pin);
@@ -169,11 +168,10 @@ public:
 
 	// IEnumMediaTypes
 	STDMETHODIMP Next(ULONG cMediaTypes, AM_MEDIA_TYPE **ppMediaTypes,
-			ULONG *pcFetched);
+			  ULONG *pcFetched);
 	STDMETHODIMP Skip(ULONG cMediaTypes);
 	STDMETHODIMP Reset();
 	STDMETHODIMP Clone(IEnumMediaTypes **ppEnum);
 };
 
 }; /* namespace DShow */
-

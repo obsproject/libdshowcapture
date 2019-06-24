@@ -24,7 +24,7 @@
 namespace DShow {
 
 HRESULT CopyMediaType(AM_MEDIA_TYPE *pmtTarget, const AM_MEDIA_TYPE *pmtSource);
-void    FreeMediaType(AM_MEDIA_TYPE &mt);
+void FreeMediaType(AM_MEDIA_TYPE &mt);
 
 BITMAPINFOHEADER *GetBitmapInfoHeader(AM_MEDIA_TYPE &mt);
 const BITMAPINFOHEADER *GetBitmapInfoHeader(const AM_MEDIA_TYPE &mt);
@@ -37,7 +37,7 @@ class MediaType {
 	AM_MEDIA_TYPE type;
 
 public:
-	inline MediaType() {memset(&type, 0, sizeof(type));}
+	inline MediaType() { memset(&type, 0, sizeof(type)); }
 
 	inline MediaType(const MediaType &mt)
 	{
@@ -49,20 +49,20 @@ public:
 		CopyMediaType(&type, &type_);
 	}
 
-	inline ~MediaType() {FreeMediaType(type);}
+	inline ~MediaType() { FreeMediaType(type); }
 
-	inline operator AM_MEDIA_TYPE*()             {return &type;}
-	inline operator AM_MEDIA_TYPE&()             {return type;}
-	inline operator const AM_MEDIA_TYPE*() const {return &type;}
-	inline operator const AM_MEDIA_TYPE&() const {return type;}
-	inline AM_MEDIA_TYPE *Ptr()                  {return &type;}
+	inline operator AM_MEDIA_TYPE *() { return &type; }
+	inline operator AM_MEDIA_TYPE &() { return type; }
+	inline operator const AM_MEDIA_TYPE *() const { return &type; }
+	inline operator const AM_MEDIA_TYPE &() const { return type; }
+	inline AM_MEDIA_TYPE *Ptr() { return &type; }
 
-	inline AM_MEDIA_TYPE *operator->()           {return &type;}
+	inline AM_MEDIA_TYPE *operator->() { return &type; }
 
 	inline AM_MEDIA_TYPE *Duplicate() const
 	{
 		AM_MEDIA_TYPE *ptr =
-			(AM_MEDIA_TYPE*)CoTaskMemAlloc(sizeof(*ptr));
+			(AM_MEDIA_TYPE *)CoTaskMemAlloc(sizeof(*ptr));
 		memset(ptr, 0, sizeof(*ptr));
 		CopyMediaType(ptr, &type);
 		return ptr;
@@ -91,7 +91,7 @@ public:
 		CopyMediaType(&type, &type_);
 	}
 
-	template <typename T> inline T *AllocFormat()
+	template<typename T> inline T *AllocFormat()
 	{
 		if (type.pbFormat) {
 			CoTaskMemFree(type.pbFormat);
@@ -103,7 +103,7 @@ public:
 		type.cbFormat = sizeof(T);
 		memset(type.pbFormat, 0, sizeof(T));
 
-		return (T*)type.pbFormat;
+		return (T *)type.pbFormat;
 	}
 };
 
@@ -124,15 +124,23 @@ public:
 
 	inline MediaTypePtr() : ptr(nullptr) {}
 	inline MediaTypePtr(AM_MEDIA_TYPE *ptr_) : ptr(ptr_) {}
-	inline ~MediaTypePtr() {Clear();}
+	inline ~MediaTypePtr() { Clear(); }
 
-	inline AM_MEDIA_TYPE **operator&() {Clear(); return &ptr;}
+	inline AM_MEDIA_TYPE **operator&()
+	{
+		Clear();
+		return &ptr;
+	}
 
-	inline AM_MEDIA_TYPE *operator->() const {return ptr;}
+	inline AM_MEDIA_TYPE *operator->() const { return ptr; }
 
-	inline operator AM_MEDIA_TYPE*() const {return ptr;}
+	inline operator AM_MEDIA_TYPE *() const { return ptr; }
 
-	inline void operator=(AM_MEDIA_TYPE *ptr_) {Clear(); ptr = ptr_;}
+	inline void operator=(AM_MEDIA_TYPE *ptr_)
+	{
+		Clear();
+		ptr = ptr_;
+	}
 
 	inline bool operator==(const AM_MEDIA_TYPE *ptr_) const
 	{

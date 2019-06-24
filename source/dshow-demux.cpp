@@ -39,46 +39,46 @@ static inline const GUID &VideoFormatToSubType(VideoFormat format)
 	return GUID_NULL;
 }
 
-bool CreateDemuxVideoPin(IBaseFilter *demuxFilter, MediaType &mt,
-		long width, long height, long long frameTime,
-		VideoFormat format)
+bool CreateDemuxVideoPin(IBaseFilter *demuxFilter, MediaType &mt, long width,
+			 long height, long long frameTime, VideoFormat format)
 {
 	ComQIPtr<IMpeg2Demultiplexer> demuxer(demuxFilter);
 	if (!demuxer) {
 		Warning(L"CreateDemuxVideoPin: Failed to get "
-		        L"IMpeg2Demultiplexer from filter");
+			L"IMpeg2Demultiplexer from filter");
 		return false;
 	}
 
-	ComPtr<IPin>  pin;
-	HRESULT       hr;
+	ComPtr<IPin> pin;
+	HRESULT hr;
 
-	VIDEOINFOHEADER *vih           = mt.AllocFormat<VIDEOINFOHEADER>();
-	vih->bmiHeader.biSize          = sizeof(vih->bmiHeader);
-	vih->bmiHeader.biWidth         = width;
-	vih->bmiHeader.biHeight        = height;
-	vih->bmiHeader.biCompression   = VideoFormatToFourCC(format);
-	vih->rcSource.right            = width;
-	vih->rcSource.bottom           = height;
-	vih->AvgTimePerFrame           = frameTime;
+	VIDEOINFOHEADER *vih = mt.AllocFormat<VIDEOINFOHEADER>();
+	vih->bmiHeader.biSize = sizeof(vih->bmiHeader);
+	vih->bmiHeader.biWidth = width;
+	vih->bmiHeader.biHeight = height;
+	vih->bmiHeader.biCompression = VideoFormatToFourCC(format);
+	vih->rcSource.right = width;
+	vih->rcSource.bottom = height;
+	vih->AvgTimePerFrame = frameTime;
 
 	if (!vih->bmiHeader.biCompression) {
 		Warning(L"CreateDemuxVideoPin: Invalid video format");
 		return false;
 	}
 
-	mt->majortype            = MEDIATYPE_Video;
-	mt->subtype              = VideoFormatToSubType(format);
-	mt->formattype           = FORMAT_VideoInfo;
+	mt->majortype = MEDIATYPE_Video;
+	mt->subtype = VideoFormatToSubType(format);
+	mt->formattype = FORMAT_VideoInfo;
 	mt->bTemporalCompression = true;
 
-	wchar_t *name = (wchar_t*)CoTaskMemAlloc(sizeof(DEMUX_VIDEO_PIN));
+	wchar_t *name = (wchar_t *)CoTaskMemAlloc(sizeof(DEMUX_VIDEO_PIN));
 	memcpy(name, DEMUX_VIDEO_PIN, sizeof(DEMUX_VIDEO_PIN));
 
 	hr = demuxer->CreateOutputPin(mt, name, &pin);
 	if (FAILED(hr)) {
 		WarningHR(L"CreateDemuxVideoPin: Failed to create video pin "
-		          L"on demuxer", hr);
+			  L"on demuxer",
+			  hr);
 		return false;
 	}
 
@@ -110,22 +110,22 @@ static inline const GUID &AudioFormatToSubType(AudioFormat format)
 }
 
 bool CreateDemuxAudioPin(IBaseFilter *demuxFilter, MediaType &mt,
-		DWORD samplesPerSec, WORD bitsPerSample, WORD channels,
-		AudioFormat format)
+			 DWORD samplesPerSec, WORD bitsPerSample, WORD channels,
+			 AudioFormat format)
 {
 	ComQIPtr<IMpeg2Demultiplexer> demuxer(demuxFilter);
 	if (!demuxer) {
 		Warning(L"CreateDemuxAudioPin: Failed to get "
-		        L"IMpeg2Demultiplexer from filter");
+			L"IMpeg2Demultiplexer from filter");
 		return false;
 	}
 
-	ComPtr<IPin>  pin;
-	HRESULT       hr;
+	ComPtr<IPin> pin;
+	HRESULT hr;
 
-	WAVEFORMATEX *wfex   = mt.AllocFormat<WAVEFORMATEX>();
-	wfex->wFormatTag     = AudioFormatToFormatTag(format);
-	wfex->nChannels      = channels;
+	WAVEFORMATEX *wfex = mt.AllocFormat<WAVEFORMATEX>();
+	wfex->wFormatTag = AudioFormatToFormatTag(format);
+	wfex->nChannels = channels;
 	wfex->nSamplesPerSec = samplesPerSec;
 	wfex->wBitsPerSample = bitsPerSample;
 
@@ -134,18 +134,19 @@ bool CreateDemuxAudioPin(IBaseFilter *demuxFilter, MediaType &mt,
 		return false;
 	}
 
-	mt->majortype            = MEDIATYPE_Audio;
-	mt->subtype              = AudioFormatToSubType(format);
-	mt->formattype           = FORMAT_WaveFormatEx;
+	mt->majortype = MEDIATYPE_Audio;
+	mt->subtype = AudioFormatToSubType(format);
+	mt->formattype = FORMAT_WaveFormatEx;
 	mt->bTemporalCompression = true;
 
-	wchar_t *name = (wchar_t*)CoTaskMemAlloc(sizeof(DEMUX_AUDIO_PIN));
+	wchar_t *name = (wchar_t *)CoTaskMemAlloc(sizeof(DEMUX_AUDIO_PIN));
 	memcpy(name, DEMUX_AUDIO_PIN, sizeof(DEMUX_AUDIO_PIN));
 
 	hr = demuxer->CreateOutputPin(mt, name, &pin);
 	if (FAILED(hr)) {
 		WarningHR(L"CreateDemuxAudioPin: Failed to create audio pin "
-		          L"on demuxer", hr);
+			  L"on demuxer",
+			  hr);
 		return false;
 	}
 

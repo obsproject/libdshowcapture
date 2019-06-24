@@ -37,11 +37,11 @@ HRESULT CopyMediaType(AM_MEDIA_TYPE *pmtTarget, const AM_MEDIA_TYPE *pmtSource)
 			return E_OUTOFMEMORY;
 		} else {
 			memcpy(pmtTarget->pbFormat, pmtSource->pbFormat,
-					pmtTarget->cbFormat);
+			       pmtTarget->cbFormat);
 		}
 	}
 
-	if(pmtTarget->pUnk != nullptr)
+	if (pmtTarget->pUnk != nullptr)
 		pmtTarget->pUnk->AddRef();
 
 	return S_OK;
@@ -49,7 +49,7 @@ HRESULT CopyMediaType(AM_MEDIA_TYPE *pmtTarget, const AM_MEDIA_TYPE *pmtSource)
 
 void FreeMediaType(AM_MEDIA_TYPE &mt)
 {
-	if(mt.cbFormat != 0) {
+	if (mt.cbFormat != 0) {
 		CoTaskMemFree((LPVOID)mt.pbFormat);
 		mt.cbFormat = 0;
 		mt.pbFormat = nullptr;
@@ -65,12 +65,12 @@ BITMAPINFOHEADER *GetBitmapInfoHeader(AM_MEDIA_TYPE &mt)
 {
 	if (mt.formattype == FORMAT_VideoInfo) {
 		VIDEOINFOHEADER *vih;
-		vih = reinterpret_cast<VIDEOINFOHEADER*>(mt.pbFormat);
+		vih = reinterpret_cast<VIDEOINFOHEADER *>(mt.pbFormat);
 		return &vih->bmiHeader;
 
 	} else if (mt.formattype == FORMAT_VideoInfo2) {
 		VIDEOINFOHEADER2 *vih;
-		vih = reinterpret_cast<VIDEOINFOHEADER2*>(mt.pbFormat);
+		vih = reinterpret_cast<VIDEOINFOHEADER2 *>(mt.pbFormat);
 		return &vih->bmiHeader;
 	}
 
@@ -81,12 +81,12 @@ const BITMAPINFOHEADER *GetBitmapInfoHeader(const AM_MEDIA_TYPE &mt)
 {
 	if (mt.formattype == FORMAT_VideoInfo) {
 		const VIDEOINFOHEADER *vih;
-		vih = reinterpret_cast<const VIDEOINFOHEADER*>(mt.pbFormat);
+		vih = reinterpret_cast<const VIDEOINFOHEADER *>(mt.pbFormat);
 		return &vih->bmiHeader;
 
 	} else if (mt.formattype == FORMAT_VideoInfo2) {
 		const VIDEOINFOHEADER2 *vih;
-		vih = reinterpret_cast<const VIDEOINFOHEADER2*>(mt.pbFormat);
+		vih = reinterpret_cast<const VIDEOINFOHEADER2 *>(mt.pbFormat);
 		return &vih->bmiHeader;
 	}
 

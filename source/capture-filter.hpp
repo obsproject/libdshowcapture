@@ -31,21 +31,21 @@ class CaptureSource;
 typedef void (*CaptureCallback)(void *param, IMediaSample *sample);
 
 struct PinCaptureInfo {
-	std::function<void (IMediaSample *sample)> callback;
-	GUID                                       expectedMajorType;
-	GUID                                       expectedSubType;
+	std::function<void(IMediaSample *sample)> callback;
+	GUID expectedMajorType;
+	GUID expectedSubType;
 };
 
 class CapturePin : public IPin, public IMemInputPin {
 	friend class CaptureEnumMediaTypes;
 
-	volatile long          refCount;
+	volatile long refCount;
 
-	PinCaptureInfo         captureInfo;
-	ComPtr<IPin>           connectedPin;
-	CaptureFilter          *filter;
-	MediaType              connectedMediaType;
-	volatile bool          flushing = false;
+	PinCaptureInfo captureInfo;
+	ComPtr<IPin> connectedPin;
+	CaptureFilter *filter;
+	MediaType connectedMediaType;
+	volatile bool flushing = false;
 
 	bool IsValidMediaType(const AM_MEDIA_TYPE *pmt) const;
 
@@ -60,7 +60,7 @@ public:
 	// IPin methods
 	STDMETHODIMP Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt);
 	STDMETHODIMP ReceiveConnection(IPin *connector,
-			const AM_MEDIA_TYPE *pmt);
+				       const AM_MEDIA_TYPE *pmt);
 	STDMETHODIMP Disconnect();
 	STDMETHODIMP ConnectedTo(IPin **pPin);
 	STDMETHODIMP ConnectionMediaType(AM_MEDIA_TYPE *pmt);
@@ -69,13 +69,13 @@ public:
 	STDMETHODIMP QueryId(LPWSTR *lpId);
 	STDMETHODIMP QueryAccept(const AM_MEDIA_TYPE *pmt);
 	STDMETHODIMP EnumMediaTypes(IEnumMediaTypes **ppEnum);
-	STDMETHODIMP QueryInternalConnections(IPin* *apPin, ULONG *nPin);
+	STDMETHODIMP QueryInternalConnections(IPin **apPin, ULONG *nPin);
 	STDMETHODIMP EndOfStream();
 
 	STDMETHODIMP BeginFlush();
 	STDMETHODIMP EndFlush();
 	STDMETHODIMP NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop,
-			double dRate);
+				double dRate);
 
 	// IMemInputPin methods
 	STDMETHODIMP GetAllocator(IMemAllocator **ppAllocator);
@@ -83,17 +83,17 @@ public:
 	STDMETHODIMP GetAllocatorRequirements(ALLOCATOR_PROPERTIES *pProps);
 	STDMETHODIMP Receive(IMediaSample *pSample);
 	STDMETHODIMP ReceiveMultiple(IMediaSample **pSamples, long nSamples,
-			long *nSamplesProcessed);
+				     long *nSamplesProcessed);
 	STDMETHODIMP ReceiveCanBlock();
 };
 
 class CaptureFilter : public IBaseFilter {
 	friend class CapturePin;
 
-	volatile long         refCount;
-	FILTER_STATE          state;
-	ComPtr<IFilterGraph>  graph;
-	ComPtr<CapturePin>    pin;
+	volatile long refCount;
+	FILTER_STATE state;
+	ComPtr<IFilterGraph> graph;
+	ComPtr<CapturePin> pin;
 
 	ComPtr<IAMFilterMiscFlags> misc;
 
@@ -124,13 +124,13 @@ public:
 	STDMETHODIMP JoinFilterGraph(IFilterGraph *pGraph, LPCWSTR pName);
 	STDMETHODIMP QueryVendorInfo(LPWSTR *pVendorInfo);
 
-	inline CapturePin* GetPin() const {return (CapturePin*)pin;}
+	inline CapturePin *GetPin() const { return (CapturePin *)pin; }
 };
 
 class CaptureEnumPins : public IEnumPins {
-	volatile long          refCount = 1;
-	ComPtr<CaptureFilter>  filter;
-	UINT                   curPin;
+	volatile long refCount = 1;
+	ComPtr<CaptureFilter> filter;
+	UINT curPin;
 
 public:
 	CaptureEnumPins(CaptureFilter *filter, CaptureEnumPins *pEnum);
@@ -149,9 +149,9 @@ public:
 };
 
 class CaptureEnumMediaTypes : public IEnumMediaTypes {
-	volatile long       refCount = 1;
-	ComPtr<CapturePin>  pin;
-	UINT                curMT = 0;
+	volatile long refCount = 1;
+	ComPtr<CapturePin> pin;
+	UINT curMT = 0;
 
 public:
 	CaptureEnumMediaTypes(CapturePin *pin);
@@ -164,7 +164,7 @@ public:
 
 	// IEnumMediaTypes
 	STDMETHODIMP Next(ULONG cMediaTypes, AM_MEDIA_TYPE **ppMediaTypes,
-			ULONG *pcFetched);
+			  ULONG *pcFetched);
 	STDMETHODIMP Skip(ULONG cMediaTypes);
 	STDMETHODIMP Reset();
 	STDMETHODIMP Clone(IEnumMediaTypes **ppEnum);

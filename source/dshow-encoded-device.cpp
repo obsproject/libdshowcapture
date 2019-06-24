@@ -27,16 +27,15 @@
 
 namespace DShow {
 
-static inline bool CreateFilters(IBaseFilter *filter,
-		IBaseFilter **crossbar, IBaseFilter **encoder,
-		IBaseFilter **demuxer)
+static inline bool CreateFilters(IBaseFilter *filter, IBaseFilter **crossbar,
+				 IBaseFilter **encoder, IBaseFilter **demuxer)
 {
-	ComPtr<IPin>  inputPin;
-	ComPtr<IPin>  outputPin;
-	REGPINMEDIUM  inMedium;
-	REGPINMEDIUM  outMedium;
-	bool          hasOutMedium;
-	HRESULT       hr;
+	ComPtr<IPin> inputPin;
+	ComPtr<IPin> outputPin;
+	REGPINMEDIUM inMedium;
+	REGPINMEDIUM outMedium;
+	bool hasOutMedium;
+	HRESULT hr;
 
 	if (!GetPinByName(filter, PINDIR_INPUT, nullptr, &inputPin)) {
 		Warning(L"Encoded Device: Failed to get input pin");
@@ -65,7 +64,8 @@ static inline bool CreateFilters(IBaseFilter *filter,
 		GetFilterByMedium(KSCATEGORY_ENCODER, outMedium, encoder);
 
 	hr = CoCreateInstance(CLSID_MPEG2Demultiplexer, nullptr,
-			CLSCTX_INPROC_SERVER, IID_IBaseFilter, (void**)demuxer);
+			      CLSCTX_INPROC_SERVER, IID_IBaseFilter,
+			      (void **)demuxer);
 	if (FAILED(hr)) {
 		WarningHR(L"Encoded Device: Failed to create demuxer", hr);
 		return false;
@@ -75,19 +75,21 @@ static inline bool CreateFilters(IBaseFilter *filter,
 }
 
 static inline bool ConnectEncodedFilters(IGraphBuilder *graph,
-		IBaseFilter *filter, IBaseFilter *crossbar,
-		IBaseFilter *encoder, IBaseFilter *demuxer)
+					 IBaseFilter *filter,
+					 IBaseFilter *crossbar,
+					 IBaseFilter *encoder,
+					 IBaseFilter *demuxer)
 {
 	if (!DirectConnectFilters(graph, crossbar, filter)) {
 		Warning(L"Encoded Device: Failed to connect crossbar to "
-		        L"device");
+			L"device");
 		return false;
 	}
 
 	if (!!encoder) {
 		if (!DirectConnectFilters(graph, filter, encoder)) {
 			Warning(L"Encoded Device: Failed to connect device to "
-			        L"encoder");
+				L"encoder");
 			return false;
 		}
 
@@ -99,7 +101,7 @@ static inline bool ConnectEncodedFilters(IGraphBuilder *graph,
 	} else {
 		if (!DirectConnectFilters(graph, filter, demuxer)) {
 			Warning(L"Encoded Device: Failed to connect device to "
-			        L"demuxer");
+				L"demuxer");
 			return false;
 		}
 	}
@@ -109,32 +111,34 @@ static inline bool ConnectEncodedFilters(IGraphBuilder *graph,
 
 static inline bool MapPacketIDs(IBaseFilter *demuxer, ULONG video, ULONG audio)
 {
-	ComPtr<IPin>  videoPin, audioPin;
-	HRESULT       hr;
+	ComPtr<IPin> videoPin, audioPin;
+	HRESULT hr;
 
 	if (!GetPinByName(demuxer, PINDIR_OUTPUT, DEMUX_VIDEO_PIN, &videoPin)) {
 		Warning(L"Encoded Device: Could not get video pin from "
-		        L"demuxer");
+			L"demuxer");
 		return false;
 	}
 
 	if (!GetPinByName(demuxer, PINDIR_OUTPUT, DEMUX_AUDIO_PIN, &audioPin)) {
 		Warning(L"Encoded Device: Could not get audio pin from "
-		        L"demuxer");
+			L"demuxer");
 		return false;
 	}
 
 	hr = MapPinToPacketID(videoPin, video);
 	if (FAILED(hr)) {
 		WarningHR(L"Encoded Device: Failed to map demuxer video pin "
-		          L"packet ID", hr);
+			  L"packet ID",
+			  hr);
 		return false;
 	}
 
 	hr = MapPinToPacketID(audioPin, audio);
 	if (FAILED(hr)) {
 		WarningHR(L"Encoded Device: Failed to map demuxer audio pin "
-		          L"packet ID", hr);
+			  L"packet ID",
+			  hr);
 		return false;
 	}
 
@@ -149,8 +153,11 @@ static inline bool MapPacketIDs(IBaseFilter *demuxer, ULONG video, ULONG audio)
  * programs because I could not figure out how the hell to get this thing
  * to turn on.
  */
-static const GUID RocketEncoderGUID =
-{0x99100000, 0xa330, 0x11e1, {0xa3, 0x80, 0x99, 0x10, 0x68, 0x64, 0x00, 0x00}};
+static const GUID RocketEncoderGUID = {0x99100000,
+				       0xa330,
+				       0x11e1,
+				       {0xa3, 0x80, 0x99, 0x10, 0x68, 0x64,
+					0x00, 0x00}};
 
 struct RocketPropStruct {
 	DWORD dwSize;
@@ -159,7 +166,7 @@ struct RocketPropStruct {
 	DWORD unknown3;
 	DWORD code;
 	DWORD unknown4;
-	BOOL  enabled;
+	BOOL enabled;
 };
 
 struct RocketInstStruct {
@@ -169,61 +176,60 @@ struct RocketInstStruct {
 
 bool SetRocketEnabled(IBaseFilter *encoder, bool enable)
 {
-	static const ULONG rocketEnableId   = 0x9910E001;
+	static const ULONG rocketEnableId = 0x9910E001;
 	static const DWORD rocketEnableCode = 0x38384001;
-	RocketInstStruct   rocketInstance   = {};
-	RocketPropStruct   rocketProperty   = {};
+	RocketInstStruct rocketInstance = {};
+	RocketPropStruct rocketProperty = {};
 
 	ComQIPtr<IKsPropertySet> propertySet(encoder);
 	if (!propertySet)
 		return false;
 
-	rocketProperty.dwSize  = sizeof(rocketProperty);
-	rocketProperty.code    = rocketEnableCode;
+	rocketProperty.dwSize = sizeof(rocketProperty);
+	rocketProperty.code = rocketEnableCode;
 	rocketProperty.enabled = enable;
-	rocketInstance.code    = rocketEnableCode;
+	rocketInstance.code = rocketEnableCode;
 
 	HRESULT hr = propertySet->Set(RocketEncoderGUID, rocketEnableId,
-			&rocketInstance, sizeof(rocketInstance),
-			&rocketProperty, sizeof(rocketProperty));
+				      &rocketInstance, sizeof(rocketInstance),
+				      &rocketProperty, sizeof(rocketProperty));
 
 	return SUCCEEDED(hr);
 }
 
-bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter,
-			VideoConfig &config,
-			const EncodedDevice &info)
+bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter, VideoConfig &config,
+				       const EncodedDevice &info)
 {
-	ComPtr<IBaseFilter>  crossbar;
-	ComPtr<IBaseFilter>  encoder;
-	ComPtr<IBaseFilter>  demuxer;
-	MediaType            mtVideo;
-	MediaType            mtAudio;
+	ComPtr<IBaseFilter> crossbar;
+	ComPtr<IBaseFilter> encoder;
+	ComPtr<IBaseFilter> demuxer;
+	MediaType mtVideo;
+	MediaType mtAudio;
 
 	if (!CreateFilters(filter, &crossbar, &encoder, &demuxer))
 		return false;
 
 	if (!CreateDemuxVideoPin(demuxer, mtVideo, info.width, info.height,
-				info.frameInterval, info.videoFormat))
+				 info.frameInterval, info.videoFormat))
 		return false;
 
-	if (!CreateDemuxAudioPin(demuxer, mtAudio, info.samplesPerSec,
-				16, 2, info.audioFormat))
+	if (!CreateDemuxAudioPin(demuxer, mtAudio, info.samplesPerSec, 16, 2,
+				 info.audioFormat))
 		return false;
 
-	config.cx             = info.width;
-	config.cy             = info.height;
-	config.frameInterval  = info.frameInterval;
-	config.format         = info.videoFormat;
+	config.cx = info.width;
+	config.cy = info.height;
+	config.frameInterval = info.frameInterval;
+	config.format = info.videoFormat;
 	config.internalFormat = info.videoFormat;
 
 	PinCaptureInfo pci;
-	pci.callback          = [this] (IMediaSample *s) {Receive(true, s);};
+	pci.callback = [this](IMediaSample *s) { Receive(true, s); };
 	pci.expectedMajorType = mtVideo->majortype;
-	pci.expectedSubType   = mtVideo->subtype;
+	pci.expectedSubType = mtVideo->subtype;
 
 	videoCapture = new CaptureFilter(pci);
-	videoFilter  = demuxer;
+	videoFilter = demuxer;
 
 	if (!!encoder && config.name.find(L"IT9910") != std::string::npos) {
 		rocketEncoder = encoder;
@@ -232,19 +238,19 @@ bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter,
 			return false;
 	}
 
-	graph->AddFilter(crossbar,     L"Crossbar");
-	graph->AddFilter(filter,       L"Device");
-	graph->AddFilter(demuxer,      L"Demuxer");
+	graph->AddFilter(crossbar, L"Crossbar");
+	graph->AddFilter(filter, L"Device");
+	graph->AddFilter(demuxer, L"Demuxer");
 	graph->AddFilter(videoCapture, L"Capture Filter");
 
 	if (!!encoder)
 		graph->AddFilter(encoder, L"Encoder");
 
-	bool success = ConnectEncodedFilters(graph, filter, crossbar,
-			encoder, demuxer);
+	bool success = ConnectEncodedFilters(graph, filter, crossbar, encoder,
+					     demuxer);
 	if (success)
 		success = MapPacketIDs(demuxer, info.videoPacketID,
-				info.audioPacketID);
+				       info.audioPacketID);
 
 	encodedDevice = success;
 	return success;

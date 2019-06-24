@@ -30,7 +30,7 @@
 using namespace std;
 
 struct EncodedData {
-	vector<unsigned char>          data;
+	vector<unsigned char> data;
 
 	inline EncodedData() {}
 
@@ -44,25 +44,25 @@ struct EncodedData {
 namespace DShow {
 
 struct HVideoEncoder {
-	ComPtr<IGraphBuilder>          graph;
-	ComPtr<ICaptureGraphBuilder2>  builder;
-	ComPtr<IMediaControl>          control;
+	ComPtr<IGraphBuilder> graph;
+	ComPtr<ICaptureGraphBuilder2> builder;
+	ComPtr<IMediaControl> control;
 
-	ComPtr<IBaseFilter>            encoder;
-	ComPtr<IBaseFilter>            device;
-	ComPtr<OutputFilter>           output;
-	ComPtr<CaptureFilter>          capture;
+	ComPtr<IBaseFilter> encoder;
+	ComPtr<IBaseFilter> device;
+	ComPtr<OutputFilter> output;
+	ComPtr<CaptureFilter> capture;
 
-	VideoEncoderConfig             config;
+	VideoEncoderConfig config;
 
-	mutex                          packetMutex;
-	deque<EncodedData>             packets;
-	EncodedData                    curPacket;
+	mutex packetMutex;
+	deque<EncodedData> packets;
+	EncodedData curPacket;
 
-	deque<long long>               ptsVals;
+	deque<long long> ptsVals;
 
-	bool                           initialized = false;
-	bool                           active = false;
+	bool initialized = false;
+	bool active = false;
 
 	HVideoEncoder();
 	~HVideoEncoder();
@@ -79,9 +79,9 @@ struct HVideoEncoder {
 	bool SetConfig(VideoEncoderConfig &config);
 
 	bool Encode(unsigned char *frame[DSHOW_MAX_PLANES],
-			size_t linesize[DSHOW_MAX_PLANES],
-			long long timestampStart, long long timestampEnd,
-			EncoderPacket &packet, bool &new_packet);
+		    size_t linesize[DSHOW_MAX_PLANES], long long timestampStart,
+		    long long timestampEnd, EncoderPacket &packet,
+		    bool &new_packet);
 };
 
 };

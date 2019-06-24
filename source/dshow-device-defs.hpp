@@ -21,33 +21,29 @@
 
 namespace DShow {
 
-#define COMMON_ENCODED_CX         720
-#define COMMON_ENCODED_CY         480
-#define COMMON_ENCODED_INTERVAL   (10010000000LL/60000LL)
-#define COMMON_ENCODED_VFORMAT    VideoFormat::H264
+#define COMMON_ENCODED_CX 720
+#define COMMON_ENCODED_CY 480
+#define COMMON_ENCODED_INTERVAL (10010000000LL / 60000LL)
+#define COMMON_ENCODED_VFORMAT VideoFormat::H264
 #define COMMON_ENCODED_SAMPLERATE 48000
 
-static const EncodedDevice HD_PVR1 = {
-	COMMON_ENCODED_VFORMAT,
-	0x1011UL,
-	COMMON_ENCODED_CX,
-	COMMON_ENCODED_CY,
-	COMMON_ENCODED_INTERVAL,
-	AudioFormat::AC3,
-	0x1100UL,
-	COMMON_ENCODED_SAMPLERATE
-};
+static const EncodedDevice HD_PVR1 = {COMMON_ENCODED_VFORMAT,
+				      0x1011UL,
+				      COMMON_ENCODED_CX,
+				      COMMON_ENCODED_CY,
+				      COMMON_ENCODED_INTERVAL,
+				      AudioFormat::AC3,
+				      0x1100UL,
+				      COMMON_ENCODED_SAMPLERATE};
 
-static const EncodedDevice HD_PVR2 = {
-	COMMON_ENCODED_VFORMAT,
-	0x1011UL,
-	COMMON_ENCODED_CX,
-	COMMON_ENCODED_CY,
-	COMMON_ENCODED_INTERVAL,
-	AudioFormat::AAC,
-	0x1100UL,
-	COMMON_ENCODED_SAMPLERATE
-};
+static const EncodedDevice HD_PVR2 = {COMMON_ENCODED_VFORMAT,
+				      0x1011UL,
+				      COMMON_ENCODED_CX,
+				      COMMON_ENCODED_CY,
+				      COMMON_ENCODED_INTERVAL,
+				      AudioFormat::AAC,
+				      0x1100UL,
+				      COMMON_ENCODED_SAMPLERATE};
 
 static const EncodedDevice Roxio = {
 	COMMON_ENCODED_VFORMAT,
@@ -60,26 +56,22 @@ static const EncodedDevice Roxio = {
 	COMMON_ENCODED_SAMPLERATE,
 };
 
-static const EncodedDevice HD_PVR_Rocket = {
-	COMMON_ENCODED_VFORMAT,
-	0x07D1UL,
-	COMMON_ENCODED_CX,
-	COMMON_ENCODED_CY,
-	COMMON_ENCODED_INTERVAL,
-	AudioFormat::AAC,
-	0x07D2UL,
-	COMMON_ENCODED_SAMPLERATE
-};
+static const EncodedDevice HD_PVR_Rocket = {COMMON_ENCODED_VFORMAT,
+					    0x07D1UL,
+					    COMMON_ENCODED_CX,
+					    COMMON_ENCODED_CY,
+					    COMMON_ENCODED_INTERVAL,
+					    AudioFormat::AAC,
+					    0x07D2UL,
+					    COMMON_ENCODED_SAMPLERATE};
 
-static const EncodedDevice AV_LGP = {
-	COMMON_ENCODED_VFORMAT,
-	68,
-	COMMON_ENCODED_CX,
-	COMMON_ENCODED_CY,
-	COMMON_ENCODED_INTERVAL,
-	AudioFormat::AAC,
-	69,
-	COMMON_ENCODED_SAMPLERATE
-};
+static const EncodedDevice AV_LGP = {COMMON_ENCODED_VFORMAT,
+				     68,
+				     COMMON_ENCODED_CX,
+				     COMMON_ENCODED_CY,
+				     COMMON_ENCODED_INTERVAL,
+				     AudioFormat::AAC,
+				     69,
+				     COMMON_ENCODED_SAMPLERATE};
 
 }; /* namespace DShow */

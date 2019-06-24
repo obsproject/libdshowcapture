@@ -28,12 +28,11 @@ namespace DShow {
 #define DEMUX_VIDEO_PIN L"Demuxer Video Pin"
 #define DEMUX_AUDIO_PIN L"Demuxer Audio Pin"
 
-bool CreateDemuxVideoPin(IBaseFilter *demuxFilter, MediaType &mt,
-		long width, long height, long long frameTime,
-		VideoFormat format);
+bool CreateDemuxVideoPin(IBaseFilter *demuxFilter, MediaType &mt, long width,
+			 long height, long long frameTime, VideoFormat format);
 
 bool CreateDemuxAudioPin(IBaseFilter *demuxFilter, MediaType &mt,
-		DWORD samplesPerSec, WORD bitsPerSample, WORD channels,
-		AudioFormat format);
+			 DWORD samplesPerSec, WORD bitsPerSample, WORD channels,
+			 AudioFormat format);
 
 }; /* namespace DShow */

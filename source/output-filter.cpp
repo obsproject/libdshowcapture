@@ -28,20 +28,16 @@ namespace DShow {
 #define PrintFunc(x)
 #endif
 
-#define FILTER_NAME    L"Output Filter"
+#define FILTER_NAME L"Output Filter"
 #define VIDEO_PIN_NAME L"Video Output"
 #define AUDIO_PIN_NAME L"Audio Output"
 
 OutputPin::OutputPin(OutputFilter *filter_, const PinOutputInfo &info)
-	: refCount   (0),
-	  outputInfo (info),
-	  filter     (filter_)
+	: refCount(0), outputInfo(info), filter(filter_)
 {
 }
 
-OutputPin::~OutputPin()
-{
-}
+OutputPin::~OutputPin() {}
 
 STDMETHODIMP OutputPin::QueryInterface(REFIID riid, void **ppv)
 {
@@ -50,10 +46,10 @@ STDMETHODIMP OutputPin::QueryInterface(REFIID riid, void **ppv)
 		*ppv = this;
 	} else if (riid == IID_IPin) {
 		AddRef();
-		*ppv = (IPin*)this;
+		*ppv = (IPin *)this;
 	} else if (riid == IID_IMemInputPin) {
 		AddRef();
-		*ppv = (IMemInputPin*)this;
+		*ppv = (IMemInputPin *)this;
 	} else {
 		*ppv = nullptr;
 		return E_NOINTERFACE;
@@ -120,8 +116,9 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 	hr = memInput->GetAllocator(&allocator);
 	if (hr == VFW_E_NO_ALLOCATOR)
 		hr = CoCreateInstance(CLSID_MemoryAllocator, NULL,
-				CLSCTX_INPROC_SERVER, __uuidof(IMemAllocator),
-				(void**)&allocator);
+				      CLSCTX_INPROC_SERVER,
+				      __uuidof(IMemAllocator),
+				      (void **)&allocator);
 
 	if (FAILED(hr))
 		return E_FAIL;
@@ -137,7 +134,7 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 	if (hr == E_NOTIMPL) {
 		props.cBuffers = 4;
 		props.cbBuffer = (long)bufSize;
-		props.cbAlign  = 32;
+		props.cbAlign = 32;
 		props.cbPrefix = 0;
 
 	} else if (FAILED(hr)) {
@@ -160,7 +157,7 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 }
 
 STDMETHODIMP OutputPin::ReceiveConnection(IPin *pConnector,
-		const AM_MEDIA_TYPE *pmt)
+					  const AM_MEDIA_TYPE *pmt)
 {
 	PrintFunc(L"OutputPin::ReceiveConnection");
 
@@ -237,7 +234,7 @@ STDMETHODIMP OutputPin::QueryDirection(PIN_DIRECTION *pPinDir)
 
 STDMETHODIMP OutputPin::QueryId(LPWSTR *lpId)
 {
-	wchar_t *str = (wchar_t*)CoTaskMemAlloc(sizeof(OUTPUT_PIN_NAME));
+	wchar_t *str = (wchar_t *)CoTaskMemAlloc(sizeof(OUTPUT_PIN_NAME));
 	memcpy(str, OUTPUT_PIN_NAME, sizeof(OUTPUT_PIN_NAME));
 	*lpId = str;
 	return S_OK;
@@ -294,8 +291,8 @@ STDMETHODIMP OutputPin::EndFlush()
 	return S_OK;
 }
 
-STDMETHODIMP OutputPin::NewSegment(REFERENCE_TIME tStart,
-		REFERENCE_TIME tStop, double dRate)
+STDMETHODIMP OutputPin::NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop,
+				   double dRate)
 {
 	PrintFunc(L"OutputPin::NewSegment");
 
@@ -308,7 +305,7 @@ STDMETHODIMP OutputPin::NewSegment(REFERENCE_TIME tStart,
 bool OutputPin::IsValidMediaType(const AM_MEDIA_TYPE *pmt) const
 {
 	if (pmt->pbFormat) {
-		if (pmt->subtype   != outputInfo.expectedSubType ||
+		if (pmt->subtype != outputInfo.expectedSubType ||
 		    pmt->majortype != outputInfo.expectedMajorType)
 			return false;
 
@@ -323,8 +320,8 @@ bool OutputPin::IsValidMediaType(const AM_MEDIA_TYPE *pmt) const
 }
 
 void OutputPin::Send(unsigned char *data[DSHOW_MAX_PLANES],
-		size_t linesize[DSHOW_MAX_PLANES],
-		long long timestampStart, long long timestampEnd)
+		     size_t linesize[DSHOW_MAX_PLANES],
+		     long long timestampStart, long long timestampEnd)
 {
 	ComQIPtr<IMemInputPin> memInput(connectedPin);
 	REFERENCE_TIME startTime = timestampStart;
@@ -420,16 +417,14 @@ public:
 };
 
 OutputFilter::OutputFilter(const PinOutputInfo &info)
-	: refCount (0),
-	  state    (State_Stopped),
-	  pin      (new OutputPin(this, info)),
-	  misc     (new SourceMiscFlags)
+	: refCount(0),
+	  state(State_Stopped),
+	  pin(new OutputPin(this, info)),
+	  misc(new SourceMiscFlags)
 {
 }
 
-OutputFilter::~OutputFilter()
-{
-}
+OutputFilter::~OutputFilter() {}
 
 // IUnknown methods
 STDMETHODIMP OutputFilter::QueryInterface(REFIID riid, void **ppv)
@@ -439,15 +434,15 @@ STDMETHODIMP OutputFilter::QueryInterface(REFIID riid, void **ppv)
 		*ppv = this;
 	} else if (riid == IID_IPersist) {
 		AddRef();
-		*ppv = (IPersist*)this;
+		*ppv = (IPersist *)this;
 	} else if (riid == IID_IMediaFilter) {
 		AddRef();
-		*ppv = (IMediaFilter*)this;
+		*ppv = (IMediaFilter *)this;
 	} else if (riid == IID_IBaseFilter) {
 		AddRef();
-		*ppv = (IBaseFilter*)this;
+		*ppv = (IBaseFilter *)this;
 	} else if (riid == IID_IAMFilterMiscFlags) {
-		misc.CopyTo((IAMFilterMiscFlags**)ppv);
+		misc.CopyTo((IAMFilterMiscFlags **)ppv);
 	} else {
 		*ppv = nullptr;
 		return E_NOINTERFACE;
@@ -580,21 +575,19 @@ STDMETHODIMP OutputFilter::QueryVendorInfo(LPWSTR *pVendorInfo)
 // ============================================================================
 
 OutputEnumPins::OutputEnumPins(OutputFilter *filter_, OutputEnumPins *pEnum)
-	: filter (filter_)
+	: filter(filter_)
 {
 	curPin = (pEnum != nullptr) ? pEnum->curPin : 0;
 }
 
-OutputEnumPins::~OutputEnumPins()
-{
-}
+OutputEnumPins::~OutputEnumPins() {}
 
 // IUnknown
 STDMETHODIMP OutputEnumPins::QueryInterface(REFIID riid, void **ppv)
 {
 	if (riid == IID_IUnknown || riid == IID_IEnumPins) {
 		AddRef();
-		*ppv = (IEnumPins*)this;
+		*ppv = (IEnumPins *)this;
 		return NOERROR;
 	} else {
 		*ppv = nullptr;
@@ -632,7 +625,8 @@ STDMETHODIMP OutputEnumPins::Next(ULONG cPins, IPin **ppPins, ULONG *pcFetched)
 		curPin++;
 	}
 
-	if (pcFetched) *pcFetched = nFetched;
+	if (pcFetched)
+		*pcFetched = nFetched;
 
 	return (nFetched == cPins) ? S_OK : S_FALSE;
 }
@@ -654,17 +648,11 @@ STDMETHODIMP OutputEnumPins::Clone(IEnumPins **ppEnum)
 	return (*ppEnum == nullptr) ? E_OUTOFMEMORY : NOERROR;
 }
 
-
 // ============================================================================
 
-OutputEnumMediaTypes::OutputEnumMediaTypes(OutputPin *pin_)
-	: pin (pin_)
-{
-}
+OutputEnumMediaTypes::OutputEnumMediaTypes(OutputPin *pin_) : pin(pin_) {}
 
-OutputEnumMediaTypes::~OutputEnumMediaTypes()
-{
-}
+OutputEnumMediaTypes::~OutputEnumMediaTypes() {}
 
 STDMETHODIMP OutputEnumMediaTypes::QueryInterface(REFIID riid, void **ppv)
 {
@@ -695,7 +683,8 @@ STDMETHODIMP_(ULONG) OutputEnumMediaTypes::Release()
 
 // IEnumMediaTypes
 STDMETHODIMP OutputEnumMediaTypes::Next(ULONG cMediaTypes,
-		AM_MEDIA_TYPE **ppMediaTypes, ULONG *pcFetched)
+					AM_MEDIA_TYPE **ppMediaTypes,
+					ULONG *pcFetched)
 {
 	PrintFunc(L"OutputEnumMediaTypes::Next");
 
@@ -707,7 +696,8 @@ STDMETHODIMP OutputEnumMediaTypes::Next(ULONG cMediaTypes,
 		curMT++;
 	}
 
-	if (pcFetched) *pcFetched = nFetched;
+	if (pcFetched)
+		*pcFetched = nFetched;
 
 	return (nFetched == cMediaTypes) ? S_OK : S_FALSE;
 }

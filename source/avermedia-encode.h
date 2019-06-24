@@ -12,40 +12,43 @@
  */
 #pragma once
 
-static const GUID AVER_HW_ENCODE_PROPERTY =
-{0x1bd55918, 0xbaf5, 0x4781, {0x8d, 0x76, 0xe0, 0xa0, 0xa5, 0xe1, 0xd2, 0xb8}};
+static const GUID AVER_HW_ENCODE_PROPERTY = {0x1bd55918,
+					     0xbaf5,
+					     0x4781,
+					     {0x8d, 0x76, 0xe0, 0xa0, 0xa5,
+					      0xe1, 0xd2, 0xb8}};
 
 enum {
 	// @brief	PropertySet Enumeration
-	// param	AVER_PARAMETERS          
-	PROPERTY_HW_ENCODE_PARAMETER           = 0
+	// param	AVER_PARAMETERS
+	PROPERTY_HW_ENCODE_PARAMETER = 0
 };
 
 enum {
 	// property to set/get the encode frame rate
 	// ulParam1 = Frames per second
-	AVER_PARAMETER_ENCODE_FRAME_RATE       = 0,
+	AVER_PARAMETER_ENCODE_FRAME_RATE = 0,
 
 	// property to set/get the encode bit rate
 	// ulParam1 = Bitrate (kb/s)
-	AVER_PARAMETER_ENCODE_BIT_RATE         = 1,
+	AVER_PARAMETER_ENCODE_BIT_RATE = 1,
 
 	// property to get the output resolution
 	// ulParam1 = Resolution width
 	// ulParam2 = Resolution height
-	AVER_PARAMETER_CURRENT_RESOLUTION      = 2,
+	AVER_PARAMETER_CURRENT_RESOLUTION = 2,
 
 	// property to set the output resolution
 	// ulParam1 = Resolution width
 	// ulParam2 = Resolution height
-	AVER_PARAMETER_ENCODE_RESOLUTION       = 3,
+	AVER_PARAMETER_ENCODE_RESOLUTION = 3,
 
 	// property to set/get the encode GOP
 	// ulParam1 = GOP length
-	AVER_PARAMETER_ENCODE_GOP              = 4,
+	AVER_PARAMETER_ENCODE_GOP = 4,
 
 	// property to insert an I frame to the encoded stream
-	AVER_PARAMETER_INSERT_I_FRAME          = 6
+	AVER_PARAMETER_INSERT_I_FRAME = 6
 };
 
 struct AVER_PARAMETERS {

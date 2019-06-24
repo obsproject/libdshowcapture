@@ -40,27 +40,27 @@ using namespace std;
 namespace DShow {
 
 bool CreateFilterGraph(IGraphBuilder **graph, ICaptureGraphBuilder2 **builder,
-		IMediaControl **control);
+		       IMediaControl **control);
 
 void LogFilters(IGraphBuilder *graph);
 
 bool GetDeviceFilter(const IID &type, const wchar_t *name, const wchar_t *path,
-		IBaseFilter **filter);
+		     IBaseFilter **filter);
 
 bool GetFilterPin(IBaseFilter *filter, const GUID &type, const GUID &category,
-		PIN_DIRECTION dir, IPin **pin);
+		  PIN_DIRECTION dir, IPin **pin);
 
 bool GetPinByName(IBaseFilter *filter, PIN_DIRECTION dir, const wchar_t *name,
-		IPin **pin);
+		  IPin **pin);
 
 bool GetPinByMedium(IBaseFilter *filter, REGPINMEDIUM &medium, IPin **pin);
 bool GetFilterByMedium(const CLSID &id, REGPINMEDIUM &medium,
-		IBaseFilter **filter);
+		       IBaseFilter **filter);
 
 bool GetPinMedium(IPin *pin, REGPINMEDIUM &medium);
 
 bool DirectConnectFilters(IFilterGraph *graph, IBaseFilter *filterOut,
-		IBaseFilter *filterIn);
+			  IBaseFilter *filterIn);
 
 /**
  * This maps a created demuxer pin to a packet ID for the mux stream.  Note
@@ -75,6 +75,6 @@ wstring ConvertHRToEnglish(HRESULT hr);
  * Get audio filter for the same device as the given video device path
  */
 bool GetDeviceAudioFilter(const wchar_t *videoDevicePath,
-		IBaseFilter **audioCaptureFilter);
+			  IBaseFilter **audioCaptureFilter);
 
 }; /* namespace DShow */

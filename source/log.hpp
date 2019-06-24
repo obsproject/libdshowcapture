@@ -24,14 +24,14 @@
 
 namespace DShow {
 
-void Error  (const wchar_t *format, ...);
+void Error(const wchar_t *format, ...);
 void Warning(const wchar_t *format, ...);
-void Info   (const wchar_t *format, ...);
-void Debug  (const wchar_t *format, ...);
+void Info(const wchar_t *format, ...);
+void Debug(const wchar_t *format, ...);
 
-void ErrorHR  (const wchar_t *str, HRESULT hr);
+void ErrorHR(const wchar_t *str, HRESULT hr);
 void WarningHR(const wchar_t *str, HRESULT hr);
-void InfoHR   (const wchar_t *str, HRESULT hr);
-void DebugHR  (const wchar_t *str, HRESULT hr);
+void InfoHR(const wchar_t *str, HRESULT hr);
+void DebugHR(const wchar_t *str, HRESULT hr);
 
 }; /* namespace DShow */

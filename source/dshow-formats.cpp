@@ -22,19 +22,31 @@
 
 #ifndef __MINGW32__
 
-const GUID MEDIASUBTYPE_RAW_AAC1 =
-{0x000000FF, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+const GUID MEDIASUBTYPE_RAW_AAC1 = {0x000000FF,
+				    0x0000,
+				    0x0010,
+				    {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b,
+				     0x71}};
 
-const GUID MEDIASUBTYPE_I420 =
-{0x30323449, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+const GUID MEDIASUBTYPE_I420 = {0x30323449,
+				0x0000,
+				0x0010,
+				{0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b,
+				 0x71}};
 
-const GUID MEDIASUBTYPE_DVM =
-{0x00002000, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+const GUID MEDIASUBTYPE_DVM = {0x00002000,
+			       0x0000,
+			       0x0010,
+			       {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b,
+				0x71}};
 
 #endif
 
-const GUID MEDIASUBTYPE_Y800 =
-{0x30303859, 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+const GUID MEDIASUBTYPE_Y800 = {0x30303859,
+				0x0000,
+				0x0010,
+				{0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b,
+				 0x71}};
 
 namespace DShow {
 
@@ -43,41 +55,54 @@ static bool GetFourCCVFormat(DWORD fourCC, VideoFormat &format)
 	switch (fourCC) {
 	/* raw formats */
 	case MAKEFOURCC('R', 'G', 'B', '2'):
-		format = VideoFormat::XRGB; break;
+		format = VideoFormat::XRGB;
+		break;
 	case MAKEFOURCC('R', 'G', 'B', '4'):
-		format = VideoFormat::XRGB; break;
+		format = VideoFormat::XRGB;
+		break;
 	case MAKEFOURCC('A', 'R', 'G', 'B'):
-		format = VideoFormat::ARGB; break;
+		format = VideoFormat::ARGB;
+		break;
 
 	/* planar YUV formats */
 	case MAKEFOURCC('I', '4', '2', '0'):
 	case MAKEFOURCC('I', 'Y', 'U', 'V'):
-		format = VideoFormat::I420; break;
+		format = VideoFormat::I420;
+		break;
 	case MAKEFOURCC('Y', 'V', '1', '2'):
-		format = VideoFormat::YV12; break;
+		format = VideoFormat::YV12;
+		break;
 	case MAKEFOURCC('N', 'V', '1', '2'):
-		format = VideoFormat::NV12; break;
+		format = VideoFormat::NV12;
+		break;
 	case MAKEFOURCC('Y', '8', '0', '0'):
-		format = VideoFormat::Y800; break;
+		format = VideoFormat::Y800;
+		break;
 
 	/* packed YUV formats */
 	case MAKEFOURCC('Y', 'V', 'Y', 'U'):
-		format = VideoFormat::YVYU; break;
+		format = VideoFormat::YVYU;
+		break;
 	case MAKEFOURCC('Y', 'U', 'Y', '2'):
-		format = VideoFormat::YUY2; break;
+		format = VideoFormat::YUY2;
+		break;
 	case MAKEFOURCC('U', 'Y', 'V', 'Y'):
-		format = VideoFormat::UYVY; break;
+		format = VideoFormat::UYVY;
+		break;
 	case MAKEFOURCC('H', 'D', 'Y', 'C'):
-		format = VideoFormat::HDYC; break;
+		format = VideoFormat::HDYC;
+		break;
 
 	/* compressed formats */
 	case MAKEFOURCC('H', '2', '6', '4'):
-		format = VideoFormat::H264; break;
+		format = VideoFormat::H264;
+		break;
 
 	/* compressed formats that can automatically create intermediary
 	 * filters for decompression */
 	case MAKEFOURCC('M', 'J', 'P', 'G'):
-		format = VideoFormat::MJPEG; break;
+		format = VideoFormat::MJPEG;
+		break;
 
 	default:
 		return false;
@@ -134,8 +159,8 @@ bool GetMediaTypeVFormat(const AM_MEDIA_TYPE &mt, VideoFormat &format)
 
 	/* no valid types, check fourcc value instead */
 	else
-		return bmih ?
-			GetFourCCVFormat(bmih->biCompression, format) : false;
+		return bmih ? GetFourCCVFormat(bmih->biCompression, format)
+			    : false;
 
 	return true;
 }

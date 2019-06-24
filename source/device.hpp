@@ -29,45 +29,45 @@ using namespace std;
 namespace DShow {
 
 struct EncodedData {
-	long long                      lastStartTime = 0;
-	long long                      lastStopTime  = 0;
-	vector<unsigned char>          bytes;
+	long long lastStartTime = 0;
+	long long lastStopTime = 0;
+	vector<unsigned char> bytes;
 };
 
 struct EncodedDevice {
 	VideoFormat videoFormat;
-	ULONG       videoPacketID;
-	long        width;
-	long        height;
-	long long   frameInterval;
+	ULONG videoPacketID;
+	long width;
+	long height;
+	long long frameInterval;
 
 	AudioFormat audioFormat;
-	ULONG       audioPacketID;
-	DWORD       samplesPerSec;
+	ULONG audioPacketID;
+	DWORD samplesPerSec;
 };
 
 struct HDevice {
-	ComPtr<IGraphBuilder>          graph;
-	ComPtr<ICaptureGraphBuilder2>  builder;
-	ComPtr<IMediaControl>          control;
+	ComPtr<IGraphBuilder> graph;
+	ComPtr<ICaptureGraphBuilder2> builder;
+	ComPtr<IMediaControl> control;
 
-	ComPtr<IBaseFilter>            videoFilter;
-	ComPtr<IBaseFilter>            audioFilter;
-	ComPtr<CaptureFilter>          videoCapture;
-	ComPtr<CaptureFilter>          audioCapture;
-	ComPtr<IBaseFilter>            audioOutput;
-	ComPtr<IBaseFilter>            rocketEncoder;
-	MediaType                      videoMediaType;
-	MediaType                      audioMediaType;
-	VideoConfig                    videoConfig;
-	AudioConfig                    audioConfig;
+	ComPtr<IBaseFilter> videoFilter;
+	ComPtr<IBaseFilter> audioFilter;
+	ComPtr<CaptureFilter> videoCapture;
+	ComPtr<CaptureFilter> audioCapture;
+	ComPtr<IBaseFilter> audioOutput;
+	ComPtr<IBaseFilter> rocketEncoder;
+	MediaType videoMediaType;
+	MediaType audioMediaType;
+	VideoConfig videoConfig;
+	AudioConfig audioConfig;
 
-	bool                           encodedDevice = false;
-	bool                           initialized;
-	bool                           active;
+	bool encodedDevice = false;
+	bool initialized;
+	bool active;
 
-	EncodedData                    encodedVideo;
-	EncodedData                    encodedAudio;
+	EncodedData encodedVideo;
+	EncodedData encodedAudio;
 
 	HDevice();
 	~HDevice();
@@ -79,18 +79,16 @@ struct HDevice {
 	bool EnsureActive(const wchar_t *func);
 	bool EnsureInactive(const wchar_t *func);
 
-	inline void SendToCallback(bool video,
-			unsigned char *data, size_t size,
-			long long startTime, long long stopTime);
+	inline void SendToCallback(bool video, unsigned char *data, size_t size,
+				   long long startTime, long long stopTime);
 
 	void Receive(bool video, IMediaSample *sample);
 
-	bool SetupEncodedVideoCapture(IBaseFilter *filter,
-				VideoConfig &config,
-				const EncodedDevice &info);
+	bool SetupEncodedVideoCapture(IBaseFilter *filter, VideoConfig &config,
+				      const EncodedDevice &info);
 
 	bool SetupExceptionVideoCapture(IBaseFilter *filter,
-			VideoConfig &config);
+					VideoConfig &config);
 
 	bool SetupExceptionAudioCapture(IPin *pin);
 
@@ -105,9 +103,9 @@ struct HDevice {
 	bool CreateGraph();
 	bool FindCrossbar(IBaseFilter *filter, IBaseFilter **crossbar);
 	bool ConnectPins(const GUID &category, const GUID &type,
-			IBaseFilter *filter, IBaseFilter *capture);
+			 IBaseFilter *filter, IBaseFilter *capture);
 	bool RenderFilters(const GUID &category, const GUID &type,
-			IBaseFilter *filter, IBaseFilter *capture);
+			   IBaseFilter *filter, IBaseFilter *capture);
 	void SetAudioBuffering(int bufferingMs);
 	bool ConnectFilters();
 	void DisconnectFilters();
