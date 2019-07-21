@@ -223,10 +223,11 @@ static bool ClosestVideoMTCallback(ClosestVideoData &data,
 	else if (data.config.cy > info.maxCY)
 		yVal = data.config.cy - info.maxCY;
 
-	if (data.config.frameInterval < info.minInterval)
-		frameVal = info.minInterval - data.config.frameInterval;
-	else if (data.config.frameInterval > info.maxInterval)
-		frameVal = data.config.frameInterval - info.maxInterval;
+	const long long frameInterval = data.config.frameInterval;
+	if (frameInterval < info.minInterval)
+		frameVal = info.minInterval - frameInterval;
+	else if (frameInterval > info.maxInterval)
+		frameVal = frameInterval - info.maxInterval;
 
 	formatVal = GetFormatRating(info.format);
 
@@ -245,8 +246,11 @@ static bool ClosestVideoMTCallback(ClosestVideoData &data,
 					   info.granularityCY);
 		}
 
-		if (frameVal == 0)
-			vih->AvgTimePerFrame = data.config.frameInterval;
+		if (frameVal == 0) {
+			// Close enough. Fixes GV-USB2 29.97 FPS setting.
+			if (abs(vih->AvgTimePerFrame - frameInterval) > 1)
+				vih->AvgTimePerFrame = frameInterval;
+		}
 
 		data.found = true;
 		data.bestVal = totalVal;
