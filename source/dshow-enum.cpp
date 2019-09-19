@@ -182,7 +182,7 @@ static inline int GetFormatRating(VideoFormat format)
 		return 0;
 	else if (format >= VideoFormat::YVYU && format < VideoFormat::MJPEG)
 		return 5;
-	else if (format >= VideoFormat::MJPEG)
+	else if (format == VideoFormat::MJPEG)
 		return 10;
 
 	return 15;
