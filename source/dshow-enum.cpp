@@ -218,10 +218,12 @@ static bool ClosestVideoMTCallback(ClosestVideoData &data,
 	else if (data.config.cx > info.maxCX)
 		xVal = data.config.cx - info.maxCX;
 
-	if (data.config.cy < info.minCY)
-		yVal = info.minCY - data.config.cy;
-	else if (data.config.cy > info.maxCY)
-		yVal = data.config.cy - info.maxCY;
+	const int absMinCY = abs(info.minCY);
+	const int absMaxCY = abs(info.maxCY);
+	if (data.config.cy_abs < absMinCY)
+		yVal = absMinCY - data.config.cy_abs;
+	else if (data.config.cy_abs > absMaxCY)
+		yVal = data.config.cy_abs - absMaxCY;
 
 	const long long frameInterval = data.config.frameInterval;
 	if (frameInterval < info.minInterval)
@@ -241,9 +243,11 @@ static bool ClosestVideoMTCallback(ClosestVideoData &data,
 		}
 
 		if (yVal == 0) {
-			bmih->biHeight = data.config.cy;
-			ClampToGranularity(bmih->biHeight, info.minCY,
+			LONG cy_abs_clamp = data.config.cy_abs;
+			ClampToGranularity(cy_abs_clamp, info.minCY,
 					   info.granularityCY);
+			bmih->biHeight = data.config.cy_flip ? -cy_abs_clamp
+							     : cy_abs_clamp;
 		}
 
 		if (frameVal == 0) {

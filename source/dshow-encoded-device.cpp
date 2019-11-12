@@ -218,7 +218,8 @@ bool HDevice::SetupEncodedVideoCapture(IBaseFilter *filter, VideoConfig &config,
 		return false;
 
 	config.cx = info.width;
-	config.cy = info.height;
+	config.cy_abs = labs(info.height);
+	config.cy_flip = info.height < 0;
 	config.frameInterval = info.frameInterval;
 	config.format = info.videoFormat;
 	config.internalFormat = info.videoFormat;

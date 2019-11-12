@@ -161,8 +161,11 @@ struct Config : DeviceId {
 struct VideoConfig : Config {
 	VideoProc callback;
 
-	/** Desired width/height of video.  */
-	int cx = 0, cy = 0;
+	/** Desired width/height of video. */
+	int cx = 0, cy_abs = 0;
+
+	/** Whether or not cy was negative. */
+	bool cy_flip = false;
 
 	/** Desired frame interval (in 100-nanosecond units) */
 	long long frameInterval = 0;
