@@ -513,8 +513,8 @@ static HRESULT DevicePathToDeviceInstancePath(const wchar_t *devicePath,
 
 	/* Convert to uppercase STL string */
 	wstring parseDevicePath = devicePath;
-	std::transform(parseDevicePath.begin(), parseDevicePath.end(),
-		       parseDevicePath.begin(), ::toupper);
+	for (wchar_t &c : parseDevicePath)
+		c = (wchar_t)toupper(c);
 
 	/* Find start position ('\\?\' or '\?\') */
 	wstring startToken = L"\\\\?\\";
