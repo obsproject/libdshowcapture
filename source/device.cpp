@@ -85,14 +85,14 @@ bool HDevice::EnsureInactive(const wchar_t *func)
 
 inline void HDevice::SendToCallback(bool video, unsigned char *data,
 				    size_t size, long long startTime,
-				    long long stopTime)
+				    long long stopTime, long rotation)
 {
 	if (!size)
 		return;
 
 	if (video)
 		videoConfig.callback(videoConfig, data, size, startTime,
-				     stopTime);
+				     stopTime, rotation);
 	else
 		audioConfig.callback(audioConfig, data, size, startTime,
 				     stopTime);
@@ -102,6 +102,7 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 {
 	BYTE *ptr;
 	MediaTypePtr mt;
+	long roll = 0;
 	bool encoded = isVideo ? ((int)videoConfig.format >= 400)
 			       : ((int)audioConfig.format >= 200);
 
@@ -110,6 +111,15 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 
 	if (isVideo ? !videoConfig.callback : !audioConfig.callback)
 		return;
+
+	/* auto-rotation for devices such as streamcam */
+	if (isVideo && rotatableDevice) {
+		ComQIPtr<IAMCameraControl> cc(videoFilter);
+		if (cc) {
+			long ccf = 0;
+			cc->Get(CameraControl_Roll, &roll, &ccf);
+		}
+	}
 
 	if (sample->GetMediaType(&mt) == S_OK) {
 		if (isVideo) {
@@ -139,7 +149,7 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 		if (hasTime) {
 			SendToCallback(isVideo, data.bytes.data(),
 				       data.bytes.size(), data.lastStartTime,
-				       data.lastStopTime);
+				       data.lastStopTime, roll);
 
 			data.bytes.resize(0);
 			data.lastStartTime = startTime;
@@ -150,7 +160,7 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 				  (unsigned char *)ptr + size);
 
 	} else if (hasTime) {
-		SendToCallback(isVideo, ptr, size, startTime, stopTime);
+		SendToCallback(isVideo, ptr, size, startTime, stopTime, roll);
 	}
 }
 
@@ -250,6 +260,9 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 
 	else if (config.name.find(HD_PVR1_NAME) != std::string::npos)
 		return SetupEncodedVideoCapture(filter, config, HD_PVR1);
+
+	rotatableDevice = videoConfig.name.find(L"StreamCam") !=
+			  std::string::npos;
 
 	success = GetFilterPin(filter, MEDIATYPE_Video, PIN_CATEGORY_CAPTURE,
 			       PINDIR_OUTPUT, &pin);

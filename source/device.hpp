@@ -63,6 +63,7 @@ struct HDevice {
 	AudioConfig audioConfig;
 
 	bool encodedDevice = false;
+	bool rotatableDevice = false;
 	bool initialized;
 	bool active;
 
@@ -80,7 +81,8 @@ struct HDevice {
 	bool EnsureInactive(const wchar_t *func);
 
 	inline void SendToCallback(bool video, unsigned char *data, size_t size,
-				   long long startTime, long long stopTime);
+				   long long startTime, long long stopTime,
+				   long rotation);
 
 	void Receive(bool video, IMediaSample *sample);
 

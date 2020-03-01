@@ -30,8 +30,8 @@
 #endif
 
 #define DSHOWCAPTURE_VERSION_MAJOR 0
-#define DSHOWCAPTURE_VERSION_MINOR 6
-#define DSHOWCAPTURE_VERSION_PATCH 2
+#define DSHOWCAPTURE_VERSION_MINOR 7
+#define DSHOWCAPTURE_VERSION_PATCH 0
 
 #define MAKE_DSHOWCAPTURE_VERSION(major, minor, patch) \
 	((major << 24) | (minor << 16) | (patch))
@@ -51,7 +51,8 @@ struct VideoConfig;
 struct AudioConfig;
 
 typedef std::function<void(const VideoConfig &config, unsigned char *data,
-			   size_t size, long long startTime, long long stopTime)>
+			   size_t size, long long startTime, long long stopTime,
+			   long rotation)>
 	VideoProc;
 
 typedef std::function<void(const AudioConfig &config, unsigned char *data,
