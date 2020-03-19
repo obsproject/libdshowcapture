@@ -37,6 +37,7 @@ public:
 	{
 		Clear();
 		ptr = val;
+		return *this;
 	}
 
 	inline T **operator&()
