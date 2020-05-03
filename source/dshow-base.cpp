@@ -302,8 +302,6 @@ bool GetPinByName(IBaseFilter *filter, PIN_DIRECTION dir, const wchar_t *name,
 		return false;
 
 	while (pinsEnum->Next(1, &curPin, &num) == S_OK) {
-		wstring pinName;
-
 		if (PinIsDirection(curPin, dir) && PinNameIs(curPin, name)) {
 			*pin = curPin.Detach();
 			return true;
@@ -499,7 +497,7 @@ wstring ConvertHRToEnglish(HRESULT hr)
 		LocalFree(buffer);
 	}
 
-	return str.c_str();
+	return str;
 }
 
 static HRESULT DevicePathToDeviceInstancePath(const wchar_t *devicePath,
@@ -529,7 +527,7 @@ static HRESULT DevicePathToDeviceInstancePath(const wchar_t *devicePath,
 		startToken.size(), parseDevicePath.size() - startToken.size());
 
 	/* Find end position (last occurrence of '#') */
-	wstring endToken = L"#";
+	wchar_t endToken = '#';
 	size_t end =
 		parseDevicePath.find_last_of(endToken, parseDevicePath.size());
 	if (end == string::npos)
