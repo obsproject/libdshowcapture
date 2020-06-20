@@ -73,7 +73,6 @@ struct HVideoEncoder {
 
 	bool ConnectFilters();
 
-	void InitializeVideoFormat(MediaType &mt);
 	bool SetupEncoder(IBaseFilter *filter);
 
 	bool SetConfig(VideoEncoderConfig &config);

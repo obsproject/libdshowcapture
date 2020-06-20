@@ -25,32 +25,37 @@
 
 namespace DShow {
 
-struct PinOutputInfo {
-	MediaType mt;
-	GUID expectedMajorType;
-	GUID expectedSubType;
-	int cx;
-	int cy;
-};
-
 class OutputFilter;
 
-class OutputPin : public IPin {
+class OutputPin : public IPin, public IAMStreamConfig, public IKsPropertySet {
 	friend class OutputEnumMediaTypes;
+	friend class OutputFilter;
 
 	volatile long refCount;
 
-	PinOutputInfo outputInfo;
+	std::vector<MediaType> mtList;
+
+	MediaType mt;
+	VideoFormat curVFormat;
+	long long curInterval;
+	int curCX;
+	int curCY;
+	bool setSampleMediaType = false;
+
 	ComPtr<IPin> connectedPin;
 	OutputFilter *filter;
 	volatile bool flushing = false;
 	ComPtr<IMemAllocator> allocator;
+	ComPtr<IMediaSample> sample;
 	size_t bufSize;
 
 	bool IsValidMediaType(const AM_MEDIA_TYPE *pmt) const;
 
+	bool AllocateBuffers(IPin *target, bool connecting = false);
+
 public:
-	OutputPin(OutputFilter *filter, const PinOutputInfo &info);
+	OutputPin(OutputFilter *filter, VideoFormat format, int cx, int cy,
+		  long long interval);
 	virtual ~OutputPin();
 
 	STDMETHODIMP QueryInterface(REFIID riid, void **ppv);
@@ -77,9 +82,49 @@ public:
 	STDMETHODIMP NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop,
 				double dRate);
 
+	// IAMStreamConfig methods
+	STDMETHODIMP GetFormat(AM_MEDIA_TYPE **ppmt) override;
+	STDMETHODIMP GetNumberOfCapabilities(int *piCount,
+					     int *piSize) override;
+	STDMETHODIMP GetStreamCaps(int iIndex, AM_MEDIA_TYPE **ppmt,
+				   BYTE *pSCC) override;
+	STDMETHODIMP SetFormat(AM_MEDIA_TYPE *pmt) override;
+
+	// IKsPropertySet methods
+	STDMETHODIMP Set(REFGUID guidPropSet, DWORD dwID, void *pInstanceData,
+			 DWORD cbInstanceData, void *pPropData,
+			 DWORD cbPropData) override;
+
+	STDMETHODIMP Get(REFGUID guidPropSet, DWORD dwPropID,
+			 void *pInstanceData, DWORD cbInstanceData,
+			 void *pPropData, DWORD cbPropData,
+			 DWORD *pcbReturned) override;
+
+	STDMETHODIMP QuerySupported(REFGUID guidPropSet, DWORD dwPropID,
+				    DWORD *pTypeSupport) override;
+
+	// Other methods
+	inline bool ReallocateBuffers()
+	{
+		return !!connectedPin ? AllocateBuffers(connectedPin) : false;
+	}
+
+	inline VideoFormat GetVideoFormat() const { return curVFormat; }
+	inline int GetCX() const { return curCX; }
+	inline int GetCY() const { return curCY; }
+	inline long long GetInterval() const { return curInterval; }
+
+	void AddVideoFormat(VideoFormat format, int cx, int cy,
+			    long long interval);
+	bool SetVideoFormat(VideoFormat format, int cx, int cy,
+			    long long interval);
+
 	void Send(unsigned char *data[DSHOW_MAX_PLANES],
 		  size_t linesize[DSHOW_MAX_PLANES], long long timestampStart,
 		  long long timestampEnd);
+
+	bool LockSampleData(unsigned char **ptr);
+	void UnlockSampleData(long long timestampStart, long long timestampEnd);
 
 	void Stop();
 };
@@ -94,8 +139,11 @@ class OutputFilter : public IBaseFilter {
 
 	ComPtr<IAMFilterMiscFlags> misc;
 
+protected:
+	ComPtr<IReferenceClock> clock;
+
 public:
-	OutputFilter(const PinOutputInfo &info);
+	OutputFilter(VideoFormat format, int cx, int cy, long long interval);
 	virtual ~OutputFilter();
 
 	// IUnknown methods
@@ -121,13 +169,48 @@ public:
 	STDMETHODIMP JoinFilterGraph(IFilterGraph *pGraph, LPCWSTR pName);
 	STDMETHODIMP QueryVendorInfo(LPWSTR *pVendorInfo);
 
+	virtual const wchar_t *FilterName() const;
+
 	inline OutputPin *GetPin() const { return (OutputPin *)pin; }
+
+	inline bool ReallocateBuffers() { return pin->ReallocateBuffers(); }
+
+	inline VideoFormat GetVideoFormat() const
+	{
+		return pin->GetVideoFormat();
+	}
+
+	inline int GetCX() const { return pin->GetCX(); }
+	inline int GetCY() const { return pin->GetCY(); }
+	inline long long GetInterval() const { return pin->GetInterval(); }
+
+	inline void AddVideoFormat(VideoFormat format, int cx, int cy,
+				   long long interval)
+	{
+		pin->AddVideoFormat(format, cx, cy, interval);
+	}
+	inline bool SetVideoFormat(VideoFormat format, int cx, int cy,
+				   long long interval)
+	{
+		return pin->SetVideoFormat(format, cx, cy, interval);
+	}
 
 	inline void Send(unsigned char *data[DSHOW_MAX_PLANES],
 			 size_t linesize[DSHOW_MAX_PLANES],
 			 long long timestampStart, long long timestampEnd)
 	{
 		pin->Send(data, linesize, timestampStart, timestampEnd);
+	}
+
+	inline bool LockSampleData(unsigned char **ptr)
+	{
+		return pin->LockSampleData(ptr);
+	}
+
+	inline void UnlockSampleData(long long timestampStart,
+				     long long timestampEnd)
+	{
+		pin->UnlockSampleData(timestampStart, timestampEnd);
 	}
 };
 

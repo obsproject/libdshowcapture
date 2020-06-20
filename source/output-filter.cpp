@@ -17,7 +17,9 @@
  *  USA
  */
 
+#include <strsafe.h>
 #include "output-filter.hpp"
+#include "dshow-formats.hpp"
 #include "log.hpp"
 
 namespace DShow {
@@ -28,13 +30,22 @@ namespace DShow {
 #define PrintFunc(x)
 #endif
 
+/* XXX: This is hardcoded for NV12/YV12/I420 */
+
 #define FILTER_NAME L"Output Filter"
 #define VIDEO_PIN_NAME L"Video Output"
 #define AUDIO_PIN_NAME L"Audio Output"
 
-OutputPin::OutputPin(OutputFilter *filter_, const PinOutputInfo &info)
-	: refCount(0), outputInfo(info), filter(filter_)
+OutputPin::OutputPin(OutputFilter *filter_, VideoFormat format, int cx, int cy,
+		     long long interval)
+	: refCount(0), filter(filter_)
 {
+	curCX = cx;
+	curCY = cy;
+	curInterval = interval;
+
+	AddVideoFormat(format, cx, cy, interval);
+	SetVideoFormat(format, cx, cy, interval);
 }
 
 OutputPin::~OutputPin() {}
@@ -50,6 +61,14 @@ STDMETHODIMP OutputPin::QueryInterface(REFIID riid, void **ppv)
 	} else if (riid == IID_IMemInputPin) {
 		AddRef();
 		*ppv = (IMemInputPin *)this;
+	} else if (riid == IID_IAMStreamConfig) {
+		AddRef();
+		*ppv = (IAMStreamConfig *)this;
+		return S_OK;
+	} else if (riid == IID_IKsPropertySet) {
+		AddRef();
+		*ppv = (IKsPropertySet *)this;
+		return S_OK;
 	} else {
 		*ppv = nullptr;
 		return E_NOINTERFACE;
@@ -65,12 +84,13 @@ STDMETHODIMP_(ULONG) OutputPin::AddRef()
 
 STDMETHODIMP_(ULONG) OutputPin::Release()
 {
-	if (!InterlockedDecrement(&refCount)) {
+	long newRefs = InterlockedDecrement(&refCount);
+	if (!newRefs) {
 		delete this;
 		return 0;
 	}
 
-	return (ULONG)refCount;
+	return (ULONG)newRefs;
 }
 
 // IPin methods
@@ -86,7 +106,7 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 	if (connectedPin)
 		return VFW_E_ALREADY_CONNECTED;
 
-	hr = pReceivePin->ReceiveConnection(this, outputInfo.mt);
+	hr = pReceivePin->ReceiveConnection(this, mt);
 	if (FAILED(hr)) {
 #if 0 /* debug code to test caps on fail */
 		ComPtr<IEnumMediaTypes> enumMT;
@@ -105,51 +125,9 @@ STDMETHODIMP OutputPin::Connect(IPin *pReceivePin, const AM_MEDIA_TYPE *pmt)
 		return E_FAIL;
 	}
 
-	ComQIPtr<IMemInputPin> memInput(pReceivePin);
-	if (!memInput)
-		return E_FAIL;
-
-	if (!!allocator) {
-		allocator->Decommit();
-	}
-
-	hr = memInput->GetAllocator(&allocator);
-	if (hr == VFW_E_NO_ALLOCATOR)
-		hr = CoCreateInstance(CLSID_MemoryAllocator, NULL,
-				      CLSCTX_INPROC_SERVER,
-				      __uuidof(IMemAllocator),
-				      (void **)&allocator);
-
-	if (FAILED(hr))
-		return E_FAIL;
-
-	int cx = outputInfo.cx;
-	int cy = outputInfo.cy;
-
-	bufSize = cx * cy + cx * cy / 2;
-
-	ALLOCATOR_PROPERTIES props;
-
-	hr = memInput->GetAllocatorRequirements(&props);
-	if (hr == E_NOTIMPL) {
-		props.cBuffers = 4;
-		props.cbBuffer = (long)bufSize;
-		props.cbAlign = 32;
-		props.cbPrefix = 0;
-
-	} else if (FAILED(hr)) {
+	if (!AllocateBuffers(pReceivePin, true)) {
 		return E_FAIL;
 	}
-
-	ALLOCATOR_PROPERTIES actual;
-	hr = allocator->SetProperties(&props, &actual);
-	if (FAILED(hr))
-		return E_FAIL;
-
-	if (FAILED(allocator->Commit()))
-		return E_FAIL;
-
-	memInput->NotifyAllocator(allocator, false);
 
 	connectedPin = pReceivePin;
 	DSHOW_UNUSED(pmt);
@@ -175,6 +153,7 @@ STDMETHODIMP OutputPin::Disconnect()
 
 	if (!!allocator) {
 		allocator->Decommit();
+		allocator.Clear();
 	}
 
 	connectedPin = nullptr;
@@ -185,8 +164,10 @@ STDMETHODIMP OutputPin::ConnectedTo(IPin **pPin)
 {
 	PrintFunc(L"OutputPin::ConnectedTo");
 
-	if (!connectedPin)
+	if (!connectedPin) {
+		*pPin = nullptr;
 		return VFW_E_NOT_CONNECTED;
+	}
 
 	IPin *pin = connectedPin;
 	pin->AddRef();
@@ -201,7 +182,7 @@ STDMETHODIMP OutputPin::ConnectionMediaType(AM_MEDIA_TYPE *pmt)
 	if (!connectedPin)
 		return VFW_E_NOT_CONNECTED;
 
-	return CopyMediaType(pmt, outputInfo.mt);
+	return CopyMediaType(pmt, mt);
 }
 
 STDMETHODIMP OutputPin::QueryPinInfo(PIN_INFO *pInfo)
@@ -214,7 +195,7 @@ STDMETHODIMP OutputPin::QueryPinInfo(PIN_INFO *pInfo)
 		ptr->AddRef();
 	}
 
-	if (outputInfo.expectedMajorType == MEDIATYPE_Video)
+	if (mt->majortype == MEDIATYPE_Video)
 		memcpy(pInfo->achName, VIDEO_PIN_NAME, sizeof(VIDEO_PIN_NAME));
 	else
 		memcpy(pInfo->achName, AUDIO_PIN_NAME, sizeof(AUDIO_PIN_NAME));
@@ -240,11 +221,10 @@ STDMETHODIMP OutputPin::QueryId(LPWSTR *lpId)
 	return S_OK;
 }
 
-STDMETHODIMP OutputPin::QueryAccept(const AM_MEDIA_TYPE *pmt)
+STDMETHODIMP OutputPin::QueryAccept(const AM_MEDIA_TYPE *)
 {
 	PrintFunc(L"OutputPin::QueryAccept");
 
-	DSHOW_UNUSED(pmt);
 	return S_OK;
 }
 
@@ -291,29 +271,285 @@ STDMETHODIMP OutputPin::EndFlush()
 	return S_OK;
 }
 
-STDMETHODIMP OutputPin::NewSegment(REFERENCE_TIME tStart, REFERENCE_TIME tStop,
-				   double dRate)
+STDMETHODIMP OutputPin::NewSegment(REFERENCE_TIME, REFERENCE_TIME, double)
 {
 	PrintFunc(L"OutputPin::NewSegment");
 
-	DSHOW_UNUSED(tStart);
-	DSHOW_UNUSED(tStop);
-	DSHOW_UNUSED(dRate);
 	return S_OK;
 }
 
-bool OutputPin::IsValidMediaType(const AM_MEDIA_TYPE *pmt) const
+STDMETHODIMP OutputPin::GetFormat(AM_MEDIA_TYPE **ppmt)
 {
-	if (pmt->pbFormat) {
-		if (pmt->subtype != outputInfo.expectedSubType ||
-		    pmt->majortype != outputInfo.expectedMajorType)
-			return false;
+	PrintFunc(L"OutputPin::GetFormat");
 
-		if (outputInfo.expectedMajorType == MEDIATYPE_Video) {
-			const BITMAPINFOHEADER *bih = GetBitmapInfoHeader(*pmt);
-			if (!bih || bih->biHeight == 0 || bih->biWidth == 0)
-				return false;
+	if (!ppmt) {
+		return E_POINTER;
+	}
+
+	*ppmt = mt.Duplicate();
+	return S_OK;
+}
+
+STDMETHODIMP OutputPin::GetNumberOfCapabilities(int *piCount, int *piSize)
+{
+	PrintFunc(L"OutputPin::GetNumberOfCapabilities");
+
+	if (!piCount || !piSize) {
+		return E_POINTER;
+	}
+
+	*piCount = (int)mtList.size();
+	*piSize = sizeof(VIDEO_STREAM_CONFIG_CAPS);
+	return S_OK;
+}
+
+STDMETHODIMP OutputPin::GetStreamCaps(int iIndex, AM_MEDIA_TYPE **ppmt,
+				      BYTE *pSCC)
+{
+	PrintFunc(L"OutputPin::GetStreamCaps");
+
+	int count = (int)mtList.size();
+
+	if (!ppmt || !pSCC) {
+		return E_POINTER;
+	}
+	if (iIndex > (count - 1)) {
+		return S_FALSE;
+	}
+	if (iIndex < 0) {
+		return E_INVALIDARG;
+	}
+
+	AM_MEDIA_TYPE *pmt = mtList[iIndex].Duplicate();
+	VIDEOINFOHEADER *vih = reinterpret_cast<decltype(vih)>(pmt->pbFormat);
+
+	VIDEO_STREAM_CONFIG_CAPS caps = {};
+	caps.guid = FORMAT_VideoInfo;
+	caps.MinFrameInterval = vih->AvgTimePerFrame;
+	caps.MaxFrameInterval = vih->AvgTimePerFrame;
+	caps.MinOutputSize.cx = vih->bmiHeader.biWidth;
+	caps.MinOutputSize.cy = vih->bmiHeader.biHeight;
+	caps.MaxOutputSize = caps.MinOutputSize;
+	caps.InputSize = caps.MinOutputSize;
+	caps.MinCroppingSize = caps.MinOutputSize;
+	caps.MaxCroppingSize = caps.MinOutputSize;
+	caps.CropGranularityX = vih->bmiHeader.biWidth;
+	caps.CropGranularityY = vih->bmiHeader.biHeight;
+	caps.MinBitsPerSecond = vih->dwBitRate;
+	caps.MaxBitsPerSecond = caps.MinBitsPerSecond;
+
+	*ppmt = pmt;
+
+	memcpy(pSCC, &caps, sizeof(caps));
+	return S_OK;
+}
+
+STDMETHODIMP OutputPin::SetFormat(AM_MEDIA_TYPE *pmt)
+{
+	PrintFunc(L"OutputPin::SetFormat");
+
+	mt = pmt;
+
+	GetMediaTypeVFormat(mt, curVFormat);
+
+	VIDEOINFOHEADER *vih = reinterpret_cast<decltype(vih)>(mt->pbFormat);
+	curCX = vih->bmiHeader.biWidth;
+	curCY = vih->bmiHeader.biHeight;
+	curInterval = vih->AvgTimePerFrame;
+
+	return S_OK;
+}
+
+STDMETHODIMP OutputPin::Set(REFGUID, DWORD, void *, DWORD, void *, DWORD)
+{
+	PrintFunc(L"OutputPin::Set");
+	return E_NOTIMPL;
+}
+
+STDMETHODIMP OutputPin::Get(REFGUID guidPropSet, DWORD dwPropID, void *, DWORD,
+			    void *pPropData, DWORD cbPropData,
+			    DWORD *pcbReturned)
+{
+	PrintFunc(L"OutputPin::Get");
+
+	if (guidPropSet != AMPROPSETID_Pin)
+		return E_PROP_SET_UNSUPPORTED;
+	if (dwPropID != AMPROPERTY_PIN_CATEGORY)
+		return E_PROP_ID_UNSUPPORTED;
+	if (pPropData == NULL && pcbReturned == NULL)
+		return E_POINTER;
+
+	if (pcbReturned)
+		*pcbReturned = sizeof(GUID);
+	if (pPropData == NULL)
+		return S_OK;
+	if (cbPropData < sizeof(GUID))
+		return E_UNEXPECTED;
+
+	*(GUID *)pPropData = PIN_CATEGORY_CAPTURE;
+	return S_OK;
+}
+
+STDMETHODIMP OutputPin::QuerySupported(REFGUID guidPropSet, DWORD dwPropID,
+				       DWORD *pTypeSupport)
+{
+	PrintFunc(L"OutputPin::QuerySupported");
+
+	if (guidPropSet != AMPROPSETID_Pin)
+		return E_PROP_SET_UNSUPPORTED;
+	if (dwPropID != AMPROPERTY_PIN_CATEGORY)
+		return E_PROP_ID_UNSUPPORTED;
+	if (pTypeSupport)
+		*pTypeSupport = KSPROPERTY_SUPPORT_GET;
+	return S_OK;
+}
+
+bool OutputPin::AllocateBuffers(IPin *target, bool connecting)
+{
+	HRESULT hr;
+
+	ComQIPtr<IMemInputPin> memInput(target);
+	if (!memInput)
+		return false;
+
+	if (!!allocator) {
+		allocator->Decommit();
+	}
+
+	hr = memInput->GetAllocator(&allocator);
+	if (hr == VFW_E_NO_ALLOCATOR)
+		hr = CoCreateInstance(CLSID_MemoryAllocator, NULL,
+				      CLSCTX_INPROC_SERVER,
+				      __uuidof(IMemAllocator),
+				      (void **)&allocator);
+
+	if (FAILED(hr))
+		return false;
+
+	VIDEOINFOHEADER *vih = reinterpret_cast<decltype(vih)>(mt->pbFormat);
+
+	int cx = vih->bmiHeader.biWidth;
+	int cy = vih->bmiHeader.biHeight;
+
+	/* TODO: Support formats, you know, other than video NV12/YV12 if
+	 * needed */
+	bufSize = cx * cy * 15 / 10;
+
+	ALLOCATOR_PROPERTIES props;
+
+	hr = memInput->GetAllocatorRequirements(&props);
+	if (hr == E_NOTIMPL) {
+		props.cBuffers = 4;
+		props.cbAlign = 32;
+		props.cbPrefix = 0;
+
+	} else if (FAILED(hr)) {
+		return false;
+	}
+
+	props.cbBuffer = (long)bufSize;
+
+	ALLOCATOR_PROPERTIES actual;
+	hr = allocator->SetProperties(&props, &actual);
+	if (FAILED(hr))
+		return false;
+
+	if (!connecting && FAILED(allocator->Commit())) {
+		return false;
+	}
+
+	memInput->NotifyAllocator(allocator, false);
+	return true;
+}
+
+static MediaType CreateMediaType(VideoFormat format, int cx, int cy,
+				 long long interval)
+{
+	MediaType mt;
+
+	WORD bits = VFormatBits(format);
+	DWORD size = cx * cy * bits / 8;
+	uint64_t rate =
+		(uint64_t)size * 10000000ULL / (uint64_t)interval * 8ULL;
+
+	VIDEOINFOHEADER *vih = mt.AllocFormat<VIDEOINFOHEADER>();
+	vih->bmiHeader.biSize = sizeof(vih->bmiHeader);
+	vih->bmiHeader.biWidth = cx;
+	vih->bmiHeader.biHeight = cy;
+	vih->bmiHeader.biPlanes = VFormatPlanes(format);
+	vih->bmiHeader.biBitCount = bits;
+	vih->bmiHeader.biSizeImage = size;
+	vih->bmiHeader.biCompression = VFormatToFourCC(format);
+	vih->rcSource.right = cx;
+	vih->rcSource.bottom = cy;
+	vih->rcTarget = vih->rcSource;
+	vih->dwBitRate = (DWORD)rate;
+	vih->AvgTimePerFrame = interval;
+
+	mt->majortype = MEDIATYPE_Video;
+	mt->subtype = VFormatToSubType(format);
+	mt->formattype = FORMAT_VideoInfo;
+	mt->bFixedSizeSamples = true;
+	mt->lSampleSize = size;
+
+	return mt;
+}
+
+void OutputPin::AddVideoFormat(VideoFormat format, int cx, int cy,
+			       long long interval)
+{
+	MediaType newMT = CreateMediaType(format, cx, cy, interval);
+	mtList.push_back(newMT);
+}
+
+bool OutputPin::SetVideoFormat(VideoFormat format, int cx, int cy,
+			       long long interval)
+{
+	mt = CreateMediaType(format, cx, cy, interval);
+
+	if (curCX != cx || curCY != cy || curInterval != interval ||
+	    curVFormat != format) {
+		curVFormat = format;
+		curCX = cx;
+		curCY = cy;
+		curInterval = interval;
+
+		if (!!connectedPin) {
+			setSampleMediaType = true;
+			return ReallocateBuffers();
 		}
+	}
+
+	return true;
+}
+
+bool OutputPin::LockSampleData(unsigned char **ptr)
+{
+	if (!connectedPin)
+		return false;
+
+	ComQIPtr<IMemInputPin> memInput(connectedPin);
+	HRESULT hr;
+
+	if (!memInput || !allocator)
+		return false;
+
+	hr = allocator->GetBuffer(&sample, nullptr, nullptr, 0);
+	if (FAILED(hr))
+		return false;
+
+	if (FAILED(sample->SetActualDataLength((long)bufSize)))
+		return false;
+	if (FAILED(sample->SetDiscontinuity(false)))
+		return false;
+	if (FAILED(sample->SetPreroll(false)))
+		return false;
+	if (FAILED(sample->GetPointer(ptr)))
+		return false;
+
+	if (setSampleMediaType) {
+		sample->SetMediaType(mt);
+		setSampleMediaType = false;
 	}
 
 	return true;
@@ -323,31 +559,8 @@ void OutputPin::Send(unsigned char *data[DSHOW_MAX_PLANES],
 		     size_t linesize[DSHOW_MAX_PLANES],
 		     long long timestampStart, long long timestampEnd)
 {
-	ComQIPtr<IMemInputPin> memInput(connectedPin);
-	REFERENCE_TIME startTime = timestampStart;
-	REFERENCE_TIME endTime = timestampEnd;
-	ComPtr<IMediaSample> sample;
-	HRESULT hr;
 	BYTE *ptr;
-
-	if (!memInput || !allocator)
-		return;
-
-	hr = allocator->GetBuffer(&sample, &startTime, &endTime, 0);
-	if (FAILED(hr))
-		return;
-
-	if (FAILED(sample->SetActualDataLength((long)bufSize)))
-		return;
-	if (FAILED(sample->SetDiscontinuity(false)))
-		return;
-	if (FAILED(sample->SetMediaTime(&startTime, &endTime)))
-		return;
-	if (FAILED(sample->SetPreroll(false)))
-		return;
-	if (FAILED(sample->SetTime(&startTime, &endTime)))
-		return;
-	if (FAILED(sample->GetPointer(&ptr)))
+	if (!LockSampleData(&ptr))
 		return;
 
 	size_t total = 0;
@@ -359,10 +572,25 @@ void OutputPin::Send(unsigned char *data[DSHOW_MAX_PLANES],
 		total += linesize[i];
 	}
 
-	hr = memInput->Receive(sample);
-	if (FAILED(hr)) {
-		DebugHR(L"test", hr);
-	}
+	UnlockSampleData(timestampStart, timestampEnd);
+}
+
+void OutputPin::UnlockSampleData(long long timestampStart,
+				 long long timestampEnd)
+{
+	if (!connectedPin)
+		return;
+
+	ComQIPtr<IMemInputPin> memInput(connectedPin);
+	REFERENCE_TIME startTime = timestampStart;
+	REFERENCE_TIME endTime = timestampEnd;
+
+	sample->SetMediaTime(&startTime, &endTime);
+	sample->SetTime(&startTime, &endTime);
+
+	memInput->Receive(sample);
+
+	sample.Clear();
 }
 
 void OutputPin::Stop()
@@ -416,15 +644,20 @@ public:
 	}
 };
 
-OutputFilter::OutputFilter(const PinOutputInfo &info)
+OutputFilter::OutputFilter(VideoFormat format, int cx, int cy,
+			   long long interval)
 	: refCount(0),
 	  state(State_Stopped),
-	  pin(new OutputPin(this, info)),
+	  pin(new OutputPin(this, format, cx, cy, interval)),
 	  misc(new SourceMiscFlags)
 {
 }
 
-OutputFilter::~OutputFilter() {}
+OutputFilter::~OutputFilter()
+{
+	int test = 0;
+	test = 1;
+}
 
 // IUnknown methods
 STDMETHODIMP OutputFilter::QueryInterface(REFIID riid, void **ppv)
@@ -486,13 +719,16 @@ STDMETHODIMP OutputFilter::GetState(DWORD dwMSecs, FILTER_STATE *State)
 
 STDMETHODIMP OutputFilter::SetSyncSource(IReferenceClock *pClock)
 {
-	DSHOW_UNUSED(pClock);
+	clock = pClock;
 	return S_OK;
 }
 
 STDMETHODIMP OutputFilter::GetSyncSource(IReferenceClock **pClock)
 {
-	*pClock = nullptr;
+	*pClock = clock.Get();
+	if (*pClock) {
+		(*pClock)->AddRef();
+	}
 	return NOERROR;
 }
 
@@ -511,6 +747,11 @@ STDMETHODIMP OutputFilter::Stop()
 STDMETHODIMP OutputFilter::Pause()
 {
 	PrintFunc(L"OutputFilter::Pause");
+
+	OutputPin *pin = GetPin();
+	if (!!pin->allocator && state == State_Stopped) {
+		pin->allocator->Commit();
+	}
 
 	state = State_Paused;
 	return S_OK;
@@ -548,7 +789,7 @@ STDMETHODIMP OutputFilter::QueryFilterInfo(FILTER_INFO *pInfo)
 {
 	PrintFunc(L"OutputFilter::QueryFilterInfo");
 
-	memcpy(pInfo->achName, FILTER_NAME, sizeof(FILTER_NAME));
+	StringCbCopyW(pInfo->achName, sizeof(pInfo->achName), FilterName());
 
 	pInfo->pGraph = graph;
 	if (graph) {
@@ -570,6 +811,11 @@ STDMETHODIMP OutputFilter::QueryVendorInfo(LPWSTR *pVendorInfo)
 {
 	DSHOW_UNUSED(pVendorInfo);
 	return E_NOTIMPL;
+}
+
+const wchar_t *OutputFilter::FilterName() const
+{
+	return FILTER_NAME;
 }
 
 // ============================================================================
@@ -688,12 +934,12 @@ STDMETHODIMP OutputEnumMediaTypes::Next(ULONG cMediaTypes,
 {
 	PrintFunc(L"OutputEnumMediaTypes::Next");
 
+	UINT total = (UINT)pin->mtList.size();
 	UINT nFetched = 0;
 
-	if (curMT == 0 && cMediaTypes > 0) {
-		*ppMediaTypes = pin->outputInfo.mt.Duplicate();
-		nFetched = 1;
-		curMT++;
+	for (ULONG i = 0; i < cMediaTypes && curMT < total; i++) {
+		*(ppMediaTypes++) = pin->mtList[curMT++].Duplicate();
+		nFetched++;
 	}
 
 	if (pcFetched)
@@ -706,7 +952,8 @@ STDMETHODIMP OutputEnumMediaTypes::Skip(ULONG cMediaTypes)
 {
 	PrintFunc(L"OutputEnumMediaTypes::Skip");
 
-	return ((curMT += cMediaTypes) > 1) ? S_FALSE : S_OK;
+	UINT total = (UINT)pin->mtList.size();
+	return ((curMT += cMediaTypes) > total) ? S_FALSE : S_OK;
 }
 
 STDMETHODIMP OutputEnumMediaTypes::Reset()

@@ -161,42 +161,6 @@ bool HVideoEncoder::SetupCrossbar()
 	return true;
 }
 
-void HVideoEncoder::InitializeVideoFormat(MediaType &mt)
-{
-	long long frameTime;
-	DWORD size;
-	long long bitrate;
-
-	frameTime = config.fpsDenominator;
-	frameTime *= 10000000;
-	frameTime /= config.fpsNumerator;
-
-	size = config.cx * config.cy;
-	size += size / 2;
-
-	bitrate = size * config.fpsNumerator / config.fpsDenominator;
-
-	VIDEOINFOHEADER *vih = mt.AllocFormat<VIDEOINFOHEADER>();
-	vih->bmiHeader.biSize = sizeof(vih->bmiHeader);
-	vih->bmiHeader.biWidth = config.cx;
-	vih->bmiHeader.biHeight = config.cy;
-	vih->bmiHeader.biPlanes = 1;
-	vih->bmiHeader.biBitCount = 12;
-	vih->bmiHeader.biSizeImage = size;
-	vih->bmiHeader.biCompression = MAKEFOURCC('Y', 'V', '1', '2');
-	vih->rcSource.right = config.cx;
-	vih->rcSource.bottom = config.cy;
-	vih->rcTarget = vih->rcSource;
-	vih->dwBitRate = (DWORD)(bitrate * 8);
-	vih->AvgTimePerFrame = frameTime;
-
-	mt->majortype = MEDIATYPE_Video;
-	mt->subtype = MEDIASUBTYPE_YV12;
-	mt->formattype = FORMAT_VideoInfo;
-	mt->bFixedSizeSamples = true;
-	mt->lSampleSize = size;
-}
-
 bool HVideoEncoder::SetupEncoder(IBaseFilter *filter)
 {
 	ComPtr<IBaseFilter> deviceFilter;
@@ -244,18 +208,16 @@ bool HVideoEncoder::SetupEncoder(IBaseFilter *filter)
 	captureInfo.expectedMajorType = mtEncoded->majortype;
 	captureInfo.expectedSubType = mtEncoded->subtype;
 
-	PinOutputInfo outputInfo;
-	outputInfo.expectedMajorType = mtRaw->majortype;
-	outputInfo.expectedSubType = mtRaw->subtype;
-	outputInfo.cx = config.cx;
-	outputInfo.cy = config.cy;
-
-	InitializeVideoFormat(outputInfo.mt);
+	long long frameTime;
+	frameTime = config.fpsDenominator;
+	frameTime *= 10000000;
+	frameTime /= config.fpsNumerator;
 
 	encoder = filter;
 	device = deviceFilter;
 	capture = new CaptureFilter(captureInfo);
-	output = new OutputFilter(outputInfo);
+	output = new OutputFilter(VideoFormat::YV12, config.cx, config.cy,
+				  frameTime);
 
 	graph->AddFilter(output, nullptr);
 	graph->AddFilter(device, L"Device Filter");
