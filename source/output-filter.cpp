@@ -653,11 +653,7 @@ OutputFilter::OutputFilter(VideoFormat format, int cx, int cy,
 {
 }
 
-OutputFilter::~OutputFilter()
-{
-	int test = 0;
-	test = 1;
-}
+OutputFilter::~OutputFilter() {}
 
 // IUnknown methods
 STDMETHODIMP OutputFilter::QueryInterface(REFIID riid, void **ppv)
