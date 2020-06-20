@@ -58,6 +58,7 @@ public:
 	inline AM_MEDIA_TYPE *Ptr() { return &type; }
 
 	inline AM_MEDIA_TYPE *operator->() { return &type; }
+	inline const AM_MEDIA_TYPE *operator->() const { return &type; }
 
 	inline AM_MEDIA_TYPE *Duplicate() const
 	{
