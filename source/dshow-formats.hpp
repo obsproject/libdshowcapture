@@ -27,6 +27,11 @@
 
 namespace DShow {
 
+DWORD VFormatToFourCC(VideoFormat format);
+WORD VFormatBits(VideoFormat format);
+WORD VFormatPlanes(VideoFormat format);
+GUID VFormatToSubType(VideoFormat format);
+
 bool GetMediaTypeVFormat(const AM_MEDIA_TYPE &mt, VideoFormat &format);
 
 }; /*namespace DShow */

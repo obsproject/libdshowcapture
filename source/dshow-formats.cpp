@@ -50,6 +50,139 @@ const GUID MEDIASUBTYPE_Y800 = {0x30303859,
 
 namespace DShow {
 
+DWORD VFormatToFourCC(VideoFormat format)
+{
+	switch (format) {
+	/* raw formats */
+	case VideoFormat::ARGB:
+		return MAKEFOURCC('A', 'R', 'G', 'B');
+	case VideoFormat::XRGB:
+		return MAKEFOURCC('R', 'G', 'B', '4');
+
+	/* planar YUV formats */
+	case VideoFormat::I420:
+		return MAKEFOURCC('I', '4', '2', '0');
+	case VideoFormat::NV12:
+		return MAKEFOURCC('N', 'V', '1', '2');
+	case VideoFormat::YV12:
+		return MAKEFOURCC('Y', 'V', '1', '2');
+	case VideoFormat::Y800:
+		return MAKEFOURCC('Y', '8', '0', '0');
+
+	/* packed YUV formats */
+	case VideoFormat::YVYU:
+		return MAKEFOURCC('Y', 'V', 'Y', 'U');
+	case VideoFormat::YUY2:
+		return MAKEFOURCC('Y', 'U', 'Y', '2');
+	case VideoFormat::UYVY:
+		return MAKEFOURCC('U', 'Y', 'V', 'Y');
+	case VideoFormat::HDYC:
+		return MAKEFOURCC('H', 'D', 'Y', 'C');
+
+	/* encoded formats */
+	case VideoFormat::MJPEG:
+		return MAKEFOURCC('M', 'J', 'P', 'G');
+	case VideoFormat::H264:
+		return MAKEFOURCC('H', '2', '6', '4');
+
+	default:
+		return 0;
+	}
+}
+
+GUID VFormatToSubType(VideoFormat format)
+{
+	switch (format) {
+	/* raw formats */
+	case VideoFormat::ARGB:
+		return MEDIASUBTYPE_ARGB32;
+	case VideoFormat::XRGB:
+		return MEDIASUBTYPE_RGB32;
+
+	/* planar YUV formats */
+	case VideoFormat::I420:
+		return MEDIASUBTYPE_I420;
+	case VideoFormat::NV12:
+		return MEDIASUBTYPE_NV12;
+	case VideoFormat::YV12:
+		return MEDIASUBTYPE_YV12;
+	case VideoFormat::Y800:
+		return MEDIASUBTYPE_Y800;
+
+	/* packed YUV formats */
+	case VideoFormat::YVYU:
+		return MEDIASUBTYPE_YVYU;
+	case VideoFormat::YUY2:
+		return MEDIASUBTYPE_YUY2;
+	case VideoFormat::UYVY:
+		return MEDIASUBTYPE_UYVY;
+
+	/* encoded formats */
+	case VideoFormat::MJPEG:
+		return MEDIASUBTYPE_MJPG;
+	case VideoFormat::H264:
+		return MEDIASUBTYPE_H264;
+
+	default:
+		return GUID();
+	}
+}
+
+WORD VFormatBits(VideoFormat format)
+{
+	switch (format) {
+	/* raw formats */
+	case VideoFormat::ARGB:
+	case VideoFormat::XRGB:
+		return 32;
+
+	/* planar YUV formats */
+	case VideoFormat::I420:
+	case VideoFormat::NV12:
+	case VideoFormat::YV12:
+		return 12;
+	case VideoFormat::Y800:
+		return 8;
+
+	/* packed YUV formats */
+	case VideoFormat::YVYU:
+	case VideoFormat::YUY2:
+	case VideoFormat::UYVY:
+		return 16;
+
+	default:
+		return 0;
+	}
+}
+
+WORD VFormatPlanes(VideoFormat format)
+{
+	switch (format) {
+	/* raw formats */
+	case VideoFormat::ARGB:
+	case VideoFormat::XRGB:
+		return 1;
+
+	/* planar YUV formats */
+	case VideoFormat::I420:
+		return 3;
+	case VideoFormat::NV12:
+	case VideoFormat::YV12:
+		return 2;
+	case VideoFormat::Y800:
+		return 1;
+
+	/* packed YUV formats */
+	case VideoFormat::YVYU:
+	case VideoFormat::YUY2:
+	case VideoFormat::UYVY:
+		return 1;
+
+	default:
+		return 0;
+	}
+}
+
 static bool GetFourCCVFormat(DWORD fourCC, VideoFormat &format)
 {
 	switch (fourCC) {
