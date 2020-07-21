@@ -772,7 +772,7 @@ Result HDevice::Start()
 	hr = control->Run();
 
 	if (FAILED(hr)) {
-		if (hr == (HRESULT)0x8007001F) {
+		if (hr == (HRESULT)0x8007001F || || hr == (HRESULT)0x800705AA) {
 			WarningHR(L"Run failed, device already in use", hr);
 			return Result::InUse;
 		} else {
