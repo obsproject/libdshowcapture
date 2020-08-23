@@ -115,6 +115,7 @@ enum class AudioMode {
 	Capture,
 	DirectSound,
 	WaveOut,
+	Disable,
 };
 
 enum class Result {
