@@ -414,6 +414,17 @@ bool HDevice::SetupExceptionAudioCapture(IPin *pin)
 	return false;
 }
 
+static bool is24BitAudio(AM_MEDIA_TYPE *mt)
+{
+	if (mt->formattype == FORMAT_WaveFormatEx &&
+	    mt->cbFormat == sizeof(WAVEFORMATEX)) {
+		WAVEFORMATEX *wfex = (WAVEFORMATEX *)mt->pbFormat;
+		return wfex->wBitsPerSample == 24;
+	}
+
+	return false;
+}
+
 bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 {
 	ComPtr<IPin> pin;
@@ -434,7 +445,16 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 		MediaTypePtr defaultMT;
 
 		if (pinConfig && SUCCEEDED(pinConfig->GetFormat(&defaultMT))) {
-			audioMediaType = defaultMT;
+			if (is24BitAudio(defaultMT)) {
+				WAVEFORMATEX *wfex =
+					(WAVEFORMATEX *)defaultMT->pbFormat;
+				config.sampleRate = wfex->nSamplesPerSec;
+				config.channels = wfex->nChannels;
+				config.format = AudioFormat::Wave16bit;
+				config.useDefaultConfig = false;
+			} else {
+				audioMediaType = defaultMT;
+			}
 		} else {
 			if (!SetupExceptionAudioCapture(pin)) {
 				Error(L"Could not get default format for "
@@ -442,7 +462,9 @@ bool HDevice::SetupAudioCapture(IBaseFilter *filter, AudioConfig &config)
 				return false;
 			}
 		}
-	} else {
+	}
+
+	if (!config.useDefaultConfig) {
 		if (!GetClosestAudioMediaType(filter, config, audioMediaType)) {
 			Error(L"Could not get closest audio media type");
 			return false;
