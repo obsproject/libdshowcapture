@@ -416,8 +416,7 @@ bool HDevice::SetupExceptionAudioCapture(IPin *pin)
 
 static bool is24BitAudio(AM_MEDIA_TYPE *mt)
 {
-	if (mt->formattype == FORMAT_WaveFormatEx &&
-	    mt->cbFormat == sizeof(WAVEFORMATEX)) {
+	if (mt->formattype == FORMAT_WaveFormatEx) {
 		WAVEFORMATEX *wfex = (WAVEFORMATEX *)mt->pbFormat;
 		return wfex->wBitsPerSample == 24;
 	}
