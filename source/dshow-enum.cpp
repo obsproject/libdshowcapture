@@ -332,11 +332,19 @@ static bool ClosestAudioMTCallback(ClosestAudioData &data,
 		sampleRateVal = info.minSampleRate - data.config.sampleRate;
 	else if (data.config.sampleRate > info.maxSampleRate)
 		sampleRateVal = data.config.sampleRate - info.maxSampleRate;
+	else if (data.config.sampleRate == info.minSampleRate)
+		sampleRateVal = data.config.sampleRate;
+	else if (data.config.sampleRate == info.maxSampleRate)
+		sampleRateVal = data.config.sampleRate;
 
 	if (data.config.channels < info.minChannels)
 		channelsVal = info.minChannels - data.config.channels;
+	else if (data.config.channels == info.minChannels)
+		channelsVal = info.minChannels;
 	else if (info.maxChannels > data.config.channels)
 		channelsVal = data.config.channels - info.maxChannels;
+	else if (data.config.channels == info.maxChannels)
+		channelsVal = data.config.channels;
 
 	int totalVal = sampleRateVal + channelsVal;
 
