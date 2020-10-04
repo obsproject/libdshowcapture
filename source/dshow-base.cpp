@@ -671,7 +671,16 @@ static bool IsMonikerSameParentInstPath(IMoniker *moniker,
 	return wcscmp(audParentDevInstPath, vidParentDevInstPath) == 0;
 }
 
-static bool IsElgatoDevice(const wchar_t *vidDevInstPath)
+#define VEN_ID_SIZE 4
+
+static inline bool MatchingStartToken(const wstring &path,
+				      const wstring &start_token)
+{
+	return path.find(start_token) == 0 &&
+	       path.size() >= start_token.size() + VEN_ID_SIZE;
+}
+
+static bool IsUncoupledDevice(const wchar_t *vidDevInstPath)
 {
 	/* Sanity checks */
 	if (!vidDevInstPath)
@@ -681,35 +690,52 @@ static bool IsElgatoDevice(const wchar_t *vidDevInstPath)
 
 	/* USB */
 	wstring usbToken = L"USB\\VID_";
-	wstring usbVidElgato = L"0FD9";
+	wstring usbVidIdWhitelist[] = {
+		L"0FD9", /* elgato */
+		L"3842", /* evga */
+	};
 
-	if (path.find(usbToken) == 0) {
-		if (path.size() >= usbToken.size() + usbVidElgato.size()) {
-
-			/* Get USB vendor ID */
-			wstring vid = path.substr(usbToken.size(),
-						  usbVidElgato.size());
-			if (vid == usbVidElgato)
+	if (MatchingStartToken(path, usbToken)) {
+		/* Get USB vendor ID */
+		wstring vid = path.substr(usbToken.size(), VEN_ID_SIZE);
+		for (wstring &whitelistId : usbVidIdWhitelist) {
+			if (vid == whitelistId) {
 				return true;
+			}
 		}
 	}
 
 	/* PCI */
-	wstring pciToken = L"PCI\\VEN_";
+	wstring pciVenToken = L"PCI\\VEN_";
 	wstring pciSubsysToken = L"SUBSYS_";
-	wstring pciVidElgato = L"1CFA";
+	wstring pciVenIdWhitelist[] = {
+		L"1CD7", /* magewell */
+	};
+	wstring pciSubsysIdWhitelist[] = {
+		L"1CFA", /* elgato */
+	};
 
-	if (path.find(pciToken) == 0) {
-		size_t pos = path.find(pciSubsysToken);
-		size_t devSize =
-			pos + pciSubsysToken.size() + 4; /* skip product ID*/
-		size_t expectedSize = devSize + pciVidElgato.size();
-
-		if (pos != string::npos && path.size() >= expectedSize) {
-			/* Get PCI subsystem vendor ID */
-			wstring vid = path.substr(devSize, pciVidElgato.size());
-			if (vid == pciVidElgato)
+	if (MatchingStartToken(path, pciVenToken)) {
+		wstring vid = path.substr(usbToken.size(), VEN_ID_SIZE);
+		for (wstring &whitelistId : pciVenIdWhitelist) {
+			if (vid == whitelistId) {
 				return true;
+			}
+		}
+
+		size_t subsysPos = path.find(pciSubsysToken);
+		size_t subsysIdPos =
+			subsysPos + pciSubsysToken.size() + VEN_ID_SIZE;
+		size_t expectedSize = subsysIdPos + VEN_ID_SIZE;
+
+		if (subsysPos != string::npos && path.size() >= expectedSize) {
+			/* Get PCI subsystem vendor ID */
+			wstring ssid = path.substr(subsysIdPos, VEN_ID_SIZE);
+			for (wstring &whitelistId : pciSubsysIdWhitelist) {
+				if (ssid == whitelistId) {
+					return true;
+				}
+			}
 		}
 	}
 
@@ -762,11 +788,12 @@ static bool GetDeviceAudioFilterInternal(REFCLSID deviceClass,
 	wchar_t vidDevInstPath[512];
 	HRESULT hr = DevicePathToDeviceInstancePath(vidDevPath, vidDevInstPath,
 						    _ARRAYSIZE(vidDevInstPath));
+	if (FAILED(hr))
+		return false;
 
-	/* Only enabled for Elgato devices for now to do not change behavior
-	 * for any other devices (e.g. webcams) */
 #if 1
-	if (!IsElgatoDevice(vidDevInstPath))
+	/* Only enabled for certain whitelisted devices for now */
+	if (!IsUncoupledDevice(vidDevInstPath))
 		return false;
 #endif
 
