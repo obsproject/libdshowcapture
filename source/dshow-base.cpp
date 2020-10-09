@@ -694,6 +694,21 @@ static bool IsUncoupledDevice(const wchar_t *vidDevInstPath)
 		L"3842", /* evga */
 		L"0B05", /* asus */
 		L"07CA", /* avermedia */
+		L"048D", /* digitnow/pengo */
+		L"04B4", /* mokose */
+		L"0557", /* aten */
+		L"1164", /* startek/kapchr */
+		L"1532", /* razer */
+		L"1BCF", /* mypin/treaslin/mirabox */
+		L"1E4E", /* pengo/cloneralliance */
+		L"1E71", /* nzxt */
+		L"2040", /* hauppauge */
+		L"2935", /* magewell */
+		L"298F", /* genki */
+		L"2B77", /* epiphan */
+		L"32ED", /* ezcap */
+		L"534D", /* brand-less/pacoxi/ucec */
+		L"EBA4", /* zasluke */
 	};
 
 	if (MatchingStartToken(path, usbToken)) {
@@ -711,6 +726,8 @@ static bool IsUncoupledDevice(const wchar_t *vidDevInstPath)
 	const wstring pciSubsysToken = L"SUBSYS_";
 	const wstring pciVenIdWhitelist[] = {
 		L"1CD7", /* magewell */
+		L"8888", /* acasis */
+		L"1461", /* avermedia */
 	};
 	const wstring pciSubsysIdWhitelist[] = {
 		L"1CFA", /* elgato */
