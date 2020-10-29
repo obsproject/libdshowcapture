@@ -348,6 +348,9 @@ STDMETHODIMP OutputPin::SetFormat(AM_MEDIA_TYPE *pmt)
 {
 	PrintFunc(L"OutputPin::SetFormat");
 
+	if (pmt == nullptr)
+		return VFW_E_INVALIDMEDIATYPE;
+
 	mt = pmt;
 
 	GetMediaTypeVFormat(mt, curVFormat);
