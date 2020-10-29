@@ -651,6 +651,7 @@ OutputFilter::OutputFilter(VideoFormat format, int cx, int cy,
 			   long long interval)
 	: refCount(0),
 	  state(State_Stopped),
+	  graph(nullptr),
 	  pin(new OutputPin(this, format, cx, cy, interval)),
 	  misc(new SourceMiscFlags)
 {
