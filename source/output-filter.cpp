@@ -30,8 +30,6 @@ namespace DShow {
 #define PrintFunc(x)
 #endif
 
-/* XXX: This is hardcoded for NV12/YV12/I420 */
-
 #define FILTER_NAME L"Output Filter"
 #define VIDEO_PIN_NAME L"Video Output"
 #define AUDIO_PIN_NAME L"Audio Output"
@@ -434,9 +432,8 @@ bool OutputPin::AllocateBuffers(IPin *target, bool connecting)
 	int cx = vih->bmiHeader.biWidth;
 	int cy = vih->bmiHeader.biHeight;
 
-	/* TODO: Support formats, you know, other than video NV12/YV12 if
-	 * needed */
-	bufSize = cx * cy * 15 / 10;
+	WORD bits = VFormatBits(curVFormat);
+	bufSize = cx * cy * bits / 8;
 
 	ALLOCATOR_PROPERTIES props;
 
