@@ -780,9 +780,105 @@ static HRESULT ReadProperty(IMoniker *moniker, const wchar_t *property,
 	return hr;
 }
 
+static HRESULT GetFriendlyName(REFCLSID deviceClass, const wchar_t *devPath,
+			       wchar_t *name, int nameSize)
+{
+	/* Sanity checks */
+	if (!devPath)
+		return E_POINTER;
+	if (!name)
+		return E_POINTER;
+
+	/* Create device enumerator */
+	ComPtr<ICreateDevEnum> createDevEnum;
+	HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL,
+				      CLSCTX_INPROC_SERVER, IID_ICreateDevEnum,
+				      (void **)&createDevEnum);
+
+	/* Enumerate filters */
+	ComPtr<IEnumMoniker> enumMoniker;
+	if (SUCCEEDED(hr)) {
+		/* returns S_FALSE if no devices are installed */
+		hr = createDevEnum->CreateClassEnumerator(deviceClass,
+							  &enumMoniker, 0);
+		if (!enumMoniker)
+			hr = E_FAIL;
+	}
+
+	/* Cycle through the enumeration */
+	if (SUCCEEDED(hr)) {
+		ULONG fetched = 0;
+		ComPtr<IMoniker> moniker;
+
+		enumMoniker->Reset();
+
+		while (enumMoniker->Next(1, &moniker, &fetched) == S_OK) {
+
+			/* Get device path from moniker */
+			wchar_t monikerDevPath[512];
+			hr = ReadProperty(moniker, L"DevicePath",
+					  monikerDevPath,
+					  _ARRAYSIZE(monikerDevPath));
+
+			/* Find desired filter */
+			if (wcscmp(devPath, monikerDevPath) == 0) {
+
+				/* Get friendly name */
+				hr = ReadProperty(moniker, L"FriendlyName",
+						  name, nameSize);
+				return hr;
+			}
+		}
+	}
+
+	return E_FAIL;
+}
+
+static bool MatchFriendlyNames(const wchar_t *vidName, const wchar_t *audName)
+{
+	/* Sanity checks */
+	if (!vidName)
+		return false;
+	if (!audName)
+		return false;
+
+	/* Convert strings to lower case */
+	wstring strVidName = vidName;
+	for (wchar_t &c : strVidName)
+		c = (wchar_t)tolower(c);
+	wstring strAudName = audName;
+	for (wchar_t &c : strAudName)
+		c = (wchar_t)tolower(c);
+
+	/* Remove 'video' from friendly name */
+	size_t posVid;
+	wstring searchVid[] = {L"(video) ", L"(video)", L"video ", L"video"};
+	for (int i = 0; i < _ARRAYSIZE(searchVid); i++) {
+		wstring &search = searchVid[i];
+		while ((posVid = strVidName.find(search)) !=
+		       std::string::npos) {
+			strVidName.replace(posVid, search.length(), L"");
+		}
+	}
+
+	/* Remove 'audio' from friendly name */
+	size_t posAud;
+	wstring searchAud[] = {L"(audio) ", L"(audio)", L"audio ", L"audio"};
+	for (int i = 0; i < _ARRAYSIZE(searchAud); i++) {
+		wstring &search = searchAud[i];
+		while ((posAud = strAudName.find(search)) !=
+		       std::string::npos) {
+			strAudName.replace(posAud, search.length(), L"");
+		}
+	}
+
+	return strVidName == strAudName;
+}
+
 static bool GetDeviceAudioFilterInternal(REFCLSID deviceClass,
 					 const wchar_t *vidDevPath,
-					 IBaseFilter **audioCaptureFilter)
+					 IBaseFilter **audioCaptureFilter,
+					 bool matchFilterName = false)
 {
 	/* Get video device instance path */
 	wchar_t vidDevInstPath[512];
@@ -796,6 +892,15 @@ static bool GetDeviceAudioFilterInternal(REFCLSID deviceClass,
 	if (!IsUncoupledDevice(vidDevInstPath))
 		return false;
 #endif
+
+	/* Get friendly name */
+	wchar_t vidName[512];
+	if (matchFilterName) {
+		hr = GetFriendlyName(CLSID_VideoInputDeviceCategory, vidDevPath,
+				     vidName, _ARRAYSIZE(vidName));
+		if (FAILED(hr))
+			return false;
+	}
 
 	/* Create device enumerator */
 	ComPtr<ICreateDevEnum> createDevEnum;
@@ -823,12 +928,6 @@ static bool GetDeviceAudioFilterInternal(REFCLSID deviceClass,
 
 		while (enumMoniker->Next(1, &moniker, &fetched) == S_OK) {
 			bool samePath = false;
-#if 0
-			/* Get friendly name (helpful for debugging) */
-			wchar_t friendlyName[512];
-			ReadProperty(moniker, L"FriendlyName", friendlyName,
-					_ARRAYSIZE(friendlyName));
-#endif
 
 			/* Get device path */
 			wchar_t audDevPath[512];
@@ -848,11 +947,29 @@ static bool GetDeviceAudioFilterInternal(REFCLSID deviceClass,
 
 			/* Get audio capture filter */
 			if (samePath) {
-				hr = moniker->BindToObject(
-					0, 0, IID_IBaseFilter,
-					(void **)audioCaptureFilter);
-				if (SUCCEEDED(hr))
-					return true;
+				/* Match video and audio filter names */
+				bool isSameFilterName = false;
+				if (matchFilterName) {
+					wchar_t audName[512];
+					hr = ReadProperty(moniker,
+							  L"FriendlyName",
+							  audName,
+							  _ARRAYSIZE(audName));
+					if (SUCCEEDED(hr)) {
+						isSameFilterName =
+							MatchFriendlyNames(
+								vidName,
+								audName);
+					}
+				}
+
+				if (!matchFilterName || isSameFilterName) {
+					hr = moniker->BindToObject(
+						0, 0, IID_IBaseFilter,
+						(void **)audioCaptureFilter);
+					if (SUCCEEDED(hr))
+						return true;
+				}
 			}
 		}
 	}
@@ -863,9 +980,23 @@ static bool GetDeviceAudioFilterInternal(REFCLSID deviceClass,
 bool GetDeviceAudioFilter(const wchar_t *vidDevPath,
 			  IBaseFilter **audioCaptureFilter)
 {
-	/* Search in "Audio capture sources" */
+	/* Search in "Audio capture sources" and match filter name */
 	bool success = GetDeviceAudioFilterInternal(
-		CLSID_AudioInputDeviceCategory, vidDevPath, audioCaptureFilter);
+		CLSID_AudioInputDeviceCategory, vidDevPath, audioCaptureFilter,
+		true);
+
+	/* Search in "WDM Streaming Capture Devices" and match filter name */
+	if (!success)
+		success = GetDeviceAudioFilterInternal(KSCATEGORY_CAPTURE,
+						       vidDevPath,
+						       audioCaptureFilter,
+						       true);
+
+	/* Search in "Audio capture sources" */
+	if (!success)
+		success = GetDeviceAudioFilterInternal(
+			CLSID_AudioInputDeviceCategory, vidDevPath,
+			audioCaptureFilter);
 
 	/* Search in "WDM Streaming Capture Devices" */
 	if (!success)
