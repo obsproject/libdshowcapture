@@ -17,10 +17,11 @@
  *  USA
  */
 
-#include <strsafe.h>
 #include "output-filter.hpp"
 #include "dshow-formats.hpp"
 #include "log.hpp"
+
+#include <strsafe.h>
 
 namespace DShow {
 
