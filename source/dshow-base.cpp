@@ -31,9 +31,6 @@
 #include <cfgmgr32.h> // for CM_xxx
 #include <algorithm>  // for std::transform
 
-#pragma comment(lib, "winmm.lib")    // for waveInMessage
-#pragma comment(lib, "setupapi.lib") // for SetupDixxx
-
 using namespace std;
 
 namespace DShow {
