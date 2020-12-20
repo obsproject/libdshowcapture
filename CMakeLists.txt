@@ -99,7 +99,9 @@ add_library(libdshowcapture
 	${libdshowcapture_SOURCES}
 	${libdshowcapture_HEADERS})
 
-target_link_libraries(libdshowcapture
+target_link_libraries(libdshowcapture PRIVATE
+	setupapi
 	strmiids
 	ksuser
+	winmm
 	wmcodecdspuuid)
