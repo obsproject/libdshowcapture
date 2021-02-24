@@ -326,6 +326,8 @@ bool HDevice::SetupVideoCapture(IBaseFilter *filter, VideoConfig &config)
 		info.expectedSubType = MEDIASUBTYPE_RGB32;
 	else if (videoConfig.format == VideoFormat::ARGB)
 		info.expectedSubType = MEDIASUBTYPE_ARGB32;
+	else if (videoConfig.format == VideoFormat::RGB24)
+		info.expectedSubType = MEDIASUBTYPE_RGB24;
 	else if (videoConfig.format == VideoFormat::YVYU)
 		info.expectedSubType = MEDIASUBTYPE_YVYU;
 	else if (videoConfig.format == VideoFormat::YUY2)
