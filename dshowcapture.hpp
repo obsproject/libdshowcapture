@@ -31,7 +31,7 @@
 
 #define DSHOWCAPTURE_VERSION_MAJOR 0
 #define DSHOWCAPTURE_VERSION_MINOR 8
-#define DSHOWCAPTURE_VERSION_PATCH 6
+#define DSHOWCAPTURE_VERSION_PATCH 7
 
 #define MAKE_DSHOWCAPTURE_VERSION(major, minor, patch) \
 	((major << 24) | (minor << 16) | (patch))
