@@ -852,7 +852,8 @@ static bool MatchFriendlyNames(const wchar_t *vidName, const wchar_t *audName)
 
 	/* Remove 'video' from friendly name */
 	size_t posVid;
-	wstring searchVid[] = {L"(video) ", L"(video)", L"video ", L"video", L"hdmi", L" / multiview"};
+	wstring searchVid[] = {L"(video) ", L"(video)", L"video ",
+			       L"video",    L"hdmi",    L" / multiview"};
 	for (int i = 0; i < _ARRAYSIZE(searchVid); i++) {
 		wstring &search = searchVid[i];
 		while ((posVid = strVidName.find(search)) !=
