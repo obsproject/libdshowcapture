@@ -693,6 +693,7 @@ static bool IsUncoupledDevice(const wchar_t *vidDevInstPath)
 	wstring usbVidIdWhitelist[] = {
 		L"0FD9", /* elgato */
 		L"3842", /* evga */
+		L"0B05", /* asus */
 	};
 
 	if (MatchingStartToken(path, usbToken)) {
