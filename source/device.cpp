@@ -64,7 +64,7 @@ HDevice::~HDevice()
 	}
 }
 
-unsigned HDevice::EventThread(void *pParam)
+unsigned __stdcall HDevice::EventThread(void *pParam)
 {
 	HDevice *self = reinterpret_cast<HDevice *>(pParam);
 	CoInitialize(nullptr);

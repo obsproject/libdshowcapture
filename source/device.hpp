@@ -82,7 +82,7 @@ struct HDevice {
 	~HDevice();
 
 	// handle insert/remove events
-	static unsigned EventThread(void *pParam);
+	static unsigned __stdcall EventThread(void *pParam);
 	void EventThreadInner();
 	bool ReadAllEvents();
 	void StartEventThread();
