@@ -30,12 +30,23 @@ namespace DShow {
 
 bool SetRocketEnabled(IBaseFilter *encoder, bool enable);
 
-HDevice::HDevice() : initialized(false), active(false) {}
+HDevice::HDevice(IDeviceCallback *cb)
+	: initialized(false),
+	  active(false),
+	  callback(cb),
+	  msgEvt(0),
+	  msgThread(0)
+{
+	exitEvt = ::CreateEvent(NULL, TRUE, FALSE, NULL);
+}
 
 HDevice::~HDevice()
 {
 	if (active)
 		Stop();
+
+	StopEventThread();
+	CloseHandle(exitEvt);
 
 	DisconnectFilters();
 
@@ -50,6 +61,90 @@ HDevice::~HDevice()
 	if (!!rocketEncoder) {
 		Sleep(ROCKET_WAIT_TIME_MS);
 		SetRocketEnabled(rocketEncoder, false);
+	}
+}
+
+unsigned HDevice::EventThread(void *pParam)
+{
+	HDevice *self = reinterpret_cast<HDevice *>(pParam);
+	CoInitialize(nullptr);
+	self->EventThreadInner();
+	CoUninitialize();
+	return 0;
+}
+
+void HDevice::EventThreadInner()
+{
+	HANDLE events[] = {
+		exitEvt, // must be first one
+		msgEvt,
+	};
+
+	DWORD count = sizeof(events) / sizeof(HANDLE);
+
+	while (true) {
+		DWORD res =
+			WaitForMultipleObjects(count, events, FALSE, INFINITE);
+		if (res == WAIT_OBJECT_0)
+			break; // exitEvt is set for exiting thread
+
+		if (!ReadAllEvents())
+			break;
+	}
+}
+
+#define FLAG_REMOVE_DEVICE 0
+#define FLAG_INSERT_DEVICE 1
+
+bool HDevice::ReadAllEvents()
+{
+	long eventCode = 0;
+	LONG_PTR param1 = 0;
+	LONG_PTR param2 = 0;
+
+	while (SUCCEEDED(eventEx->GetEvent(&eventCode, &param1, &param2, 0))) {
+		if (EC_DEVICE_LOST == eventCode) {
+			if (FLAG_REMOVE_DEVICE == param2) {
+				Warning(L"Device is removed.");
+				callback->OnDeviceRemoved();
+			} else if (FLAG_INSERT_DEVICE == param2) {
+				Info(L"Device is inserted again.");
+				callback->OnDeviceInserted();
+			}
+		}
+
+		eventEx->FreeEventParams(eventCode, param1, param2);
+
+		if (WAIT_OBJECT_0 == WaitForSingleObject(exitEvt, 0))
+			return false;
+	}
+
+	return true;
+}
+
+void HDevice::StartEventThread()
+{
+	if (msgThread && (msgThread != INVALID_HANDLE_VALUE)) {
+		Warning(L"Message thread is running!");
+		return;
+	}
+
+	if (!callback) {
+		Info(L"Won't create message thread because no callback.");
+		return;
+	}
+
+	::ResetEvent(exitEvt);
+	msgThread = (HANDLE)_beginthreadex(0, 0, EventThread, this, 0, 0);
+}
+
+void HDevice::StopEventThread()
+{
+	::SetEvent(exitEvt);
+	if (msgThread && (msgThread != INVALID_HANDLE_VALUE)) {
+		WaitForSingleObject(msgThread, INFINITE);
+		CloseHandle(msgThread);
+		msgThread = 0;
 	}
 }
 
@@ -601,8 +696,18 @@ bool HDevice::CreateGraph()
 		return false;
 	}
 
-	if (!CreateFilterGraph(&graph, &builder, &control))
+	StopEventThread();
+
+	if (!CreateFilterGraph(&graph, &builder, &control, &eventEx))
 		return false;
+
+	HRESULT hr = eventEx->GetEventHandle((OAEVENT *)&msgEvt);
+	if (FAILED(hr)) {
+		ErrorHR(L"Failed to get event handle", hr);
+		return false;
+	}
+
+	StartEventThread();
 
 	initialized = true;
 	return true;

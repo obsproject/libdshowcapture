@@ -204,11 +204,20 @@ struct AudioConfig : Config {
 	AudioMode mode = AudioMode::Capture;
 };
 
+class IDeviceCallback {
+public:
+	virtual ~IDeviceCallback() {}
+
+	virtual void OnDeviceRemoved() = 0;
+	virtual void OnDeviceInserted() = 0;
+};
+
 class DSHOWCAPTURE_EXPORT Device {
 	HDevice *context;
+	IDeviceCallback *callback;
 
 public:
-	Device(InitGraph initialize = InitGraph::False);
+	Device(InitGraph initialize = InitGraph::False, IDeviceCallback *cb = NULL);
 	~Device();
 
 	bool Valid() const;

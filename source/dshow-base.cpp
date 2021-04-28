@@ -39,11 +39,12 @@ using namespace std;
 namespace DShow {
 
 bool CreateFilterGraph(IGraphBuilder **pgraph, ICaptureGraphBuilder2 **pbuilder,
-		       IMediaControl **pcontrol)
+		       IMediaControl **pcontrol, IMediaEventEx **pevent)
 {
 	ComPtr<IGraphBuilder> graph;
 	ComPtr<ICaptureGraphBuilder2> builder;
 	ComPtr<IMediaControl> control;
+	ComPtr<IMediaEventEx> event;
 	HRESULT hr;
 
 	hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
@@ -71,6 +72,16 @@ bool CreateFilterGraph(IGraphBuilder **pgraph, ICaptureGraphBuilder2 **pbuilder,
 	if (FAILED(hr)) {
 		ErrorHR(L"Failed to create IMediaControl", hr);
 		return false;
+	}
+
+	if (pevent) {
+		hr = graph->QueryInterface(IID_IMediaEventEx, (void **)&event);
+		if (FAILED(hr)) {
+			ErrorHR(L"Failed to get media event interface", hr);
+			return false;
+		}
+
+		*pevent = event.Detach();
 	}
 
 	*pgraph = graph.Detach();
