@@ -318,7 +318,7 @@ bool HVideoEncoder::SetConfig(VideoEncoderConfig &config)
 	}
 
 	bool success = GetDeviceFilter(KSCATEGORY_ENCODER, config.name.c_str(),
-				       config.path.c_str(), &filter);
+				       config.path.c_str(), config.clsid.c_str(), &filter);
 	if (!success) {
 		Warning(L"Video encoder '%s': %s not found",
 			config.name.c_str(), config.path.c_str());

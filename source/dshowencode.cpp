@@ -83,7 +83,8 @@ bool VideoEncoder::Encode(unsigned char *data[DSHOW_MAX_PLANES],
 
 static bool EnumVideoEncoder(vector<DeviceId> &encoders, IBaseFilter *encoder,
 			     const wchar_t *deviceName,
-			     const wchar_t *devicePath)
+			     const wchar_t *devicePath,
+			     const wchar_t* deviceCLSID)
 {
 	DeviceId id;
 	bool validDevice = wcsstr(deviceName, L"C985") ||
@@ -93,7 +94,8 @@ static bool EnumVideoEncoder(vector<DeviceId> &encoders, IBaseFilter *encoder,
 		return true;
 
 	id.name = deviceName;
-	id.path = devicePath;
+	id.path = devicePath ? devicePath : L"";
+	id.clsid = deviceCLSID ? deviceCLSID : L"";;
 	encoders.push_back(id);
 
 	(void)encoder;

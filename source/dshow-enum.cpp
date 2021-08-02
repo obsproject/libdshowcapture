@@ -453,9 +453,11 @@ static bool EnumDevice(const GUID &type, IMoniker *deviceInfo,
 	if (FAILED(hr))
 		return true;
 
-	VARIANT deviceName, devicePath;
+	VARIANT deviceName, devicePath, deviceCLSID;
 	deviceName.vt = VT_BSTR;
 	devicePath.vt = VT_BSTR;
+	deviceCLSID.vt = VT_BSTR;
+	deviceCLSID.bstrVal = NULL;
 	devicePath.bstrVal = NULL;
 
 	hr = propertyData->Read(L"FriendlyName", &deviceName, NULL);
@@ -472,13 +474,14 @@ static bool EnumDevice(const GUID &type, IMoniker *deviceInfo,
 		return true;
 	}
 
+	propertyData->Read(L"CLSID", &deviceCLSID, NULL);
 	propertyData->Read(L"DevicePath", &devicePath, NULL);
 
 	hr = deviceInfo->BindToObject(NULL, 0, IID_IBaseFilter,
 				      (void **)&filter);
 	if (SUCCEEDED(hr)) {
 		if (!callback(param, filter, deviceName.bstrVal,
-			      devicePath.bstrVal))
+			      devicePath.bstrVal, deviceCLSID.bstrVal))
 			return false;
 	}
 
@@ -495,7 +498,7 @@ static bool EnumExceptionVideoDevices(EnumDeviceCallback callback, void *param)
 			      (void **)&filter);
 	if (SUCCEEDED(hr)) {
 		if (!callback(param, filter, L"Elgato Game Capture HD",
-			      L"__elgato"))
+			      L"__elgato", L"__elgato"))
 			return false;
 	}
 
@@ -506,7 +509,8 @@ static recursive_mutex enumMutex;
 
 static bool CheckForDLCallback(void *unused, IBaseFilter *filter,
 			       const wchar_t *deviceName,
-			       const wchar_t *devicePath)
+			       const wchar_t *devicePath, 
+			       const wchar_t* clsid)
 {
 	if (wcsstr(deviceName, L"Decklink") != nullptr) {
 		decklinkVideoPresent = true;
@@ -516,6 +520,7 @@ static bool CheckForDLCallback(void *unused, IBaseFilter *filter,
 	DSHOW_UNUSED(unused);
 	DSHOW_UNUSED(filter);
 	DSHOW_UNUSED(devicePath);
+	DSHOW_UNUSED(clsid);
 	return true;
 }
 

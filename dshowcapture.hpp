@@ -142,6 +142,7 @@ struct AudioInfo {
 struct DeviceId {
 	std::wstring name;
 	std::wstring path;
+	std::wstring clsid;
 };
 
 struct VideoDevice : DeviceId {
