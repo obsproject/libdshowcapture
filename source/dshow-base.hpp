@@ -44,8 +44,8 @@ bool CreateFilterGraph(IGraphBuilder **graph, ICaptureGraphBuilder2 **builder,
 
 void LogFilters(IGraphBuilder *graph);
 
-bool GetDeviceFilter(const IID &type, const wchar_t *name, const wchar_t *path, const wchar_t* clsid,
-		     IBaseFilter **filter);
+bool GetDeviceFilter(const IID &type, const wchar_t *name, const wchar_t *path,
+		     const wchar_t *clsid, IBaseFilter **filter);
 
 bool GetFilterPin(IBaseFilter *filter, const GUID &type, const GUID &category,
 		  PIN_DIRECTION dir, IPin **pin);

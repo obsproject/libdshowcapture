@@ -108,12 +108,12 @@ struct DeviceFilterCallbackInfo {
 	ComPtr<IBaseFilter> filter;
 	const wchar_t *name;
 	const wchar_t *path;
-	const wchar_t* clsid;
+	const wchar_t *clsid;
 };
 
 static bool GetDeviceCallback(DeviceFilterCallbackInfo &info,
 			      IBaseFilter *filter, const wchar_t *name,
-			      const wchar_t *path, const wchar_t* clsid)
+			      const wchar_t *path, const wchar_t *clsid)
 {
 	if (info.name && *info.name && wcscmp(name, info.name) != 0)
 		return true;
@@ -121,7 +121,8 @@ static bool GetDeviceCallback(DeviceFilterCallbackInfo &info,
 	info.filter = filter;
 
 	/* break if CLSID is same */
-	if (info.clsid && *info.clsid && clsid && *clsid && wcscmp(clsid, info.clsid) == 0)
+	if (info.clsid && *info.clsid && clsid && *clsid &&
+	    wcscmp(clsid, info.clsid) == 0)
 		return false;
 
 	/* continue if path does not match */
@@ -131,8 +132,8 @@ static bool GetDeviceCallback(DeviceFilterCallbackInfo &info,
 	return false;
 }
 
-bool GetDeviceFilter(const IID &type, const wchar_t *name, const wchar_t *path, const wchar_t* clsid,
-		     IBaseFilter **out)
+bool GetDeviceFilter(const IID &type, const wchar_t *name, const wchar_t *path,
+		     const wchar_t *clsid, IBaseFilter **out)
 {
 	DeviceFilterCallbackInfo info;
 	info.name = name;

@@ -40,7 +40,7 @@ bool EnumAudioCaps(IPin *pin, vector<AudioInfo> &caps);
 typedef bool (*EnumDeviceCallback)(void *param, IBaseFilter *filter,
 				   const wchar_t *deviceName,
 				   const wchar_t *devicePath,
-				   const wchar_t* deviceCLSID);
+				   const wchar_t *deviceCLSID);
 
 bool EnumDevices(const GUID &type, EnumDeviceCallback callback, void *param);
 

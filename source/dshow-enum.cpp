@@ -509,8 +509,7 @@ static recursive_mutex enumMutex;
 
 static bool CheckForDLCallback(void *unused, IBaseFilter *filter,
 			       const wchar_t *deviceName,
-			       const wchar_t *devicePath, 
-			       const wchar_t* clsid)
+			       const wchar_t *devicePath, const wchar_t *clsid)
 {
 	if (wcsstr(deviceName, L"Decklink") != nullptr) {
 		decklinkVideoPresent = true;

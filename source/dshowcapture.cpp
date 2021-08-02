@@ -221,7 +221,7 @@ static void EnumExceptionVideoDevice(std::vector<VideoDevice> &devices,
 
 static bool EnumVideoDevice(std::vector<VideoDevice> &devices,
 			    IBaseFilter *filter, const wchar_t *deviceName,
-			    const wchar_t *devicePath, const wchar_t* clsid)
+			    const wchar_t *devicePath, const wchar_t *clsid)
 {
 	ComPtr<IPin> pin;
 	ComPtr<IPin> audioPin;
@@ -284,8 +284,7 @@ bool Device::EnumVideoDevices(std::vector<VideoDevice> &devices)
 
 static bool EnumAudioDevice(vector<AudioDevice> &devices, IBaseFilter *filter,
 			    const wchar_t *deviceName,
-			    const wchar_t *devicePath, 
-			    const wchar_t* clsid)
+			    const wchar_t *devicePath, const wchar_t *clsid)
 {
 	ComPtr<IPin> pin;
 	AudioDevice info;

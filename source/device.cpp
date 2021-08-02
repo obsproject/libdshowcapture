@@ -367,7 +367,7 @@ bool HDevice::SetVideoConfig(VideoConfig *config)
 
 	bool success = GetDeviceFilter(CLSID_VideoInputDeviceCategory,
 				       config->name.c_str(),
-				       config->path.c_str(), 
+				       config->path.c_str(),
 				       config->clsid.c_str(), &filter);
 	if (!success) {
 		Error(L"Video device '%s': %s not found", config->name.c_str(),
@@ -571,7 +571,7 @@ bool HDevice::SetAudioConfig(AudioConfig *config)
 	} else {
 		bool success = GetDeviceFilter(CLSID_AudioInputDeviceCategory,
 					       config->name.c_str(),
-					       config->path.c_str(), 
+					       config->path.c_str(),
 					       config->clsid.c_str(), &filter);
 		if (!success) {
 			Error(L"Audio device '%s': %s not found",
