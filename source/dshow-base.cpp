@@ -106,6 +106,7 @@ void LogFilters(IGraphBuilder *graph)
 
 struct DeviceFilterCallbackInfo {
 	ComPtr<IBaseFilter> filter;
+	int priorityValue;
 	const wchar_t *name;
 	const wchar_t *path;
 	const wchar_t *clsid;
@@ -118,12 +119,15 @@ static bool GetDeviceCallback(DeviceFilterCallbackInfo &info,
 	if (info.name && *info.name && wcscmp(name, info.name) != 0)
 		return true;
 
-	info.filter = filter;
-
-	/* break if CLSID is same */
+	int priority = 1;
 	if (info.clsid && *info.clsid && clsid && *clsid &&
 	    wcscmp(clsid, info.clsid) == 0)
-		return false;
+		++priority;
+
+	if (priority >= info.priorityValue) {
+		info.filter = filter;
+		info.priorityValue = priority;
+	}
 
 	/* continue if path does not match */
 	if (!path || !info.path || wcscmp(path, info.path) != 0)
@@ -139,6 +143,7 @@ bool GetDeviceFilter(const IID &type, const wchar_t *name, const wchar_t *path,
 	info.name = name;
 	info.path = path;
 	info.clsid = clsid;
+	info.priorityValue = 0;
 
 	if (!EnumDevices(type, EnumDeviceCallback(GetDeviceCallback), &info))
 		return false;
