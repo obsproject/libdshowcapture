@@ -96,7 +96,7 @@ static bool EnumVideoEncoder(vector<DeviceId> &encoders, IBaseFilter *encoder,
 	id.name = deviceName;
 	id.path = devicePath ? devicePath : L"";
 	id.clsid = deviceCLSID ? deviceCLSID : L"";
-	;
+
 	encoders.push_back(id);
 
 	(void)encoder;
