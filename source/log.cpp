@@ -90,7 +90,7 @@ void InfoHR(const wchar_t *str, HRESULT hr)
 
 void DebugHR(const wchar_t *str, HRESULT hr)
 {
-	Info(L"%s (0x%08lX): %s", str, hr, ConvertHRToEnglish(hr).c_str());
+	Debug(L"%s (0x%08lX): %s", str, hr, ConvertHRToEnglish(hr).c_str());
 }
 
 }; /* namespace DShow */
