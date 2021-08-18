@@ -516,7 +516,7 @@ bool HDevice::SetupAudioOutput(IBaseFilter *filter, AudioConfig &config)
 	}
 
 	audioFilter = filter;
-	audioOutput = outputFilter;
+	audioOutput = std::move(outputFilter);
 
 	graph->AddFilter(audioOutput, L"Audio Output Filter");
 	if (!config.useVideoDevice)
