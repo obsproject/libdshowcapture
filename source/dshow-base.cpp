@@ -657,17 +657,19 @@ static bool IsMonikerSameParentInstPath(IMoniker *moniker,
 		vidDevInstPath, vidParentDevInstPath,
 		_ARRAYSIZE(vidParentDevInstPath));
 
-	/* Get audio parent device instance path */
-	wchar_t audParentDevInstPath[512];
-	if (SUCCEEDED(hr))
-		hr = GetAudioCaptureParentDeviceInstancePath(
-			moniker, audParentDevInstPath,
-			_ARRAYSIZE(audParentDevInstPath));
-
-	/* Compare audio and video parent device instance path */
 	if (FAILED(hr))
 		return false;
 
+	/* Get audio parent device instance path */
+	wchar_t audParentDevInstPath[512];
+	hr = GetAudioCaptureParentDeviceInstancePath(
+		moniker, audParentDevInstPath,
+		_ARRAYSIZE(audParentDevInstPath));
+
+	if (FAILED(hr))
+		return false;
+
+	/* Compare audio and video parent device instance path */
 	return wcscmp(audParentDevInstPath, vidParentDevInstPath) == 0;
 }
 
