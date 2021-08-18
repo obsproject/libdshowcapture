@@ -32,7 +32,7 @@ using namespace std;
 struct EncodedData {
 	vector<unsigned char> data;
 
-	inline EncodedData() {}
+	inline EncodedData() = default;
 
 	inline EncodedData(unsigned char *data_, size_t size)
 	{
