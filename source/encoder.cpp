@@ -214,7 +214,7 @@ bool HVideoEncoder::SetupEncoder(IBaseFilter *filter)
 	frameTime /= config.fpsNumerator;
 
 	encoder = filter;
-	device = deviceFilter;
+	device = std::move(deviceFilter);
 	capture = new CaptureFilter(captureInfo);
 	output = new OutputFilter(VideoFormat::YV12, config.cx, config.cy,
 				  frameTime);
