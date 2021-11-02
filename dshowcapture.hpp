@@ -210,6 +210,16 @@ struct AudioConfig : Config {
 	AudioMode mode = AudioMode::Capture;
 };
 
+struct VideoDeviceProperty {
+	long property;
+	long flags;
+	long val;
+	long min;
+	long max;
+	long step;
+	long def;
+};
+
 class DSHOWCAPTURE_EXPORT Device {
 	HDevice *context;
 
@@ -224,6 +234,10 @@ public:
 
 	bool SetVideoConfig(VideoConfig *config);
 	bool SetAudioConfig(AudioConfig *config);
+	bool SetCameraControlProperties(
+		std::vector<VideoDeviceProperty> *properties);
+	bool
+	SetVideoProcAmpProperties(std::vector<VideoDeviceProperty> *properties);
 
 	/**
 		 * Connects all the configured filters together.
@@ -237,6 +251,10 @@ public:
 
 	bool GetVideoConfig(VideoConfig &config) const;
 	bool GetAudioConfig(AudioConfig &config) const;
+	bool GetCameraControlProperties(
+		std::vector<VideoDeviceProperty> &properties) const;
+	bool GetVideoProcAmpProperties(
+		std::vector<VideoDeviceProperty> &properties) const;
 	bool GetVideoDeviceId(DeviceId &id) const;
 	bool GetAudioDeviceId(DeviceId &id) const;
 

@@ -427,6 +427,91 @@ bool HDevice::SetVideoConfig(VideoConfig *config)
 	return true;
 }
 
+bool HDevice::SetCameraControlProperties(
+	std::vector<VideoDeviceProperty> *properties)
+{
+	if (videoFilter == nullptr)
+		return false;
+
+	ComQIPtr<IAMCameraControl> pCameraControl = videoFilter;
+	if (!pCameraControl)
+		return false;
+
+	for (const auto &prop : *properties) {
+		pCameraControl->Set(prop.property, prop.val, prop.flags);
+	}
+	return true;
+}
+
+bool HDevice::SetVideoProcAmpProperties(
+	std::vector<VideoDeviceProperty> *properties)
+{
+	if (videoFilter == nullptr)
+		return false;
+
+	ComQIPtr<IAMVideoProcAmp> pVideoProcAmp = videoFilter;
+	if (!pVideoProcAmp)
+		return false;
+
+	for (const auto &prop : *properties) {
+		pVideoProcAmp->Set(prop.property, prop.val, prop.flags);
+	}
+	return true;
+}
+
+bool HDevice::GetCameraControlProperties(
+	std::vector<VideoDeviceProperty> &properties) const
+{
+
+	if (videoFilter == nullptr)
+		return false;
+
+	ComQIPtr<IAMCameraControl> pCameraControl = videoFilter;
+	if (!pCameraControl)
+		return false;
+
+	for (long i = 0; i < 256; i++) {
+		long flags, val;
+		auto hr = pCameraControl->Get(i, &val, &flags);
+		if (FAILED(hr))
+			continue;
+		VideoDeviceProperty p{};
+		p.property = i;
+		p.flags = flags;
+		p.val = val;
+		hr = pCameraControl->GetRange(i, &p.min, &p.max, &p.step,
+					      &p.def, &flags);
+		properties.push_back(p);
+	}
+	return true;
+}
+
+bool HDevice::GetVideoProcAmpProperties(
+	std::vector<VideoDeviceProperty> &properties) const
+{
+	if (videoFilter == nullptr)
+		return false;
+
+	ComQIPtr<IAMVideoProcAmp> pVideoProcAmp = videoFilter;
+	if (!pVideoProcAmp)
+		return false;
+
+	for (long i = 0; i < 256; i++) {
+		long flags, val;
+		auto hr = pVideoProcAmp->Get(i, &val, &flags);
+		if (FAILED(hr))
+			continue;
+		VideoDeviceProperty p{};
+		p.property = i;
+		p.flags = flags;
+		p.val = val;
+		hr = pVideoProcAmp->GetRange(i, &p.min, &p.max, &p.step, &p.def,
+					     &flags);
+		properties.push_back(p);
+	}
+	return true;
+}
+
 bool HDevice::SetupExceptionAudioCapture(IPin *pin)
 {
 	ComPtr<IEnumMediaTypes> enumMediaTypes;
