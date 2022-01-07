@@ -68,6 +68,8 @@ DWORD VFormatToFourCC(VideoFormat format)
 		return MAKEFOURCC('Y', 'V', '1', '2');
 	case VideoFormat::Y800:
 		return MAKEFOURCC('Y', '8', '0', '0');
+	case VideoFormat::P010:
+		return MAKEFOURCC('P', '0', '1', '0');
 
 	/* packed YUV formats */
 	case VideoFormat::YVYU:
@@ -108,6 +110,8 @@ GUID VFormatToSubType(VideoFormat format)
 		return MEDIASUBTYPE_YV12;
 	case VideoFormat::Y800:
 		return MEDIASUBTYPE_Y800;
+	case VideoFormat::P010:
+		return MEDIASUBTYPE_P010;
 
 	/* packed YUV formats */
 	case VideoFormat::YVYU:
@@ -272,6 +276,8 @@ bool GetMediaTypeVFormat(const AM_MEDIA_TYPE &mt, VideoFormat &format)
 		format = VideoFormat::NV12;
 	else if (mt.subtype == MEDIASUBTYPE_Y800)
 		format = VideoFormat::Y800;
+	else if (mt.subtype == MEDIASUBTYPE_P010)
+		format = VideoFormat::P010;
 
 	/* packed YUV formats */
 	else if (mt.subtype == MEDIASUBTYPE_YVYU)

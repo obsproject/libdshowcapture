@@ -86,6 +86,7 @@ enum class VideoFormat {
 	NV12,
 	YV12,
 	Y800,
+	P010,
 
 	/* packed YUV formats */
 	YVYU = 300,
