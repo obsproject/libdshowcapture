@@ -136,6 +136,9 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 			const bool hdr = IsVendorVideoHDR(propertySet);
 			if (deviceHdrSignal != hdr) {
 				deviceHdrSignal = hdr;
+#ifdef ENABLE_HEVC
+				SetVendorVideoFormat(propertySet, hdr);
+#endif
 				videoConfig.reactivateCallback();
 				reactivatePending = true;
 				return;
@@ -409,6 +412,9 @@ bool HDevice::SetVideoConfig(VideoConfig *config)
 	ComPtr<IKsPropertySet> propertySet = ComQIPtr<IKsPropertySet>(filter);
 	if (propertySet) {
 		const bool hdr = IsVendorVideoHDR(propertySet);
+#ifdef ENABLE_HEVC
+		SetVendorVideoFormat(propertySet, hdr);
+#endif
 		deviceHdrSignal = hdr;
 	}
 
