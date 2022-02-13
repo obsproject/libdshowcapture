@@ -32,8 +32,8 @@ typedef void (*CaptureCallback)(void *param, IMediaSample *sample);
 
 struct PinCaptureInfo {
 	std::function<void(IMediaSample *sample)> callback;
-	GUID expectedMajorType;
-	GUID expectedSubType;
+	GUID expectedMajorType{};
+	GUID expectedSubType{};
 };
 
 class CapturePin : public IPin, public IMemInputPin {
