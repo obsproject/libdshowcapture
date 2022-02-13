@@ -28,6 +28,12 @@
 
 namespace DShow {
 
+/* device-vendor.cpp API */
+extern bool IsVendorVideoHDR(IKsPropertySet *propertySet);
+extern void SetVendorVideoFormat(IKsPropertySet *propertySet,
+				 bool hevcTrueAvcFalse);
+extern void SetVendorTonemapperUsage(IBaseFilter *filter, bool enable);
+
 bool SetRocketEnabled(IBaseFilter *encoder, bool enable);
 
 HDevice::HDevice() : initialized(false), active(false) {}
@@ -121,6 +127,19 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 		if (cc) {
 			long ccf = 0;
 			cc->Get(CameraControl_Roll, &roll, &ccf);
+		}
+	}
+
+	if (isVideo && videoConfig.reactivateCallback) {
+		ComQIPtr<IKsPropertySet> propertySet(videoFilter);
+		if (propertySet) {
+			const bool hdr = IsVendorVideoHDR(propertySet);
+			if (deviceHdrSignal != hdr) {
+				deviceHdrSignal = hdr;
+				videoConfig.reactivateCallback();
+				reactivatePending = true;
+				return;
+			}
 		}
 	}
 
@@ -386,6 +405,12 @@ bool HDevice::SetVideoConfig(VideoConfig *config)
 
 	deviceHdrSignal = false;
 	reactivatePending = false;
+
+	ComPtr<IKsPropertySet> propertySet = ComQIPtr<IKsPropertySet>(filter);
+	if (propertySet) {
+		const bool hdr = IsVendorVideoHDR(propertySet);
+		deviceHdrSignal = hdr;
+	}
 
 	videoConfig = *config;
 
@@ -744,6 +769,11 @@ bool HDevice::ConnectFilters()
 		return false;
 
 	if (videoCapture != NULL) {
+		/* use hardware tonemapper for narrow format (SDR), not wide (HDR) */
+		const bool enable_tonemapper = videoConfig.format !=
+					       VideoFormat::P010;
+		SetVendorTonemapperUsage(videoFilter, enable_tonemapper);
+
 		success = ConnectPins(PIN_CATEGORY_CAPTURE, MEDIATYPE_Video,
 				      videoFilter, videoCapture);
 		if (!success) {
@@ -836,4 +866,4 @@ void HDevice::Stop()
 	}
 }
 
-}; /* namespace DShow */
+} /* namespace DShow */

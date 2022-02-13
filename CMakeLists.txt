@@ -71,6 +71,7 @@ set(libdshowcapture_SOURCES
 	source/dshowcapture.cpp
 	source/dshowencode.cpp
 	source/device.cpp
+	source/device-vendor.cpp
 	source/encoder.cpp
 	source/dshow-base.cpp
 	source/dshow-demux.cpp
