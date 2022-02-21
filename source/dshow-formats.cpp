@@ -215,6 +215,9 @@ static bool GetFourCCVFormat(DWORD fourCC, VideoFormat &format)
 	case MAKEFOURCC('Y', '8', '0', '0'):
 		format = VideoFormat::Y800;
 		break;
+	case MAKEFOURCC('P', '0', '1', '0'):
+		format = VideoFormat::P010;
+		break;
 
 	/* packed YUV formats */
 	case MAKEFOURCC('Y', 'V', 'Y', 'U'):
