@@ -48,6 +48,14 @@ const GUID MEDIASUBTYPE_Y800 = {0x30303859,
 				{0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b,
 				 0x71}};
 
+#ifdef ENABLE_HEVC
+const GUID MEDIASUBTYPE_HEVC = {0x43564548,
+				0x0000,
+				0x0010,
+				{0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b,
+				 0x71}};
+#endif
+
 namespace DShow {
 
 DWORD VFormatToFourCC(VideoFormat format)
@@ -86,6 +94,10 @@ DWORD VFormatToFourCC(VideoFormat format)
 		return MAKEFOURCC('M', 'J', 'P', 'G');
 	case VideoFormat::H264:
 		return MAKEFOURCC('H', '2', '6', '4');
+#ifdef ENABLE_HEVC
+	case VideoFormat::HEVC:
+		return MAKEFOURCC('H', 'E', 'V', 'C');
+#endif
 
 	default:
 		return 0;
@@ -126,6 +138,10 @@ GUID VFormatToSubType(VideoFormat format)
 		return MEDIASUBTYPE_MJPG;
 	case VideoFormat::H264:
 		return MEDIASUBTYPE_H264;
+#ifdef ENABLE_HEVC
+	case VideoFormat::HEVC:
+		return MEDIASUBTYPE_HEVC;
+#endif
 
 	default:
 		return GUID();
@@ -237,6 +253,11 @@ static bool GetFourCCVFormat(DWORD fourCC, VideoFormat &format)
 	case MAKEFOURCC('H', '2', '6', '4'):
 		format = VideoFormat::H264;
 		break;
+#ifdef ENABLE_HEVC
+	case MAKEFOURCC('H', 'E', 'V', 'C'):
+		format = VideoFormat::HEVC;
+		break;
+#endif
 
 	/* compressed formats that can automatically create intermediary
 	 * filters for decompression */
@@ -293,6 +314,10 @@ bool GetMediaTypeVFormat(const AM_MEDIA_TYPE &mt, VideoFormat &format)
 	/* compressed formats */
 	else if (mt.subtype == MEDIASUBTYPE_H264)
 		format = VideoFormat::H264;
+#ifdef ENABLE_HEVC
+	else if (mt.subtype == MEDIASUBTYPE_HEVC)
+		format = VideoFormat::HEVC;
+#endif
 
 	/* compressed formats that can automatically create intermediary
 	 * filters for decompression */
