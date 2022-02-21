@@ -99,6 +99,7 @@ enum class VideoFormat {
 	/* encoded formats */
 	MJPEG = 400,
 	H264,
+	HEVC,
 };
 
 enum class AudioFormat {
