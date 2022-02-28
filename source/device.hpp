@@ -64,6 +64,8 @@ struct HDevice {
 
 	bool encodedDevice = false;
 	bool rotatableDevice = false;
+	bool deviceHdrSignal = false;
+	bool reactivatePending = false;
 	bool initialized;
 	bool active;
 

@@ -112,6 +112,9 @@ void HDevice::Receive(bool isVideo, IMediaSample *sample)
 	if (isVideo ? !videoConfig.callback : !audioConfig.callback)
 		return;
 
+	if (reactivatePending)
+		return;
+
 	/* auto-rotation for devices such as streamcam */
 	if (isVideo && rotatableDevice) {
 		ComQIPtr<IAMCameraControl> cc(videoFilter);
@@ -380,6 +383,9 @@ bool HDevice::SetVideoConfig(VideoConfig *config)
 		Error(L"Could not get video filter");
 		return false;
 	}
+
+	deviceHdrSignal = false;
+	reactivatePending = false;
 
 	videoConfig = *config;
 
