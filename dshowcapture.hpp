@@ -59,6 +59,8 @@ typedef std::function<void(const AudioConfig &config, unsigned char *data,
 			   size_t size, long long startTime, long long stopTime)>
 	AudioProc;
 
+typedef std::function<void()> ReactivateProc;
+
 enum class InitGraph {
 	False,
 	True,
@@ -163,6 +165,7 @@ struct Config : DeviceId {
 
 struct VideoConfig : Config {
 	VideoProc callback;
+	ReactivateProc reactivateCallback;
 
 	/** Desired width/height of video. */
 	int cx = 0, cy_abs = 0;
