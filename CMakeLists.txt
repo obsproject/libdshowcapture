@@ -74,6 +74,10 @@ if(MINGW)
 endif()
 
 set(libdshowcapture_SOURCES
+    external/capture-device-support/Library/EGAVResult.cpp
+    external/capture-device-support/Library/ElgatoUVCDevice.cpp
+    external/capture-device-support/Library/win/EGAVHIDImplementation.cpp
+    external/capture-device-support/SampleCode/DriverInterface.cpp
     source/capture-filter.cpp
     source/output-filter.cpp
     source/dshowcapture.cpp
@@ -106,6 +110,12 @@ set(libdshowcapture_HEADERS
 
 add_library(libdshowcapture ${libdshowcapture_SOURCES}
                             ${libdshowcapture_HEADERS})
+
+target_include_directories(
+  libdshowcapture
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/capture-device-support/Library)
+
+target_compile_definitions(libdshowcapture PRIVATE _UP_WINDOWS=1)
 
 target_link_libraries(libdshowcapture PRIVATE setupapi strmiids ksuser winmm
                                               wmcodecdspuuid)
