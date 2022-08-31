@@ -24,6 +24,8 @@
 
 #include <cinttypes>
 
+#include <vidcap.h>
+
 namespace DShow {
 
 bool IsVendorVideoHDR(IKsPropertySet *propertySet)
@@ -53,18 +55,18 @@ static void SetTonemapperAvermedia(IKsPropertySet *propertySet, bool enable)
 	} KSPROPERTY_AVER_HW_HDR2SDR, *PKSPROPERTY_AVER_HW_HDR2SDR;
 
 	static constexpr GUID KSPROPSETID_AVER_HDR_PROPERTY = {
-		0X8A80D56F,
-		0XFAC5,
-		0X4692,
+		0x8A80D56F,
+		0xFAC5,
+		0x4692,
 		{
-			0XA4,
-			0X16,
-			0XCF,
-			0X20,
-			0XD4,
-			0XA1,
-			0X8F,
-			0X47,
+			0xA4,
+			0x16,
+			0xCF,
+			0x20,
+			0xD4,
+			0xA1,
+			0x8F,
+			0x47,
 		},
 	};
 	KSPROPERTY_AVER_HW_HDR2SDR data{};
@@ -74,6 +76,93 @@ static void SetTonemapperAvermedia(IKsPropertySet *propertySet, bool enable)
 		sizeof(data) - sizeof(data.Property), &data, sizeof(data));
 	if (SUCCEEDED(hr))
 		Info(L"AVerMedia tonemapper enable=%lu", data.Enable);
+}
+
+/* Special thanks to AVerMedia development team */
+static bool FindExtensionUnitNodeID(DWORD *pnNode, IBaseFilter *spCapture)
+{
+	bool bFindNode = false;
+	if (!spCapture)
+		return bFindNode;
+
+	ComPtr<IKsTopologyInfo> spKsTopologyInfo = NULL;
+	HRESULT hr = spCapture->QueryInterface(IID_PPV_ARGS(&spKsTopologyInfo));
+	if (spKsTopologyInfo == NULL || FAILED(hr))
+		return bFindNode;
+
+	DWORD nNodeNum = 0;
+	hr = spKsTopologyInfo->get_NumNodes(&nNodeNum);
+	if (FAILED(hr) || nNodeNum <= 0)
+		return bFindNode;
+
+	GUID guidNodeType;
+	for (int i = 0; i < nNodeNum; i++) {
+		spKsTopologyInfo->get_NodeType(i, &guidNodeType);
+		if (IsEqualGUID(guidNodeType, KSNODETYPE_DEV_SPECIFIC)) {
+			*pnNode = i;
+			bFindNode = true;
+		}
+	}
+
+	return bFindNode;
+}
+
+static bool SetTonemapperAvermedia2(IBaseFilter *filter, bool enable)
+{
+	static constexpr GUID GUID_GC553 = {
+		0xC835261B,
+		0xFF1C,
+		0x4C9A,
+		{
+			0xB2,
+			0xF7,
+			0x93,
+			0xC9,
+			0x1F,
+			0xCF,
+			0xBE,
+			0x77,
+		},
+	};
+
+	static constexpr int nId = 11;
+
+	ComPtr<IKsControl> spKsControl;
+	HRESULT hr = filter->QueryInterface(IID_PPV_ARGS(&spKsControl));
+	if (spKsControl == NULL || FAILED(hr))
+		return false;
+
+	KSP_NODE ExtensionProp{};
+	if (!FindExtensionUnitNodeID(&ExtensionProp.NodeId, filter))
+		return false;
+
+	ExtensionProp.Property.Set = GUID_GC553;
+	ExtensionProp.Property.Id = nId;
+	ExtensionProp.Property.Flags = KSPROPERTY_TYPE_GET |
+				       KSPROPERTY_TYPE_TOPOLOGY;
+
+	char pData[20];
+
+	ULONG ulBytesReturned;
+	hr = spKsControl->KsProperty(&ExtensionProp.Property,
+				     sizeof(ExtensionProp), pData,
+				     sizeof(pData), &ulBytesReturned);
+	if (FAILED(hr) || (ulBytesReturned < 18))
+		return false;
+
+	pData[15] = 0x02;
+	pData[17] = enable;
+
+	ExtensionProp.Property.Flags = KSPROPERTY_TYPE_SET |
+				       KSPROPERTY_TYPE_TOPOLOGY;
+	hr = spKsControl->KsProperty(&ExtensionProp.Property,
+				     sizeof(ExtensionProp), pData,
+				     sizeof(pData), &ulBytesReturned);
+	const bool succeeded = SUCCEEDED(hr);
+	if (succeeded)
+		Info(L"AVerMedia GC553 tonemapper enable=%d", (int)enable);
+
+	return succeeded;
 }
 
 static void SetTonemapperElgato(IKsPropertySet *propertySet, bool enable)
@@ -102,6 +191,7 @@ void SetVendorTonemapperUsage(IBaseFilter *filter, bool enable)
 			ComQIPtr<IKsPropertySet>(filter);
 		if (propertySet) {
 			SetTonemapperAvermedia(propertySet, enable);
+			SetTonemapperAvermedia2(filter, enable);
 			SetTonemapperElgato(propertySet, enable);
 		}
 	}
