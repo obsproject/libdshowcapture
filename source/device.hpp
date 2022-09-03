@@ -103,14 +103,6 @@ struct HDevice {
 
 	bool SetVideoConfig(VideoConfig *config);
 	bool SetAudioConfig(AudioConfig *config);
-	bool SetCameraControlProperties(
-		std::vector<VideoDeviceProperty> *properties);
-	bool
-	SetVideoProcAmpProperties(std::vector<VideoDeviceProperty> *properties);
-	bool GetCameraControlProperties(
-		std::vector<VideoDeviceProperty> &properties) const;
-	bool GetVideoProcAmpProperties(
-		std::vector<VideoDeviceProperty> &properties) const;
 
 	bool CreateGraph();
 	bool FindCrossbar(IBaseFilter *filter, IBaseFilter **crossbar);

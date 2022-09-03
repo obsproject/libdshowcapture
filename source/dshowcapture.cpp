@@ -69,17 +69,6 @@ bool Device::SetAudioConfig(AudioConfig *config)
 	return context->SetAudioConfig(config);
 }
 
-bool Device::SetCameraControlProperties(
-	std::vector<VideoDeviceProperty> *properties)
-{
-	return context->SetCameraControlProperties(properties);
-}
-bool Device::SetVideoProcAmpProperties(
-	std::vector<VideoDeviceProperty> *properties)
-{
-	return context->SetVideoProcAmpProperties(properties);
-}
-
 bool Device::ConnectFilters()
 {
 	return context->ConnectFilters();
@@ -102,18 +91,6 @@ bool Device::GetVideoConfig(VideoConfig &config) const
 
 	config = context->videoConfig;
 	return true;
-}
-
-bool Device::GetCameraControlProperties(
-	std::vector<VideoDeviceProperty> &properties) const
-{
-	return context->GetCameraControlProperties(properties);
-}
-
-bool Device::GetVideoProcAmpProperties(
-	std::vector<VideoDeviceProperty> &properties) const
-{
-	return context->GetVideoProcAmpProperties(properties);
 }
 
 bool Device::GetAudioConfig(AudioConfig &config) const
