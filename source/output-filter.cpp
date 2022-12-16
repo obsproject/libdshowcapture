@@ -35,9 +35,11 @@ namespace DShow {
 #define VIDEO_PIN_NAME L"Video Output"
 #define AUDIO_PIN_NAME L"Audio Output"
 
+OutputPin::OutputPin(OutputFilter *filter_) : refCount(0), filter(filter_) {}
+
 OutputPin::OutputPin(OutputFilter *filter_, VideoFormat format, int cx, int cy,
 		     long long interval)
-	: refCount(0), filter(filter_)
+	: OutputPin(filter_)
 {
 	curCX = cx;
 	curCY = cy;
@@ -644,6 +646,15 @@ public:
 		return AM_FILTER_MISC_FLAGS_IS_SOURCE;
 	}
 };
+
+OutputFilter::OutputFilter()
+	: refCount(0),
+	  state(State_Stopped),
+	  graph(nullptr),
+	  pin(new OutputPin(this)),
+	  misc(new SourceMiscFlags)
+{
+}
 
 OutputFilter::OutputFilter(VideoFormat format, int cx, int cy,
 			   long long interval)
