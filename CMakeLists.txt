@@ -119,3 +119,6 @@ target_compile_definitions(libdshowcapture PRIVATE _UP_WINDOWS=1)
 
 target_link_libraries(libdshowcapture PRIVATE setupapi strmiids ksuser winmm
                                               wmcodecdspuuid)
+
+set_target_properties(libdshowcapture PROPERTIES PUBLIC_HEADER "${libdshowcapture_HEADERS}")
+install(TARGETS libdshowcapture)
