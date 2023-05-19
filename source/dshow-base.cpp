@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2014 Hugh Bailey <obs.jim@gmail.com>
+ *  Copyright (C) 2014 Lain Bailey <lain@obsproject.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
