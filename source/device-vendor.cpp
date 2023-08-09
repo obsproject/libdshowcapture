@@ -173,13 +173,17 @@ static void SetTonemapperElgato(IKsPropertySet *propertySet, bool enable)
 	if (SUCCEEDED(hr)) {
 		Info(L"Elgato GC4K60ProMK2 tonemapper enable=%d", (int)enable);
 	} else {
-		std::shared_ptr<EGAVHIDInterface> hid =
-			CreateEGAVHIDInterface();
-		if (hid->InitHIDInterface(deviceIDHD60SPlus).Succeeded()) {
-			ElgatoUVCDevice device(hid, false);
-			device.SetHDRTonemappingEnabled(enable);
-			Info(L"Elgato HD60SPlus tonemapper enable=%d",
-			     (int)enable);
+		for (const EGAVDeviceID &deviceID : GetElgatoUVCDeviceIDs()) {
+			std::shared_ptr<EGAVHIDInterface> hid =
+				CreateEGAVHIDInterface();
+			if (hid->InitHIDInterface(deviceID).Succeeded()) {
+				ElgatoUVCDevice device(
+					hid, IsNewDeviceType(deviceID));
+				device.SetHDRTonemappingEnabled(enable);
+				Info(L"Elgato UVC device (PID = 0x%04X) tonemapper enable=%d",
+				     deviceID.productID, (int)enable);
+				hid->DeinitHIDInterface();
+			}
 		}
 	}
 }
