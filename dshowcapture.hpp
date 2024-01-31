@@ -208,6 +208,9 @@ struct AudioConfig : Config {
 
 	/** Audio playback mode */
 	AudioMode mode = AudioMode::Capture;
+
+	/** Desired buffer */
+	int buffer = 0;
 };
 
 class DSHOWCAPTURE_EXPORT Device {
