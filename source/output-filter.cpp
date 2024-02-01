@@ -547,6 +547,8 @@ bool OutputPin::LockSampleData(unsigned char **ptr)
 		return false;
 	if (FAILED(sample->SetPreroll(false)))
 		return false;
+	if (FAILED(sample->SetSyncPoint(true)))
+		return false;
 	if (FAILED(sample->GetPointer(ptr)))
 		return false;
 
