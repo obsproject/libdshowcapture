@@ -22,6 +22,7 @@
 #include "log.hpp"
 
 #include <strsafe.h>
+#include <stdint.h>
 
 namespace DShow {
 

@@ -40,7 +40,7 @@ using namespace std;
 namespace DShow {
 
 bool CreateFilterGraph(IGraphBuilder **graph, ICaptureGraphBuilder2 **builder,
-		       IMediaControl **control);
+		       IMediaControl **control, IMediaEventEx **pevent);
 
 void LogFilters(IGraphBuilder *graph);
 
