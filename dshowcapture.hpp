@@ -190,7 +190,7 @@ struct AudioConfig : Config {
 	/**
 		 * Use the audio attached to the video device
 		 *
-		 * (name/path memeber variables will be ignored)
+		 * (name/path member variables will be ignored)
 		 */
 	bool useVideoDevice = false;
 
