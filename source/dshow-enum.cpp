@@ -472,8 +472,15 @@ static bool EnumDevice(const GUID &type, IMoniker *deviceInfo,
 		return true;
 	}
 
-	propertyData->Read(L"DevicePath", &devicePath, NULL);
-
+	LPOLESTR displayName = NULL;
+	hr = deviceInfo->GetDisplayName(NULL, NULL, &displayName);
+	if (SUCCEEDED(hr))
+	{
+		devicePath.vt = VT_BSTR;
+		devicePath.bstrVal = SysAllocString(displayName);
+		CoTaskMemFree(displayName);
+	}
+	
 	hr = deviceInfo->BindToObject(NULL, 0, IID_IBaseFilter,
 				      (void **)&filter);
 	if (SUCCEEDED(hr)) {
