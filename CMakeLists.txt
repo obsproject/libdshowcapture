@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.28...3.30)
 
 project(libdshowcapture)
 
+if(NOT MSVC)
+  message(FATAL_ERROR "libdshowcapture only supports building with Visual Studio and MSVC.")
+endif()
+
 option(BUILD_SHARED_LIBS "Build shared library" ON)
 
 # Set C and C++ language standards to C17 and C++17
@@ -57,46 +61,12 @@ target_sources(
     source/log.hpp
 )
 
-if(MSVC)
-  # Set /W4
-  # Disable pointless constant condition warnings
-  target_compile_options(libdshowcapture PRIVATE /W4 /wd4127 /wd4201)
+# Set /W4
+# Disable pointless constant condition warnings
+target_compile_options(libdshowcapture PRIVATE /W4 /wd4127 /wd4201)
 
-  if(CMAKE_VS_PLATFORM_NAME STREQUAL Win32)
-    target_link_options(libdshowcapture PRIVATE /SAFESEH:NO)
-  endif()
-else()
-  if(MINGW)
-    include(CheckSymbolExists)
-    check_symbol_exists(MINGW_HAS_SECURE_API "_mingw.h" HAVE_MINGW_HAS_SECURE_API)
-    if(NOT HAVE_MINGW_HAS_SECURE_API)
-      message(FATAL_ERROR "mingw must be compiled with --enable-secure-api")
-    endif()
-
-    target_compile_definitions(libdshowcapture PRIVATE _WIN32_WINNT=0x0600 WINVER=0x0600)
-  endif()
-
-  set(_libdshowcapture_c_options
-      -fno-strict-aliasing
-      -Wall
-      -Wextra
-      -Werror-implicit-function-declaration
-      -Wno-missing-braces
-      -Wno-missing-field-initializers
-      -Wno-unused-function
-  )
-  set(_libdshowcapture_cxx_options
-      -fno-strict-aliasing
-      -Wall
-      -Wextra
-      -Werror-implicit-function-declaration
-      -Wno-missing-field-initializers
-      -Wno-unused-function
-  )
-  target_compile_options(libdshowcapture PRIVATE
-      "$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:${_libdshowcapture_c_options}>"
-      "$<$<COMPILE_LANG_AND_ID:CXX,Clang,GNU>:${_libdshowcapture_cxx_options}>"
-  )
+if(CMAKE_VS_PLATFORM_NAME STREQUAL Win32)
+  target_link_options(libdshowcapture PRIVATE /SAFESEH:NO)
 endif()
 
 target_include_directories(
