@@ -58,47 +58,13 @@ set(libdshowcapture_HEADERS
 add_library(libdshowcapture ${libdshowcapture_SOURCES}
                             ${libdshowcapture_HEADERS})
 
-if(MSVC)
-  # Set /W4
-  # Disable pointless constant condition warnings
-  target_compile_options(libdshowcapture PRIVATE /W4 /wd4127 /wd4201)
+# Set /W4
+# Disable pointless constant condition warnings
+target_compile_options(libdshowcapture PRIVATE /W4 /wd4127 /wd4201)
 
-  if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    target_link_options(libdshowcapture PRIVATE
-        /SAFESEH:NO
-    )
-  endif()
-else()
-  if(MINGW)
-    include(CheckSymbolExists)
-    check_symbol_exists(MINGW_HAS_SECURE_API "_mingw.h" HAVE_MINGW_HAS_SECURE_API)
-    if(NOT HAVE_MINGW_HAS_SECURE_API)
-      message(FATAL_ERROR "mingw must be compiled with --enable-secure-api")
-    endif()
-
-    target_compile_definitions(libdshowcapture PRIVATE _WIN32_WINNT=0x0600 WINVER=0x0600)
-  endif()
-
-  set(_libdshowcapture_c_options
-      -fno-strict-aliasing
-      -Wall
-      -Wextra
-      -Werror-implicit-function-declaration
-      -Wno-missing-braces
-      -Wno-missing-field-initializers
-      -Wno-unused-function
-  )
-  set(_libdshowcapture_cxx_options
-      -fno-strict-aliasing
-      -Wall
-      -Wextra
-      -Werror-implicit-function-declaration
-      -Wno-missing-field-initializers
-      -Wno-unused-function
-  )
-  target_compile_options(libdshowcapture PRIVATE
-      "$<$<COMPILE_LANG_AND_ID:C,Clang,GNU>:${_libdshowcapture_c_options}>"
-      "$<$<COMPILE_LANG_AND_ID:CXX,Clang,GNU>:${_libdshowcapture_cxx_options}>"
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+  target_link_options(libdshowcapture PRIVATE
+      /SAFESEH:NO
   )
 endif()
 
