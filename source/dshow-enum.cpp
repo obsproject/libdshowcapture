@@ -473,6 +473,30 @@ static bool EnumDevice(const GUID &type, IMoniker *deviceInfo,
 	}
 
 	propertyData->Read(L"DevicePath", &devicePath, NULL);
+	if (!devicePath.bstrVal) {
+		/* fall back to another method to get device path */
+		LPMALLOC co_malloc = nullptr;
+		hr = CoGetMalloc(1, &co_malloc);
+		if (FAILED(hr))
+			return true;
+
+		ComPtr<IBindCtx> bind_ctx = nullptr;
+		hr = CreateBindCtx(0, &bind_ctx);
+		if (FAILED(hr))
+			return true;
+
+		LPOLESTR olestr = nullptr;
+		bool success = true;
+		hr = deviceInfo->GetDisplayName(bind_ctx, nullptr, &olestr);
+		if (SUCCEEDED(hr)) {
+			hr = InitVariantFromString(olestr, &devicePath);
+			if (FAILED(hr))
+				success = false;
+		}
+		co_malloc->Free(olestr);
+		if (!success)
+			return true;
+	}
 
 	hr = deviceInfo->BindToObject(NULL, 0, IID_IBaseFilter,
 				      (void **)&filter);
