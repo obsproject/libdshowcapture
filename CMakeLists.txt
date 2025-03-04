@@ -69,9 +69,7 @@ if(CMAKE_VS_PLATFORM_NAME STREQUAL Win32)
   target_link_options(libdshowcapture PRIVATE /SAFESEH:NO)
 endif()
 
-target_include_directories(
-  libdshowcapture
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/capture-device-support/Library)
+target_include_directories(libdshowcapture PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/external/capture-device-support/Library)
 
 target_compile_definitions(
   libdshowcapture
@@ -84,5 +82,7 @@ target_compile_definitions(
     _UP_WINDOWS=1
 )
 
-target_link_libraries(libdshowcapture PRIVATE setupapi strmiids ksuser winmm
-                                              wmcodecdspuuid)
+target_link_libraries(
+  libdshowcapture
+  PRIVATE setupapi strmiids ksuser winmm wmcodecdspuuid
+)
