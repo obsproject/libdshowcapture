@@ -28,6 +28,7 @@
 #include <ksproxy.h>
 #include <Amaudio.h>
 #include <Dvdmedia.h>
+#include <Propvarutil.h>
 
 #include "ComPtr.hpp"
 #include "CoTaskMemPtr.hpp"
