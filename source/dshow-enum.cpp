@@ -233,6 +233,10 @@ static bool ClosestVideoMTCallback(ClosestVideoData &data,
 
 	formatVal = GetFormatRating(info.format);
 
+	if (info.format == VideoFormat::XRGB && mt.subtype == MEDIASUBTYPE_RGB24) {
+		formatVal += 1;
+	}
+
 	long long totalVal = frameVal + yVal + xVal + formatVal;
 
 	if (!data.found || data.bestVal > totalVal) {
