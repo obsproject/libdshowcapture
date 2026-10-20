@@ -21,7 +21,8 @@
 
 #include "../dshowcapture.hpp"
 #include "capture-filter.hpp"
-
+#include <Windows.h>
+#include <process.h>
 #include <string>
 #include <vector>
 using namespace std;
@@ -50,6 +51,7 @@ struct HDevice {
 	ComPtr<IGraphBuilder> graph;
 	ComPtr<ICaptureGraphBuilder2> builder;
 	ComPtr<IMediaControl> control;
+	ComPtr<IMediaEventEx> eventEx;
 
 	ComPtr<IBaseFilter> videoFilter;
 	ComPtr<IBaseFilter> audioFilter;
@@ -72,8 +74,20 @@ struct HDevice {
 	EncodedData encodedVideo;
 	EncodedData encodedAudio;
 
-	HDevice();
+	// handle insert/remove events
+	HANDLE mediaEvent = 0;
+	HANDLE exitEvent = 0;
+	HANDLE mediaEventThread = 0;
+	IDeviceCallback *callback = nullptr;
+
+	HDevice(IDeviceCallback *cb);
 	~HDevice();
+
+	// handle insert/remove events
+	void EventThreadInner();
+	bool ReadAllEvents();
+	void StartEventThread();
+	void StopEventThread();
 
 	void ConvertVideoSettings();
 	void ConvertAudioSettings();

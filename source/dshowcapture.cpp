@@ -28,7 +28,8 @@
 
 namespace DShow {
 
-Device::Device(InitGraph initialize) : context(new HDevice)
+Device::Device(InitGraph initialize, IDeviceCallback *cb)
+	: context(new HDevice(cb)), callback(cb)
 {
 	if (initialize == InitGraph::True)
 		context->CreateGraph();
@@ -48,7 +49,7 @@ bool Device::ResetGraph()
 {
 	/* cheap and easy way to clear all the filters */
 	delete context;
-	context = new HDevice;
+	context = new HDevice(callback);
 
 	return context->CreateGraph();
 }
@@ -56,7 +57,7 @@ bool Device::ResetGraph()
 void Device::ShutdownGraph()
 {
 	delete context;
-	context = new HDevice;
+	context = new HDevice(callback);
 }
 
 bool Device::SetVideoConfig(VideoConfig *config)

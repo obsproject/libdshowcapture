@@ -25,7 +25,7 @@ namespace DShow {
 
 HVideoEncoder::HVideoEncoder()
 {
-	initialized = CreateFilterGraph(&graph, &builder, &control);
+	initialized = CreateFilterGraph(&graph, &builder, &control, NULL);
 }
 
 HVideoEncoder::~HVideoEncoder()
