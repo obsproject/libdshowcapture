@@ -213,6 +213,17 @@ struct AudioConfig : Config {
 	int buffer = 0;
 };
 
+enum class VideoPropertyType {
+	CameraControl,
+	VideoProcAmp,
+};
+
+struct VideoDeviceProperty {
+	long property = 0;
+	long flags = 0;
+	long val = 0;
+};
+
 class DSHOWCAPTURE_EXPORT Device {
 	HDevice *context;
 
@@ -242,6 +253,13 @@ public:
 	bool GetAudioConfig(AudioConfig &config) const;
 	bool GetVideoDeviceId(DeviceId &id) const;
 	bool GetAudioDeviceId(DeviceId &id) const;
+
+	bool
+	GetVideoProperties(VideoPropertyType type,
+			   std::vector<VideoDeviceProperty> &properties) const;
+	bool
+	SetVideoProperties(VideoPropertyType type,
+			   const std::vector<VideoDeviceProperty> &properties);
 
 	/**
 		 * Opens a DirectShow dialog associated with this device

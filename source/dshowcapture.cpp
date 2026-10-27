@@ -120,6 +120,140 @@ bool Device::GetAudioDeviceId(DeviceId &id) const
 	return true;
 }
 
+struct VideoPropertyRange {
+	long min = 0;
+	long max = 0;
+	long step = 0;
+	long def = 0;
+	long caps = 0;
+
+	bool Contains(long value) const
+	{
+		return step > 0 && value >= min && value <= max &&
+		       (static_cast<long long>(value) - min) % step == 0;
+	}
+
+	bool Supports(long flags) const
+	{
+		return (flags == CameraControl_Flags_Auto ||
+			flags == CameraControl_Flags_Manual) &&
+		       (caps & flags) != 0;
+	}
+};
+
+template<typename Control>
+bool GetVideoProperty(Control *control, long id, VideoDeviceProperty &property,
+		      VideoPropertyRange &range)
+{
+	if (control->GetRange(id, &range.min, &range.max, &range.step,
+			      &range.def, &range.caps) != S_OK ||
+	    range.min > range.max || range.step <= 0) {
+		return false;
+	}
+
+	property.property = id;
+	if (control->Get(id, &property.val, &property.flags) != S_OK ||
+	    !range.Supports(property.flags)) {
+		return false;
+	}
+
+	range.def = range.Contains(range.def) ? range.def : range.min;
+	if (property.flags == CameraControl_Flags_Auto)
+		property.val = range.def;
+
+	return range.Contains(property.val);
+}
+
+template<typename Control>
+bool GetVideoProperties(Control *control, long lastProperty,
+			std::vector<VideoDeviceProperty> &properties)
+{
+	if (!control)
+		return false;
+	for (long id = 0; id <= lastProperty; ++id) {
+		VideoDeviceProperty property;
+		VideoPropertyRange range;
+		if (GetVideoProperty(control, id, property, range)) {
+			properties.push_back(property);
+		}
+	}
+	return true;
+}
+
+template<typename Control>
+bool SetVideoProperties(Control *control, long lastProperty,
+			const std::vector<VideoDeviceProperty> &properties)
+{
+	if (!control)
+		return false;
+	bool success = true;
+	for (const auto &property : properties) {
+		VideoDeviceProperty current;
+		VideoPropertyRange range;
+		if (property.property < 0 || property.property > lastProperty ||
+		    !GetVideoProperty(control, property.property, current,
+				      range) ||
+		    !range.Supports(property.flags)) {
+			success = false;
+			continue;
+		}
+
+		const bool automatic = property.flags ==
+				       CameraControl_Flags_Auto;
+		const long value = automatic ? range.def : property.val;
+		if (current.flags == property.flags &&
+		    (automatic || current.val == value)) {
+			continue;
+		}
+
+		if (!range.Contains(value) ||
+		    control->Set(property.property, value, property.flags) !=
+			    S_OK) {
+			success = false;
+		}
+	}
+	return success;
+}
+
+bool Device::GetVideoProperties(
+	VideoPropertyType type,
+	std::vector<VideoDeviceProperty> &properties) const
+{
+	properties.clear();
+	if (!context->active || !context->videoFilter)
+		return false;
+	switch (type) {
+	case VideoPropertyType::CameraControl:
+		return DShow::GetVideoProperties(
+			ComQIPtr<IAMCameraControl>(context->videoFilter).Get(),
+			CameraControl_Focus, properties);
+	case VideoPropertyType::VideoProcAmp:
+		return DShow::GetVideoProperties(
+			ComQIPtr<IAMVideoProcAmp>(context->videoFilter).Get(),
+			VideoProcAmp_Gain, properties);
+	}
+	return false;
+}
+
+bool Device::SetVideoProperties(
+	VideoPropertyType type,
+	const std::vector<VideoDeviceProperty> &properties)
+{
+	if (!context->active || !context->videoFilter)
+		return false;
+	switch (type) {
+	case VideoPropertyType::CameraControl:
+		return DShow::SetVideoProperties(
+			ComQIPtr<IAMCameraControl>(context->videoFilter).Get(),
+			CameraControl_Focus, properties);
+	case VideoPropertyType::VideoProcAmp:
+		return DShow::SetVideoProperties(
+			ComQIPtr<IAMVideoProcAmp>(context->videoFilter).Get(),
+			VideoProcAmp_Gain, properties);
+	}
+	return false;
+}
+
 static void OpenPropertyPages(HWND hwnd, IUnknown *propertyObject)
 {
 	if (!propertyObject)
